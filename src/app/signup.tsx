@@ -6,7 +6,10 @@ import { Button, Field, Footer, Icon, NavBar, Screen, T, Tile } from '@/componen
 import { useStore, type User } from '@/store';
 import { useTheme } from '@/theme';
 
-type Form = User & { password: string; confirm: string };
+type Form = Pick<User, 'firstName' | 'lastName' | 'email' | 'phone'> & {
+  password: string;
+  confirm: string;
+};
 type Errors = Partial<Record<keyof Form, string>>;
 
 const EMPTY: Form = { firstName: '', lastName: '', email: '', phone: '', password: '', confirm: '' };
@@ -33,29 +36,45 @@ export default function SignUpScreen() {
   const [submitted, setSubmitted] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [serverError, setServerError] = useState('');
 
   const set = (key: keyof Form) => (value: string) => {
     const next = { ...form, [key]: value };
     setForm(next);
+    setServerError('');
     if (submitted) setErrors(validate(next));
   };
 
-  const create = () => {
+  const create = async () => {
+    if (submitting) return;
     setSubmitted(true);
     const found = validate(form);
     setErrors(found);
     if (Object.keys(found).length > 0) return;
-    signUp(
-      {
-        firstName: form.firstName.trim(),
-        lastName: form.lastName.trim(),
-        email: form.email.trim(),
-        phone: form.phone.trim(),
-      },
-      form.password,
-    );
-    if (router.canDismiss()) router.dismissAll();
-    router.replace('/');
+
+    setSubmitting(true);
+    try {
+      await signUp(
+        {
+          firstName: form.firstName.trim(),
+          lastName: form.lastName.trim(),
+          email: form.email.trim(),
+          phone: form.phone.trim(),
+        },
+        form.password,
+        form.confirm,
+      );
+      router.replace({ pathname: '/verify-email', params: { email: form.email.trim() } });
+    } catch (requestError) {
+      setServerError(
+        requestError instanceof Error
+          ? requestError.message
+          : 'Unable to create your account. Please try again.',
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const eye = (shown: boolean, toggle: () => void, what: string) => (
@@ -74,7 +93,7 @@ export default function SignUpScreen() {
       header={<NavBar title="Sign up" />}
       footer={
         <Footer>
-          <Button label="Create account" onPress={create} />
+          <Button label={submitting ? 'Creating account...' : 'Create account'} onPress={() => void create()} />
         </Footer>
       }>
       <View style={{ alignItems: 'center', gap: 8, paddingTop: 4 }}>
@@ -168,6 +187,7 @@ export default function SignUpScreen() {
           right={eye(showConfirm, () => setShowConfirm((v) => !v), 'password')}
         />
       </View>
+      {serverError ? <T style={{ color: c.accentText }}>{serverError}</T> : null}
       <T v="small">
         <Text style={{ color: c.accentText }}>*</Text> Required fields
       </T>

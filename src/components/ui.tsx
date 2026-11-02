@@ -90,6 +90,7 @@ type ScreenProps = {
   /** Fixed content below the scroll area, e.g. a total + button bar. */
   footer?: ReactNode;
   gap?: number;
+  contentContainerStyle?: StyleProp<ViewStyle>;
 };
 
 /**
@@ -130,7 +131,7 @@ function KeyboardDoneBar({ bottom }: { bottom: number }) {
   );
 }
 
-export function Screen({ children, header, footer, gap = 20 }: ScreenProps) {
+export function Screen({ children, header, footer, gap = 20, contentContainerStyle }: ScreenProps) {
   const c = useTheme();
   const root = useRef<View>(null);
   const scroll = useRef<ScrollView>(null);
@@ -180,12 +181,16 @@ export function Screen({ children, header, footer, gap = 20 }: ScreenProps) {
         <ScrollView
           ref={scroll}
           style={{ flex: 1 }}
-          contentContainerStyle={{
-            padding: 20,
-            paddingTop: header ? 20 : 12,
-            paddingBottom: 20 + (barShown ? DONE_BAR_HEIGHT + FIELD_CLEARANCE : 0),
-            gap,
-          }}
+          contentContainerStyle={[
+            {
+              flexGrow: 1,
+              padding: 20,
+              paddingTop: header ? 20 : 12,
+              paddingBottom: 20 + (barShown ? DONE_BAR_HEIGHT + FIELD_CLEARANCE : 0),
+              gap,
+            },
+            contentContainerStyle,
+          ]}
           onScroll={(e) => {
             scrollY.current = e.nativeEvent.contentOffset.y;
           }}
@@ -298,10 +303,11 @@ type ButtonProps = {
   onPress: () => void;
   variant?: 'primary' | 'text' | 'outline';
   icon?: IconName;
+  disabled?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
-export function Button({ label, onPress, variant = 'primary', icon, style }: ButtonProps) {
+export function Button({ label, onPress, variant = 'primary', icon, style, disabled }: ButtonProps) {
   const c = useTheme();
   const look = {
     primary: { background: c.accent, color: c.onBrand, border: c.accent, height: 54 },

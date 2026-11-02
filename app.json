@@ -41,7 +41,8 @@
         }
       ],
       "./plugins/with-scene-lifecycle",
-      "./plugins/with-source-built-expo-modules"
+      "./plugins/with-source-built-expo-modules",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,

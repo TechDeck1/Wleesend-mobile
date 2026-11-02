@@ -105,7 +105,7 @@ export default function ProfileScreen() {
           <View style={{ alignItems: 'flex-end', paddingTop: 10 }}>
             <T v="strong">{USER.email}</T>
             <Pressable
-              onPress={() => notConnected('Change email')}
+              // onPress={() => router.push('/change-email')}
               accessibilityRole="button"
               style={{ height: 44, justifyContent: 'center', marginTop: -6 }}>
               <Text style={{ color: c.accentText, fontSize: 14, fontWeight: '600' }}>Change email</Text>

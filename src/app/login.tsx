@@ -9,23 +9,36 @@ import { useState } from 'react';
 /** Log-in form, matching the website's My Account Login page. */
 export default function LogInScreen() {
   const c = useTheme();
-  const { logIn } = useStore();
+  const { logIn, authError } = useStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const submit = () => {
+  const submit = async () => {
+    if (submitting) return;
     if (!email.trim() || !password) {
       setError('Enter your email and password.');
       return;
     }
-    if (!logIn(email, password)) {
-      setError('That email and password don’t match an account. Check them, or create an account.');
-      return;
+
+    setSubmitting(true);
+    setError('');
+    try {
+      await logIn(email, password);
+      if (router.canDismiss()) router.dismissAll();
+      router.replace('/');
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : 'Unable to log in. Please try again.',
+      );
+    } finally {
+      setSubmitting(false);
     }
-    if (router.canDismiss()) router.dismissAll();
-    router.replace('/');
+
   };
 
   const edit = (setter: (v: string) => void) => (v: string) => {
@@ -39,7 +52,7 @@ export default function LogInScreen() {
       header={<NavBar title="Log in" />}
       footer={
         <Footer>
-          <Button label="Log in" onPress={submit} />
+          <Button label={submitting ? 'Logging in...' : 'Log in'} onPress={() => void submit()} />
         </Footer>
       }>
       <View style={{ alignItems: 'center', gap: 8, paddingTop: 4 }}>
@@ -71,7 +84,7 @@ export default function LogInScreen() {
           textContentType="password"
           value={password}
           onChangeText={edit(setPassword)}
-          error={error || undefined}
+          error={error || authError || undefined}
           right={
             <Pressable
               onPress={() => setShowPassword((v) => !v)}

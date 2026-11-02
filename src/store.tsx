@@ -1,6 +1,14 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
 import type { Brand } from '@/components/brand-logo';
+import {
+  clearAuthSession,
+  getAuthSession,
+  saveAuthSession,
+  subscribeToSessionExpiration,
+} from '@/api/auth-session';
+import { Login, Register } from '@/api/auth';
+import type { AuthUser } from '@/api/auth-session';
 import {
   COUNTRY_CODE,
   FEE_RATE,
@@ -45,7 +53,7 @@ export type Order = {
 /** The original details are kept so the transaction can be sent again. */
 export type Transaction = Order & { id: string; date: string; draft: Draft };
 
-export type User = { firstName: string; lastName: string; email: string; phone: string };
+export type User = AuthUser;
 
 /** The logo for whoever receives the money: the operator, LEC or the voucher vendor. */
 export function brandOf(draft: Draft): Brand {
@@ -122,11 +130,15 @@ type Store = {
   resend: (transaction: Transaction) => void;
   /** Null when signed out. */
   user: User | null;
-  /** Creates the account locally. Replace with the Wleesend API sign-up call. */
-  signUp: (user: User, password: string) => void;
-  /** Checks against accounts made on this device this session. Replace with the Wleesend API log-in call. */
-  logIn: (email: string, password: string) => boolean;
-  signOut: () => void;
+  authReady: boolean;
+  authError: string | null;
+  signUp: (
+    user: Pick<User, 'firstName' | 'lastName' | 'email' | 'phone'>,
+    pin: string,
+    confirmPin: string,
+  ) => Promise<void>;
+  logIn: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
 };
 
 const StoreContext = createContext<Store | null>(null);
@@ -135,10 +147,34 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [draft, setDraft] = useState<Draft>(() => newDraft('airtime', 'mtn'));
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [lastOrder, setLastOrder] = useState<Order | null>(null);
-  // The app opens signed out, like the website. Accounts live in memory until the
-  // Wleesend API is connected, so they last only until the app is closed.
   const [user, setUser] = useState<User | null>(null);
-  const [accounts, setAccounts] = useState<{ user: User; password: string }[]>([]);
+  const [authReady, setAuthReady] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    const unsubscribe = subscribeToSessionExpiration(() => {
+      if (active) setUser(null);
+    });
+
+    getAuthSession()
+      .then((session) => {
+        if (active) setUser(session?.user ?? null);
+      })
+      .catch((error: unknown) => {
+        if (active) {
+          setAuthError(error instanceof Error ? error.message : 'Unable to restore your sign-in session.');
+        }
+      })
+      .finally(() => {
+        if (active) setAuthReady(true);
+      });
+
+    return () => {
+      active = false;
+      unsubscribe();
+    };
+  }, []);
 
   const store: Store = {
     draft,
@@ -158,21 +194,22 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     },
     resend: (transaction) => setDraft({ ...transaction.draft }),
     user,
-    signUp: (newUser, password) => {
-      setAccounts((list) => [
-        ...list.filter((a) => a.user.email.toLowerCase() !== newUser.email.toLowerCase()),
-        { user: newUser, password },
-      ]);
-      setUser(newUser);
+    authReady,
+    authError,
+    signUp: async (newUser, pin, confirmPin) => {
+      setAuthError(null);
+      await Register(newUser, pin, confirmPin);
     },
-    logIn: (email, password) => {
-      const account = accounts.find(
-        (a) => a.user.email.toLowerCase() === email.trim().toLowerCase() && a.password === password,
-      );
-      if (account) setUser(account.user);
-      return account !== undefined;
+    logIn: async (email, password) => {
+      setAuthError(null);
+      const session = await Login(email, password);
+      await saveAuthSession(session);
+      setUser(session.user);
     },
-    signOut: () => setUser(null),
+    signOut: async () => {
+      await clearAuthSession();
+      setUser(null);
+    },
   };
 
   return <StoreContext.Provider value={store}>{children}</StoreContext.Provider>;
