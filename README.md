@@ -42,6 +42,7 @@ You need an Apple Developer account and a Google Play developer account.
 | --- | --- |
 | `src/app/(tabs)/` | The four tab screens: Home, Products, Transactions, Profile |
 | `src/app/send/` | Send flow: details, payment, confirmation |
+| `src/app/account/verify-emails.tsx` | Two-step dual email OTP verification (`/account/verify-emails`) |
 | `src/app/about.tsx`, `src/app/support.tsx` | Opened from Profile |
 | `src/components/ui.tsx` | Shared buttons, cards, fields, icons |
 | `src/config/api.ts` | Backend URL, API route paths and website URL |

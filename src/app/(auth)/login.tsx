@@ -6,7 +6,6 @@ import { useStore } from '@/store';
 import { useState } from 'react';
 
 
-/** Log-in form, matching the website's My Account Login page. */
 export default function LogInScreen() {
   const c = useTheme();
   const { logIn, authError } = useStore();

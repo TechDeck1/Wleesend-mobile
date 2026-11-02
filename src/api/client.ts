@@ -1,7 +1,23 @@
 import { request } from './request';
 import type { ApiMethod, ApiRequestOptions } from './types';
 
+export type GenericResponse = {
+  success: boolean;
+  message: string;
+};
+
+export type SendDualEmailOtpPayload = {
+  firstEmail: string;
+  secondEmail: string;
+};
+
+export type VerifyDualEmailOtpPayload = SendDualEmailOtpPayload & {
+  firstOtp: string;
+  secondOtp: string;
+};
+
 export const apiClient = {
+  
   request<TResponse = unknown, TBody = unknown>(
     method: ApiMethod,
     path: string,

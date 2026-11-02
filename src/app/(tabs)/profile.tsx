@@ -105,7 +105,7 @@ export default function ProfileScreen() {
           <View style={{ alignItems: 'flex-end', paddingTop: 10 }}>
             <T v="strong">{USER.email}</T>
             <Pressable
-              // onPress={() => router.push('/change-email')}
+              onPress={() => router.push('/change-email')}
               accessibilityRole="button"
               style={{ height: 44, justifyContent: 'center', marginTop: -6 }}>
               <Text style={{ color: c.accentText, fontSize: 14, fontWeight: '600' }}>Change email</Text>
@@ -115,7 +115,7 @@ export default function ProfileScreen() {
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 68 }}>
           <T v="muted">Password</T>
           <Pressable
-            onPress={() => notConnected('Reset password')}
+            onPress={() => router.push('/reset-password')}
             accessibilityRole="button"
             style={{
               height: 44,

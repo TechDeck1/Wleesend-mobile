@@ -1,6 +1,15 @@
 import { router } from 'expo-router';
 import { SymbolView, type SymbolViewProps } from 'expo-symbols';
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+  type Ref,
+} from 'react';
 import {
   Keyboard,
   Platform,
@@ -385,9 +394,10 @@ type FieldProps = TextInputProps & {
   error?: string;
   /** A control inside the field's right edge, e.g. a show-password button. */
   right?: ReactNode;
+  inputRef?: Ref<TextInput>;
 };
 
-export function Field({ label, required, error, right, style, onFocus, ...input }: FieldProps) {
+export function Field({ label, required, error, right, inputRef, style, onFocus, ...input }: FieldProps) {
   const c = useTheme();
   const reveal = useContext(RevealContext);
   return (
@@ -400,6 +410,7 @@ export function Field({ label, required, error, right, style, onFocus, ...input 
       ) : null}
       <View style={{ justifyContent: 'center' }}>
         <TextInput
+          ref={inputRef}
           accessibilityLabel={label}
           placeholderTextColor={c.muted}
           {...input}

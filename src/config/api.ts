@@ -13,6 +13,12 @@ export const API_ENDPOINTS = {
     changeEmail: `${BASE_URL}/auth/change-email`,
   },
 
+  account: {
+    sendDualEmailOtp: `${API_BASE_URL}/account/send-dual-email-otp`,
+    verifyDualEmailOtp: `${API_BASE_URL}/account/verify-dual-email-otp`,
+    resetPassword : `${API_BASE_URL}/WleeUserAcccount/reset-pin`
+  },
+
   products: `${BASE_URL}/products`,
   orders: `${BASE_URL}/orders`,
   payments: `${BASE_URL}/payments`,

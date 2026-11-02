@@ -120,10 +120,13 @@ export async function request<TResponse = unknown, TBody = unknown>(
 
   const controller = new AbortController();
   let timedOut = false;
+
+
   const timeout = setTimeout(() => {
     timedOut = true;
     controller.abort();
   }, timeoutMs);
+  
   const abortRequest = () => controller.abort();
 
   if (signal?.aborted) {

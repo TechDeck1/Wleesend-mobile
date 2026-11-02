@@ -137,6 +137,7 @@ type Store = {
     pin: string,
     confirmPin: string,
   ) => Promise<void>;
+  changeEmail: (email: string) => Promise<void>;
   logIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
@@ -209,6 +210,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     signOut: async () => {
       await clearAuthSession();
       setUser(null);
+    },
+    changeEmail: async (email) => {
+      const session = await getAuthSession();
+      if (!session) throw new Error('Your session has expired. Please sign in again.');
+
+      const updatedSession = {
+        ...session,
+        user: { ...session.user, email: email.trim() },
+      };
+      await saveAuthSession(updatedSession);
+      setUser(updatedSession.user);
     },
   };
 
