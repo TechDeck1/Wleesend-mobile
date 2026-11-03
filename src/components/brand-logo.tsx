@@ -3,7 +3,7 @@ import { Image, View } from 'react-native';
 import type { OperatorId, VendorId } from '@/data';
 import { useTheme } from '@/theme';
 
-export type Brand = OperatorId | VendorId | 'lec';
+export type Brand = OperatorId | VendorId | 'lec' | 'voucher' | 'airtime';
 
 const LOGOS = {
   mtn: { source: require('@/assets/images/brands/lonestar-mtn.png'), label: 'Lonestar Cell MTN logo', bg: '#FFCB05' },

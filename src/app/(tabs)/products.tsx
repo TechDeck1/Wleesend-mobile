@@ -11,7 +11,7 @@ export default function ProductsScreen() {
   const c = useTheme();
   const { startSend } = useStore();
 
-  const product = (brand: Brand, title: string, detail: string, kind: SendKind, operator?: OperatorId) => (
+  const   product = (brand: Brand, title: string, detail: string, kind: SendKind, operator?: OperatorId) => (
     <Pressable
       accessibilityRole="button"
       onPress={() => {

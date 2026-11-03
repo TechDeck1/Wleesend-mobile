@@ -3,10 +3,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, TextInput, View } from 'react-native';
 
 import { ApiError} from '@/api/client';
-import { sendDualEmailOtp, verifyDualEmailOtp } from '@/api/email-change';
 import { Button, Card, Field, Footer, NavBar, Screen, T, Tile } from '@/components/ui';
 import { useStore } from '@/store';
 import { useTheme } from '@/theme';
+import { sendDualEmailOtp, verifyDualEmailOtp } from '@/services/accountService';
 
 const EMAIL_PATTERN = /^\S+@\S+\.\S+$/;
 const OTP_LIFETIME_MS = 10 * 60 * 1000;

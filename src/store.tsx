@@ -7,14 +7,14 @@ import {
   saveAuthSession,
   subscribeToSessionExpiration,
 } from '@/api/auth-session';
-import { Login, Register } from '@/api/auth';
 import type { AuthUser } from '@/api/auth-session';
+import type { AirtimeProduct } from '@/types/airtime';
+import { calculateAirtimePricing, roundToTwoDecimals } from '@/utils/airtime';
 import {
   COUNTRY_CODE,
   FEE_RATE,
   LEC_NAME,
   OPERATORS,
-  TOP_UP,
   VOUCHER_AMOUNTS,
   VOUCHER_VENDORS,
   approxKw,
@@ -23,18 +23,18 @@ import {
   type SendKind,
   type VendorId,
 } from '@/data';
+import { Login, Register } from './services/authService';
 
 export type Draft = {
   kind: SendKind;
   operator: OperatorId;
-  /** A package id from the operator's list, or TOP_UP.id. */
-  packageId: string;
-  /** Dollar amount typed for a top-up, kept as text while editing. */
+  operatorId: number | null;
+  operatorName: string;
+  product: AirtimeProduct | null;
   topUp: string;
   phone: string;
   phoneEdited: boolean;
   meter: string;
-  /** LEC credit amount in dollars. */
   amount: number;
   vendor: VendorId;
   voucherAmount: number;
@@ -50,19 +50,16 @@ export type Order = {
   total: number;
 };
 
-/** The original details are kept so the transaction can be sent again. */
 export type Transaction = Order & { id: string; date: string; draft: Draft };
 
 export type User = AuthUser;
 
-/** The logo for whoever receives the money: the operator, LEC or the voucher vendor. */
 export function brandOf(draft: Draft): Brand {
   if (draft.kind === 'airtime') return draft.operator;
   if (draft.kind === 'utility') return 'lec';
   return draft.vendor;
 }
 
-/** Turns the in-progress send into the order summary shown at checkout. */
 export function buildOrder(draft: Draft): Order {
   const receiver = COUNTRY_CODE + draft.phone;
   const rows: Order['rows'] = [['Receiver phone', receiver]];
@@ -71,14 +68,12 @@ export function buildOrder(draft: Draft): Order {
   let provider: string;
 
   if (draft.kind === 'airtime') {
-    const operator = OPERATORS[draft.operator];
-    const isTopUp = draft.packageId === TOP_UP.id;
-    const pkg = operator.packages.find((p) => p.id === draft.packageId);
+    const chosen = draft.product;
     const topUp = Number(draft.topUp);
-    const validTopUp = topUp >= TOP_UP.min && topUp <= TOP_UP.max ? topUp : 0;
-    amount = isTopUp ? validTopUp : (pkg?.price ?? 0);
-    product = isTopUp ? `${money(amount)} Top Up` : (pkg?.name ?? '');
-    provider = operator.name;
+    const validTopUp = chosen?.isRange && topUp >= chosen.min && topUp <= chosen.max ? roundToTwoDecimals(topUp) : 0;
+    amount = chosen?.isRange ? validTopUp : (chosen?.price ?? 0);
+    product = chosen?.name ?? '';
+    provider = draft.operatorName || OPERATORS[draft.operator].name;
     rows.push(['Operator', provider], ['Product', product]);
   } else if (draft.kind === 'utility') {
     amount = draft.amount;
@@ -98,18 +93,28 @@ export function buildOrder(draft: Draft): Order {
     rows.push(['Vendor', provider], ['Product', product]);
   }
 
-  const fee = Math.round(amount * FEE_RATE * 100) / 100;
+  let fee: number;
+  let total: number;
+  if (draft.kind === 'airtime') {
+    ({ fee, total } = calculateAirtimePricing(amount));
+  } else {
+    fee = Math.round(amount * FEE_RATE * 100) / 100;
+    total = amount + fee;
+  }
   rows.push(['Amount', money(amount)], ['Credit', money(amount)], ['Transaction fee', money(fee)]);
-  return { kind: draft.kind, rows, product, provider, receiver, fee, total: amount + fee };
+  return { kind: draft.kind, rows, product, provider, receiver, fee, total };
 }
 
 function newDraft(kind: SendKind, operator: OperatorId): Draft {
   return {
     kind,
     operator,
-    packageId: OPERATORS[operator].defaultPackage,
+    operatorId: null,
+    operatorName: '',
+    product: null,
     topUp: '',
-    phone: OPERATORS[operator].samplePhone,
+    // Airtime starts empty so the number decides the operator; the others keep the sample number.
+    phone: kind === 'airtime' ? '' : OPERATORS[operator].samplePhone,
     phoneEdited: false,
     meter: '',
     amount: 10,

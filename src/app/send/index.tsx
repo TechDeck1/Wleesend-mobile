@@ -1,25 +1,31 @@
 import { router } from 'expo-router';
-import { Alert, Text, View, useWindowDimensions } from 'react-native';
+import { useEffect } from 'react';
+import { ActivityIndicator, Alert, Text, View, useWindowDimensions } from 'react-native';
 
 import { BrandLogo } from '@/components/brand-logo';
-import { PackagePicker } from '@/components/package-picker';
+import { PackagePicker, isAvailable } from '@/components/package-picker';
 import { Button, Card, Field, Footer, NavBar, Screen, Segment, T } from '@/components/ui';
 import {
   COUNTRY_CODE,
   LEC_NAME,
-  OPERATORS,
-  TOP_UP,
   UTILITY_AMOUNTS,
   VOUCHER_AMOUNTS,
   VOUCHER_VENDORS,
   approxKw,
   money,
-  type OperatorId,
 } from '@/data';
+import { useAirtimeCatalog } from '@/hooks/use-airtime-catalog';
 import { buildOrder, useStore } from '@/store';
 import { fonts, useTheme } from '@/theme';
-
-const OPERATOR_IDS = Object.keys(OPERATORS) as OperatorId[];
+import type { AirtimeOperator } from '@/types/airtime';
+import {
+  brandForOperatorName,
+  digitsOnly,
+  findRestrictedOperator,
+  getPhonePrefixError,
+  isValidLiberiaPhone,
+} from '@/utils/airtime';
+import { CollapsibleRow } from '@/components/collapsible-row';
 
 const TITLES = {
   airtime: { nav: 'Mobile airtime', heading: 'Send mobile airtime credit' },
@@ -27,7 +33,6 @@ const TITLES = {
   voucher: { nav: 'Shopping voucher', heading: 'Send a shopping voucher' },
 } as const;
 
-/** Dollar amounts as a wrapping grid, four per row. */
 function AmountGrid({ amounts, value, onChange }: { amounts: number[]; value: number; onChange: (n: number) => void }) {
   const { width } = useWindowDimensions();
   const chip = Math.floor((Math.min(width, 430) - 40 - 3 * 8) / 4);
@@ -42,31 +47,101 @@ function AmountGrid({ amounts, value, onChange }: { amounts: number[]; value: nu
   );
 }
 
+/** A loading line, or the error with a retry button, for one of the live API lists. */
+function CatalogNotice({ loading, error, onRetry }: { loading: string; error: string | null; onRetry: () => void }) {
+  const c = useTheme();
+  if (!error) {
+    return (
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+        <ActivityIndicator color={c.brandText} />
+        <T v="small">{loading}</T>
+      </View>
+    );
+  }
+  return (
+    <View style={{ gap: 4 }}>
+      <Text style={{ color: c.accentText, fontSize: 13.5 }} accessibilityLiveRegion="polite">
+        {error}
+      </Text>
+      <Button variant="text" label="Try again" onPress={onRetry} />
+    </View>
+  );
+}
+
 /** Step 1 of 2: who receives the credit and what to send. */
 export default function SendDetailsScreen() {
   const c = useTheme();
   const { draft, updateDraft } = useStore();
   const order = buildOrder(draft);
   const isAirtime = draft.kind === 'airtime';
-  const operator = OPERATORS[draft.operator];
+  const catalog = useAirtimeCatalog(isAirtime ? draft.operatorId : null);
+  const { operators, operatorsStatus, products, productsStatus } = catalog;
+  const product = draft.product;
 
-  const pickOperator = (id: OperatorId) =>
+  const OPERATOR_ROW_HEIGHT = 52;
+  const OPERATOR_ROW_GAP = 10;
+  // A number's first digits fix its operator, so only that operator is offered once they are typed.
+  const restricted = isAirtime ? findRestrictedOperator(digitsOnly(draft.phone), operators) : undefined;
+  const phoneError = isAirtime ? getPhonePrefixError(digitsOnly(draft.phone)) : undefined;
+
+  const selectOperator = (op: AirtimeOperator) =>
     updateDraft({
-      operator: id,
-      packageId: OPERATORS[id].defaultPackage,
-      ...(draft.phoneEdited ? {} : { phone: OPERATORS[id].samplePhone }),
+      operatorId: op.id,
+      operatorName: op.name,
+      operator: brandForOperatorName(op.name) ?? draft.operator,
+      product: null,
+      topUp: '',
     });
+
+  // Once operators load: follow the number's operator, else keep the chosen one, else use the one
+  // picked on the Products screen. Clear a choice that is no longer on offer.
+  useEffect(() => {
+    if (!isAirtime || operatorsStatus !== 'ready') return;
+    const chosen = operators.find((op) => op.id === draft.operatorId);
+    if (restricted) {
+      if (restricted.id !== draft.operatorId) selectOperator(restricted);
+    } else if (!chosen) {
+      const hinted = operators.find((op) => brandForOperatorName(op.name) === draft.operator);
+      if (hinted) selectOperator(hinted);
+      else if (draft.operatorId !== null) updateDraft({ operatorId: null, operatorName: '', product: null, topUp: '' });
+    }
+    // selectOperator only reads `draft.operator`, which is already listed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAirtime, operatorsStatus, operators, restricted, draft.operatorId, draft.operator]);
+
+  const selectProduct = (id: number) => {
+    const chosen = products.find((p) => p.id === id);
+    if (chosen) updateDraft({ product: chosen, topUp: chosen.isRange ? String(chosen.min) : '' });
+  };
 
   const next = () => {
     if (!draft.phone) {
       Alert.alert('Receiver phone', 'Enter the receiver phone number.');
       return;
     }
-    if (isAirtime && draft.packageId === TOP_UP.id) {
-      const amount = Number(draft.topUp);
-      if (!(amount >= TOP_UP.min && amount <= TOP_UP.max)) {
-        Alert.alert('Top-up amount', `Enter an amount from $${TOP_UP.min} to $${TOP_UP.max}.`);
+    if (isAirtime) {
+      if (!isValidLiberiaPhone(digitsOnly(draft.phone))) {
+        Alert.alert('Receiver phone', 'Enter a valid 9-digit MTN or Orange number, without the country code.');
         return;
+      }
+      if (draft.operatorId === null) {
+        Alert.alert('Operator', 'Select an operator.');
+        return;
+      }
+      if (!product) {
+        Alert.alert('Package', 'Select a package.');
+        return;
+      }
+      if (!isAvailable(product)) {
+        Alert.alert('Package', 'This package has no price yet. Choose another one.');
+        return;
+      }
+      if (product.isRange) {
+        const amount = Number(draft.topUp);
+        if (!(amount >= product.min && amount <= product.max)) {
+          Alert.alert('Top-up amount', `Enter an amount from $${product.min} to $${product.max}.`);
+          return;
+        }
       }
     }
     router.push('/send/payment');
@@ -90,6 +165,8 @@ export default function SendDetailsScreen() {
           accessibilityLabel="Receiver phone"
           placeholder="Phone number"
           keyboardType="number-pad"
+          maxLength={isAirtime ? 9 : undefined}
+          error={phoneError}
           value={draft.phone}
           onChangeText={(text) => updateDraft({ phone: text.replace(/[^0-9]/g, ''), phoneEdited: true })}
         />
@@ -125,34 +202,64 @@ export default function SendDetailsScreen() {
         <>
           <View style={{ gap: 8 }}>
             <T v="label">Operator</T>
-            <View style={{ flexDirection: 'row', gap: 10 }}>
-              {OPERATOR_IDS.map((id) => (
-                <Segment
-                  key={id}
-                  label={OPERATORS[id].label}
-                  leading={<BrandLogo brand={id} size={28} />}
-                  selected={draft.operator === id}
-                  onPress={() => pickOperator(id)}
-                />
-              ))}
-            </View>
+            {operatorsStatus === 'ready' ? (
+              operators.length ? (
+                <View style={{ marginBottom: -OPERATOR_ROW_GAP }}>
+                  {operators.map((op) => {
+                    const brand = brandForOperatorName(op.name);
+                    return (
+                      <CollapsibleRow
+                        key={op.id}
+                        visible={!restricted || restricted.id === op.id}
+                        height={OPERATOR_ROW_HEIGHT}
+                        gap={OPERATOR_ROW_GAP}>
+                        <Segment
+                          label={op.name}
+                          leading={brand ? <BrandLogo brand={brand} size={28} /> : undefined}
+                          selected={draft.operatorId === op.id}
+                          onPress={() => selectOperator(op)}
+                        />
+                      </CollapsibleRow>
+                    );
+                  })}
+                </View>
+              ) : (
+                <T v="small">No operators are available right now.</T>
+              )
+            ) : (
+              <CatalogNotice
+                loading="Loading operators…"
+                error={catalog.operatorsError}
+                onRetry={catalog.reloadOperators}
+              />
+            )}
           </View>
           {phoneField}
           <View style={{ gap: 8 }}>
             <T v="label">Package</T>
-            <PackagePicker
-              packages={operator.packages}
-              selectedId={draft.packageId}
-              onSelect={(packageId) => updateDraft({ packageId })}
-            />
-            {draft.packageId === TOP_UP.id ? (
+            {draft.operatorId === null ? (
+              <T v="small">{operatorsStatus === 'ready' ? 'Select an operator to see its packages.' : ' '}</T>
+            ) : productsStatus === 'ready' ? (
+              products.length ? (
+                <PackagePicker packages={products} selectedId={product?.id ?? null} onSelect={selectProduct} />
+              ) : (
+                <T v="small">No packages are available for this operator.</T>
+              )
+            ) : (
+              <CatalogNotice
+                loading="Loading packages…"
+                error={catalog.productsError}
+                onRetry={catalog.reloadProducts}
+              />
+            )}
+            {product?.isRange ? (
               <Field
                 label="Top-up amount (USD)"
-                placeholder={`${TOP_UP.min} to ${TOP_UP.max}`}
-                keyboardType="number-pad"
-                maxLength={3}
+                placeholder={`${product.min} to ${product.max}`}
+                keyboardType="decimal-pad"
+                maxLength={7}
                 value={draft.topUp}
-                onChangeText={(text) => updateDraft({ topUp: text.replace(/[^0-9]/g, '') })}
+                onChangeText={(text) => updateDraft({ topUp: text.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') })}
               />
             ) : null}
           </View>

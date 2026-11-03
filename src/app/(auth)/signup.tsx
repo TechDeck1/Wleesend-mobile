@@ -193,7 +193,7 @@ export default function SignUpScreen() {
       </T>
       <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
         <T v="muted">Already have an account? </T>
-        <Pressable onPress={() => router.replace('/login')} accessibilityRole="link" hitSlop={8}>
+        <Pressable onPress={() => router.push('/login')} accessibilityRole="link" hitSlop={8}>
           <Text style={{ color: c.brandText, fontSize: 15, fontWeight: '600' }}>Log in</Text>
         </Pressable>
       </View>

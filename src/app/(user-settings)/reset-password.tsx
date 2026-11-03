@@ -16,7 +16,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { fonts, useTheme, type Palette } from '@/theme';
 import { ApiError, ApiTimeoutError } from '@/api/request';
-import { resetPassword } from '@/services/authService';
+import { resetPassword } from '@/services/accountService';
 import { SymbolView } from 'expo-symbols';
 
 const MIN_PASSWORD_LENGTH = 8;

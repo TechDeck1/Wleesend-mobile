@@ -1,5 +1,5 @@
 import { Button, Field, Footer, Icon, NavBar, Screen, T, Tile } from '@/components/ui';
-import { Alert, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { useTheme } from '@/theme';
 import { useStore } from '@/store';
@@ -98,12 +98,12 @@ export default function LogInScreen() {
 
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <Pressable
-          onPress={() => Alert.alert('Forgot password', 'Password reset isn’t connected yet.')}
+          onPress={() => router.push("/forget-password")}
           accessibilityRole="button"
           hitSlop={8}>
           <Text style={{ color: c.brandText, fontSize: 15, fontWeight: '600' }}>Forgot password?</Text>
         </Pressable>
-        <Pressable onPress={() => router.replace('/signup')} accessibilityRole="link" hitSlop={8}>
+        <Pressable onPress={() => router.push('/signup')} accessibilityRole="link" hitSlop={8}>
           <Text style={{ color: c.brandText, fontSize: 15, fontWeight: '600' }}>Sign up</Text>
         </Pressable>
       </View>

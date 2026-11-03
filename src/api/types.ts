@@ -15,3 +15,8 @@ export interface ApiRequestOptions<TBody = unknown>
   params?: ApiQueryParams;
   timeoutMs?: number;
 }
+
+export type GenericResponse = {
+  success: boolean;
+  message: string;
+};

@@ -6,7 +6,6 @@ import { useStore } from '@/store';
 
 export default function TabsLayout() {
   const { user } = useStore();
-  // Signed-out visitors start on the welcome screen, like the website.
   if (!user) return <Redirect href="/welcome" />;
 
   return (

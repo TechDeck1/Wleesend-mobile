@@ -1,11 +1,11 @@
 import { router } from 'expo-router';
-import { Alert, Pressable, Text, View } from 'react-native';
+import {  Pressable, Text, View } from 'react-native';
 
 import { Button, Card, LinkRow, Screen, T, Tile } from '@/components/ui';
 import { useStore } from '@/store';
 import { fonts, useTheme } from '@/theme';
 
-const notConnected = (what: string) => Alert.alert(what, 'This action is not connected yet.');
+// const notConnected = (what: string) => Alert.alert(what, 'This action is not connected yet.');
 
 export default function ProfileScreen() {
   const c = useTheme();

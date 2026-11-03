@@ -1,20 +1,7 @@
 import { request } from './request';
 import type { ApiMethod, ApiRequestOptions } from './types';
 
-export type GenericResponse = {
-  success: boolean;
-  message: string;
-};
 
-export type SendDualEmailOtpPayload = {
-  firstEmail: string;
-  secondEmail: string;
-};
-
-export type VerifyDualEmailOtpPayload = SendDualEmailOtpPayload & {
-  firstOtp: string;
-  secondOtp: string;
-};
 
 export const apiClient = {
   
@@ -58,6 +45,5 @@ export const apiClient = {
 };
 
 export { ApiError, ApiTimeoutError } from './request';
-export { Login, Register, resendVerificationEmail } from './auth';
 export { getAuthSession, saveAuthSession, clearAuthSession } from './auth-session';
 export type { ApiMethod, ApiQueryParams, ApiQueryValue, ApiRequestOptions } from './types';

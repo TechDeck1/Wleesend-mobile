@@ -13,16 +13,25 @@ export const API_ENDPOINTS = {
     changeEmail: `${BASE_URL}/auth/change-email`,
   },
 
+  transactions: {
+    mobileHistory: `${API_BASE_URL}/WleeTransaction/mobile/transactions`,
+  },
+
   account: {
     sendDualEmailOtp: `${API_BASE_URL}/account/send-dual-email-otp`,
     verifyDualEmailOtp: `${API_BASE_URL}/account/verify-dual-email-otp`,
-    resetPassword : `${API_BASE_URL}/WleeUserAcccount/reset-pin`
+    resetPassword: `${API_BASE_URL}/WleeUserAcccount/reset-pin`
+  },
+
+  airtime: {
+    operators: `${API_BASE_URL}/Product/operators`,
+    operatorProducts: (operatorId: number | string) =>
+      `${API_BASE_URL}/Product/operators/${operatorId}/products`,
   },
 
   products: `${BASE_URL}/products`,
   orders: `${BASE_URL}/orders`,
   payments: `${BASE_URL}/payments`,
-  transactions: `${BASE_URL}/transactions`,
 } as const;
 
 export function getApiUrl(path: string): string {

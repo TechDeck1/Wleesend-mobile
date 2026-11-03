@@ -1,12 +1,15 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 
 import { BrandLogo } from '@/components/brand-logo';
 import { Button, Card, Icon, Screen, Segment, T, Tile } from '@/components/ui';
 import { money, type SendKind } from '@/data';
+import { useTransactionHistory } from '@/hooks/use-transaction-history';
 import { brandOf, useStore, type Transaction } from '@/store';
 import { fonts, useTheme } from '@/theme';
+import { brandForDraft } from '@/services/transactionService';
+import { ApiTransactionDraft } from '@/types/transactions';
 
 const FILTERS: { id: 'all' | SendKind; label: string }[] = [
   { id: 'all', label: 'All' },
@@ -18,13 +21,14 @@ const FILTERS: { id: 'all' | SendKind; label: string }[] = [
 const KIND_LABEL: Record<SendKind, string> = { airtime: 'Airtime', utility: 'Utility', voucher: 'Shopping voucher' };
 const KINDS = Object.keys(KIND_LABEL) as SendKind[];
 
-const sum = (list: Transaction[]) => list.reduce((total, t) => total + t.total, 0);
-
 export default function TransactionsScreen() {
   const c = useTheme();
-  const { transactions, resend } = useStore();
+  const { resend } = useStore();
   const [filter, setFilter] = useState<'all' | SendKind>('all');
-  const rows = transactions.filter((t) => filter === 'all' || t.kind === filter);
+  const { rows, totals, loading, error, hasMore, refresh, loadMore } = useTransactionHistory(filter);
+
+  // Totals come from the server, so they cover every page, not just the loaded rows.
+  const totalSent = filter === 'all' ? KINDS.reduce((s, k) => s + totals[k], 0) : totals[filter];
 
   const sendAgain = (t: Transaction) => {
     resend(t);
@@ -42,7 +46,11 @@ export default function TransactionsScreen() {
         ))}
       </View>
 
-      {rows.length === 0 ? (
+      {loading && rows.length === 0 ? (
+        <ActivityIndicator style={{ paddingTop: 72 }} accessibilityLabel="Loading transactions" />
+      ) : null}
+
+      {!loading && !error && rows.length === 0 ? (
         <View style={{ alignItems: 'center', gap: 14, paddingTop: 72, paddingHorizontal: 24 }}>
           <Tile icon="list" size={72} />
           <T v="heading" style={{ fontSize: 18 }}>
@@ -53,7 +61,9 @@ export default function TransactionsScreen() {
           </T>
           <Button label="Send credit" onPress={() => router.navigate('/products')} style={{ height: 50, marginTop: 6 }} />
         </View>
-      ) : (
+      ) : null}
+
+      {rows.length > 0 ? (
         <Card>
           {rows.map((t, i) => (
             <View
@@ -67,7 +77,7 @@ export default function TransactionsScreen() {
                 borderTopWidth: i === 0 ? 0 : 1,
                 borderTopColor: c.lineSoft,
               }}>
-              <BrandLogo brand={brandOf(t.draft)} size={40} />
+              <BrandLogo brand={brandForDraft(t.draft as unknown as ApiTransactionDraft)} size={40} />
               <View style={{ flex: 1, gap: 2 }}>
                 <T v="strong" style={{ fontSize: 14.5 }}>
                   {t.product}
@@ -102,7 +112,19 @@ export default function TransactionsScreen() {
             </View>
           ))}
         </Card>
-      )}
+      ) : null}
+
+      {error ? (
+        <View style={{ alignItems: 'center', gap: 12, paddingTop: rows.length === 0 ? 48 : 0 }}>
+          <T v="muted" style={{ textAlign: 'center' }}>
+            {error}
+          </T>
+          <Button label="Try again" onPress={rows.length === 0 ? refresh : loadMore} style={{ height: 50 }} />
+        </View>
+      ) : null}
+
+      {hasMore && !loading && !error ? <Button label="Load more" onPress={loadMore} style={{ height: 50 }} /> : null}
+      {loading && rows.length > 0 ? <ActivityIndicator accessibilityLabel="Loading more transactions" /> : null}
 
       {rows.length > 0 ? (
         <Card style={{ padding: 16, paddingHorizontal: 18, gap: 10 }}>
@@ -110,7 +132,7 @@ export default function TransactionsScreen() {
             ? KINDS.map((k) => (
                 <View key={k} style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                   <T v="muted">{KIND_LABEL[k]}</T>
-                  <T v="strong">{money(sum(transactions.filter((t) => t.kind === k)))}</T>
+                  <T v="strong">{money(totals[k])}</T>
                 </View>
               ))
             : null}
@@ -124,7 +146,7 @@ export default function TransactionsScreen() {
               borderTopColor: c.lineSoft,
             }}>
             <T v="strong">Total sent{filter === 'all' ? '' : `: ${KIND_LABEL[filter]}`}</T>
-            <Text style={{ fontFamily: fonts.display, fontSize: 20, color: c.brandText }}>{money(sum(rows))}</Text>
+            <Text style={{ fontFamily: fonts.display, fontSize: 20, color: c.brandText }}>{money(totalSent)}</Text>
           </View>
           <T v="small" style={{ fontSize: 12.5 }}>
             Amounts include transaction fees.

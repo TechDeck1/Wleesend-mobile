@@ -2,13 +2,15 @@ import { useRef, useState } from 'react';
 import { Modal, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
 
 import { Icon, T } from '@/components/ui';
-import { TOP_UP, money, type Package } from '@/data';
+import { money } from '@/data';
 import { useTheme } from '@/theme';
+import type { AirtimeProduct } from '@/types/airtime';
 
-type Option = { id: string; name: string; price: number | null };
+const priceLabel = (p: AirtimeProduct) =>
+  p.isRange ? `$${p.min}–$${p.max}` : p.price === null ? 'Price TBC' : money(p.price);
 
-const priceLabel = (o: Option) =>
-  o.id === TOP_UP.id ? `$${TOP_UP.min}–$${TOP_UP.max}` : o.price === null ? 'Price TBC' : money(o.price);
+/** A product can be chosen when it has a fixed price or a range. */
+export const isAvailable = (p: AirtimeProduct) => (p.isRange ? p.max >= p.min && p.max > 0 : p.price !== null);
 
 const LIST_MAX_HEIGHT = 330;
 const GAP = 6;
@@ -16,7 +18,7 @@ const GAP = 6;
 type Anchor = { x: number; y: number; width: number; height: number };
 
 /**
- * A select field for an operator's packages. The list drops down from the
+ * A select field for the packages the API returned for an operator. The list drops down from the
  * field over the page; it opens upward when there isn't room below.
  */
 export function PackagePicker({
@@ -24,16 +26,16 @@ export function PackagePicker({
   selectedId,
   onSelect,
 }: {
-  packages: Package[];
-  selectedId: string;
-  onSelect: (id: string) => void;
+  packages: AirtimeProduct[];
+  selectedId: number | null;
+  onSelect: (id: number) => void;
 }) {
   const c = useTheme();
   const window = useWindowDimensions();
   const field = useRef<View>(null);
   const list = useRef<ScrollView>(null);
   const [anchor, setAnchor] = useState<Anchor | null>(null);
-  const options: Option[] = [{ id: TOP_UP.id, name: TOP_UP.name, price: null }, ...packages];
+  const options = packages;
   const selected = options.find((o) => o.id === selectedId);
 
   const open = () => field.current?.measureInWindow((x, y, width, height) => setAnchor({ x, y, width, height }));
@@ -100,7 +102,7 @@ export function PackagePicker({
                 onLayout={() => list.current?.flashScrollIndicators()}>
                 {options.map((o, i) => {
                   const isSelected = o.id === selectedId;
-                  const available = o.id === TOP_UP.id || o.price !== null;
+                  const available = isAvailable(o);
                   return (
                     <Pressable
                       key={o.id}
@@ -125,7 +127,7 @@ export function PackagePicker({
                       <T v="strong" style={{ flex: 1, fontSize: 15, opacity: available ? 1 : 0.5 }}>
                         {o.name}
                       </T>
-                      {available && o.id !== TOP_UP.id ? (
+                      {available && !o.isRange ? (
                         <T v="display" style={{ fontSize: 15 }}>
                           {priceLabel(o)}
                         </T>
