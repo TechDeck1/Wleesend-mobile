@@ -1,6 +1,6 @@
 import { apiClient } from '@/api/client';
 import { API_ENDPOINTS } from '@/config/api';
-import { COUNTRY_ID, RANGE_PRICE_TYPE } from '@/data';
+import { COUNTRY_ID, RANGE_PRICE_TYPE, VOUCHER_OPERATOR_ID } from '@/data';
 import type { AirtimeOperator, AirtimeProduct, ApiOperator, ApiProduct } from '@/types/airtime';
 
 const isRangePriceType = (priceType: ApiProduct['priceType']) =>
@@ -26,9 +26,9 @@ export async function getOperators(signal?: AbortSignal): Promise<AirtimeOperato
     throw new Error('Unexpected operators response from the server.');
   }
 
-  return (response as ApiOperator[])
-    .filter((item) => item.countryId === COUNTRY_ID)
-    .map((item) => ({ id: Number(item.sochitelId), name: item.name }));
+return (response as ApiOperator[])
+  .filter((item) => item.countryId === COUNTRY_ID && Number(item.sochitelId) !== VOUCHER_OPERATOR_ID)
+  .map((item) => ({ id: Number(item.sochitelId), name: item.name }));
 }
 
 /** Products for one operator. Rejects when the request fails or the response isn't a list. */

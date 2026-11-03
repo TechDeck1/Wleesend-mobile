@@ -1,22 +1,19 @@
 import { apiClient } from '@/api/client';
-import { API_ENDPOINTS } from '@/config/api'; // use your file's real export name
+import type { Brand } from '@/components/brand-logo';
+import { API_ENDPOINTS } from '@/config/api';
 import type { SendKind } from '@/data';
-import type { ApiTransactionDraft, TransactionHistoryResponse } from '@/types/transactions';
-import type { ComponentProps } from 'react';
-import type { BrandLogo } from '@/components/brand-logo';
+import type { TransactionHistoryResponse } from '@/types/transactions';
+import { operatorForPhone } from '@/utils/airtime';
 
 export const TRANSACTIONS_PAGE_SIZE = 20;
-type Brand = ComponentProps<typeof BrandLogo>['brand'];
 
-const BRAND_BY_OPERATOR: Record<string, Brand> = {
-  '2470': 'lec', // electricity ('lec' is the only brand id I can see in your code)
-  '10': 'airtime',   // airtime operator
-  '151': 'airtime-1',  // airtime operator
-  '2482': 'voucher', // gift vouchers
-};
+export function brandForTransaction(t: { kind: SendKind; receiver: string }): Brand {
+  if (t.kind === 'utility') return 'lec';
+  if (t.kind === 'voucher') return 'voucher';
 
-export function brandForDraft(draft: ApiTransactionDraft): Brand | undefined {
-  return draft.operatorId ? BRAND_BY_OPERATOR[draft.operatorId] : undefined;
+  const digits = t.receiver.replace(/\D/g, '');
+  const local = digits.startsWith('231') ? digits.slice(3) : digits;
+  return operatorForPhone(local) ?? 'airtime';
 }
 
 export function getTransactionHistory(

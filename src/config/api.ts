@@ -25,8 +25,8 @@ export const API_ENDPOINTS = {
 
   airtime: {
     operators: `${API_BASE_URL}/Product/operators`,
-    operatorProducts: (operatorId: number | string) =>
-      `${API_BASE_URL}/Product/operators/${operatorId}/products`,
+    operatorProducts: (operatorId: number | string) => `${API_BASE_URL}/Product/operators/${operatorId}/products`,
+    operatorById: (operatorId: number | string) => `${API_BASE_URL}/Product/operators/${operatorId}`,
   },
 
   products: `${BASE_URL}/products`,

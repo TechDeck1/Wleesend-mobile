@@ -9,10 +9,9 @@ import {
   COUNTRY_CODE,
   LEC_NAME,
   UTILITY_AMOUNTS,
-  VOUCHER_AMOUNTS,
-  VOUCHER_VENDORS,
   approxKw,
   money,
+  VOUCHER_VENDOR_ID,
 } from '@/data';
 import { useAirtimeCatalog } from '@/hooks/use-airtime-catalog';
 import { buildOrder, useStore } from '@/store';
@@ -26,6 +25,8 @@ import {
   isValidLiberiaPhone,
 } from '@/utils/airtime';
 import { CollapsibleRow } from '@/components/collapsible-row';
+import { useVoucherCatalog } from '@/hooks/use-voucher-catalog';
+
 
 const TITLES = {
   airtime: { nav: 'Mobile airtime', heading: 'Send mobile airtime credit' },
@@ -47,7 +48,6 @@ function AmountGrid({ amounts, value, onChange }: { amounts: number[]; value: nu
   );
 }
 
-/** A loading line, or the error with a retry button, for one of the live API lists. */
 function CatalogNotice({ loading, error, onRetry }: { loading: string; error: string | null; onRetry: () => void }) {
   const c = useTheme();
   if (!error) {
@@ -68,7 +68,6 @@ function CatalogNotice({ loading, error, onRetry }: { loading: string; error: st
   );
 }
 
-/** Step 1 of 2: who receives the credit and what to send. */
 export default function SendDetailsScreen() {
   const c = useTheme();
   const { draft, updateDraft } = useStore();
@@ -83,6 +82,10 @@ export default function SendDetailsScreen() {
   // A number's first digits fix its operator, so only that operator is offered once they are typed.
   const restricted = isAirtime ? findRestrictedOperator(digitsOnly(draft.phone), operators) : undefined;
   const phoneError = isAirtime ? getPhonePrefixError(digitsOnly(draft.phone)) : undefined;
+  const isVoucher = draft.kind === 'voucher';
+  const voucherCatalog = useVoucherCatalog(isVoucher);
+  const voucherProduct = draft.voucherProduct;
+
 
   const selectOperator = (op: AirtimeOperator) =>
     updateDraft({
@@ -92,6 +95,16 @@ export default function SendDetailsScreen() {
       product: null,
       topUp: '',
     });
+
+  const selectVoucherProduct = (id: number) => {
+    const chosen = voucherCatalog.products.find((p) => p.id === id);
+    if (chosen)
+      updateDraft({
+        voucherProduct: chosen,
+        voucherOperatorName: voucherCatalog.operatorName,
+        topUp: chosen.isRange ? String(chosen.min) : '',
+      });
+  };
 
   // Once operators load: follow the number's operator, else keep the chosen one, else use the one
   // picked on the Products screen. Clear a choice that is no longer on offer.
@@ -144,6 +157,25 @@ export default function SendDetailsScreen() {
         }
       }
     }
+
+    if (isVoucher) {
+      if (!voucherProduct) {
+        Alert.alert('Voucher', 'Select a voucher.');
+        return;
+      }
+      if (!isAvailable(voucherProduct)) {
+        Alert.alert('Voucher', 'This voucher has no price yet. Choose another one.');
+        return;
+      }
+      if (voucherProduct.isRange) {
+        const amount = Number(draft.topUp);
+        if (!(amount >= voucherProduct.min && amount <= voucherProduct.max)) {
+          Alert.alert('Voucher amount', `Enter an amount from $${voucherProduct.min} to $${voucherProduct.max}.`);
+          return;
+        }
+      }
+    }
+
     router.push('/send/payment');
   };
 
@@ -268,28 +300,42 @@ export default function SendDetailsScreen() {
         <>
           <View style={{ gap: 8 }}>
             <T v="label">Vendor</T>
-            {VOUCHER_VENDORS.map((v) => (
-              <Card
-                key={v.id}
-                style={{ padding: 14, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-                <BrandLogo brand={v.id} size={46} />
-                <View style={{ flex: 1, gap: 2 }}>
-                  <T v="strong">{v.name}</T>
-                  <T v="small" style={{ fontSize: 13.5 }}>
-                    Shopping voucher code delivered by SMS
-                  </T>
-                </View>
-              </Card>
-            ))}
+            <Card style={{ padding: 14, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+              <BrandLogo brand={VOUCHER_VENDOR_ID} size={46} />
+              <View style={{ flex: 1, gap: 2 }}>
+                <T v="strong">{voucherCatalog.operatorName}</T>
+                <T v="small" style={{ fontSize: 13.5 }}>
+                  Shopping voucher code delivered by SMS
+                </T>
+              </View>
+            </Card>
           </View>
           {phoneField}
           <View style={{ gap: 8 }}>
-            <T v="label">Shopping voucher amount (USD)</T>
-            <AmountGrid
-              amounts={VOUCHER_AMOUNTS}
-              value={draft.voucherAmount}
-              onChange={(voucherAmount) => updateDraft({ voucherAmount })}
-            />
+            <T v="label">Shopping voucher</T>
+            {voucherCatalog.status === 'ready' ? (
+              voucherCatalog.products.length ? (
+                <PackagePicker
+                  packages={voucherCatalog.products}
+                  selectedId={voucherProduct?.id ?? null}
+                  onSelect={selectVoucherProduct}
+                />
+              ) : (
+                <T v="small">No vouchers are available right now.</T>
+              )
+            ) : (
+              <CatalogNotice loading="Loading vouchers…" error={voucherCatalog.error} onRetry={voucherCatalog.reload} />
+            )}
+            {voucherProduct?.isRange ? (
+              <Field
+                label="Voucher amount (USD)"
+                placeholder={`${voucherProduct.min} to ${voucherProduct.max}`}
+                keyboardType="decimal-pad"
+                maxLength={7}
+                value={draft.topUp}
+                onChangeText={(text) => updateDraft({ topUp: text.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') })}
+              />
+            ) : null}
           </View>
         </>
       ) : (

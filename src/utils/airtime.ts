@@ -10,7 +10,7 @@ export const digitsOnly = (value: string) => value.replace(/\D/g, '');
 
 export const roundToTwoDecimals = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
 
-function operatorForPhone(digits: string): OperatorId | undefined {
+export function operatorForPhone(digits: string): OperatorId | undefined {
   const leading = digits.charAt(0);
   if (leading === '5' || leading === '8') return 'mtn';
   if (leading === '7') return 'orange';

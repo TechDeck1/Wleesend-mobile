@@ -15,8 +15,8 @@ import {
   FEE_RATE,
   LEC_NAME,
   OPERATORS,
-  VOUCHER_AMOUNTS,
-  VOUCHER_VENDORS,
+  VOUCHER_OPERATOR_NAME,
+  VOUCHER_VENDOR_ID,
   approxKw,
   money,
   type OperatorId,
@@ -37,7 +37,8 @@ export type Draft = {
   meter: string;
   amount: number;
   vendor: VendorId;
-  voucherAmount: number;
+  voucherProduct: AirtimeProduct | null;
+  voucherOperatorName: string;
 };
 
 export type Order = {
@@ -60,6 +61,14 @@ export function brandOf(draft: Draft): Brand {
   return draft.vendor;
 }
 
+
+function chosenAmount(product: AirtimeProduct | null, topUp: string): number {
+  if (!product) return 0;
+  if (!product.isRange) return product.price ?? 0;
+  const n = Number(topUp);
+  return n >= product.min && n <= product.max ? roundToTwoDecimals(n) : 0;
+}
+
 export function buildOrder(draft: Draft): Order {
   const receiver = COUNTRY_CODE + draft.phone;
   const rows: Order['rows'] = [['Receiver phone', receiver]];
@@ -68,11 +77,8 @@ export function buildOrder(draft: Draft): Order {
   let provider: string;
 
   if (draft.kind === 'airtime') {
-    const chosen = draft.product;
-    const topUp = Number(draft.topUp);
-    const validTopUp = chosen?.isRange && topUp >= chosen.min && topUp <= chosen.max ? roundToTwoDecimals(topUp) : 0;
-    amount = chosen?.isRange ? validTopUp : (chosen?.price ?? 0);
-    product = chosen?.name ?? '';
+    amount = chosenAmount(draft.product, draft.topUp);
+    product = draft.product?.name ?? '';
     provider = draft.operatorName || OPERATORS[draft.operator].name;
     rows.push(['Operator', provider], ['Product', product]);
   } else if (draft.kind === 'utility') {
@@ -86,16 +92,15 @@ export function buildOrder(draft: Draft): Order {
       ['Approx. energy', approxKw(amount)],
     );
   } else {
-    const vendor = VOUCHER_VENDORS.find((v) => v.id === draft.vendor) ?? VOUCHER_VENDORS[0];
-    amount = draft.voucherAmount;
-    product = `${vendor.name} shopping voucher`;
-    provider = vendor.name;
+    amount = chosenAmount(draft.voucherProduct, draft.topUp);
+    product = draft.voucherProduct?.name ?? '';
+    provider = draft.voucherOperatorName || VOUCHER_OPERATOR_NAME;
     rows.push(['Vendor', provider], ['Product', product]);
   }
 
   let fee: number;
   let total: number;
-  if (draft.kind === 'airtime') {
+  if (draft.kind === 'airtime' || draft.kind === 'voucher') {
     ({ fee, total } = calculateAirtimePricing(amount));
   } else {
     fee = Math.round(amount * FEE_RATE * 100) / 100;
@@ -113,13 +118,13 @@ function newDraft(kind: SendKind, operator: OperatorId): Draft {
     operatorName: '',
     product: null,
     topUp: '',
-    // Airtime starts empty so the number decides the operator; the others keep the sample number.
     phone: kind === 'airtime' ? '' : OPERATORS[operator].samplePhone,
     phoneEdited: false,
     meter: '',
     amount: 10,
-    vendor: VOUCHER_VENDORS[0].id,
-    voucherAmount: VOUCHER_AMOUNTS[1],
+    vendor: VOUCHER_VENDOR_ID,
+    voucherProduct: null,
+    voucherOperatorName: '',
   };
 }
 
@@ -129,11 +134,8 @@ type Store = {
   updateDraft: (patch: Partial<Draft>) => void;
   transactions: Transaction[];
   lastOrder: Order | null;
-  /** Records the order locally. Replace with the real payment + order API call. */
   completeOrder: (order: Order) => void;
-  /** Loads a past transaction's details so it can be paid again. */
   resend: (transaction: Transaction) => void;
-  /** Null when signed out. */
   user: User | null;
   authReady: boolean;
   authError: string | null;

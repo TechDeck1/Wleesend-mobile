@@ -6,10 +6,11 @@ import { BrandLogo } from '@/components/brand-logo';
 import { Button, Card, Icon, Screen, Segment, T, Tile } from '@/components/ui';
 import { money, type SendKind } from '@/data';
 import { useTransactionHistory } from '@/hooks/use-transaction-history';
-import { brandOf, useStore, type Transaction } from '@/store';
+import { useStore, type Transaction } from '@/store';
 import { fonts, useTheme } from '@/theme';
-import { brandForDraft } from '@/services/transactionService';
-import { ApiTransactionDraft } from '@/types/transactions';
+import { brandForTransaction } from '@/services/transactionService';
+import { TransactionDetailsModal } from '@/components/transaction-details-modal';
+
 
 const FILTERS: { id: 'all' | SendKind; label: string }[] = [
   { id: 'all', label: 'All' },
@@ -26,15 +27,14 @@ export default function TransactionsScreen() {
   const { resend } = useStore();
   const [filter, setFilter] = useState<'all' | SendKind>('all');
   const { rows, totals, loading, error, hasMore, refresh, loadMore } = useTransactionHistory(filter);
+  const [selected, setSelected] = useState<Transaction | null>(null);
 
-  // Totals come from the server, so they cover every page, not just the loaded rows.
   const totalSent = filter === 'all' ? KINDS.reduce((s, k) => s + totals[k], 0) : totals[filter];
 
   const sendAgain = (t: Transaction) => {
     resend(t);
-    router.push('/send/payment');
+    router.push(t.draft.phone ? '/send/payment' : '/send');
   };
-
   return (
     <Screen gap={18}>
       <T v="title" accessibilityRole="header">
@@ -66,9 +66,12 @@ export default function TransactionsScreen() {
       {rows.length > 0 ? (
         <Card>
           {rows.map((t, i) => (
-            <View
+            <Pressable
               key={t.id}
-              style={{
+              onPress={() => setSelected(t)}
+              accessibilityRole="button"
+              accessibilityLabel={`View details of ${t.product}`}
+              style={({ pressed }) => ({
                 flexDirection: 'row',
                 alignItems: 'center',
                 gap: 12,
@@ -76,8 +79,9 @@ export default function TransactionsScreen() {
                 paddingHorizontal: 16,
                 borderTopWidth: i === 0 ? 0 : 1,
                 borderTopColor: c.lineSoft,
-              }}>
-              <BrandLogo brand={brandForDraft(t.draft as unknown as ApiTransactionDraft)} size={40} />
+                opacity: pressed ? 0.7 : 1,
+              })}>
+              <BrandLogo brand={brandForTransaction(t)} size={40} />
               <View style={{ flex: 1, gap: 2 }}>
                 <T v="strong" style={{ fontSize: 14.5 }}>
                   {t.product}
@@ -109,7 +113,7 @@ export default function TransactionsScreen() {
                   <Text style={{ color: c.brandText, fontSize: 13, fontWeight: '600' }}>Resend</Text>
                 </Pressable>
               </View>
-            </View>
+            </Pressable>
           ))}
         </Card>
       ) : null}
@@ -130,11 +134,11 @@ export default function TransactionsScreen() {
         <Card style={{ padding: 16, paddingHorizontal: 18, gap: 10 }}>
           {filter === 'all'
             ? KINDS.map((k) => (
-                <View key={k} style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                  <T v="muted">{KIND_LABEL[k]}</T>
-                  <T v="strong">{money(totals[k])}</T>
-                </View>
-              ))
+              <View key={k} style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <T v="muted">{KIND_LABEL[k]}</T>
+                <T v="strong">{money(totals[k])}</T>
+              </View>
+            ))
             : null}
           <View
             style={{
@@ -153,6 +157,13 @@ export default function TransactionsScreen() {
           </T>
         </Card>
       ) : null}
+
+
+      <TransactionDetailsModal
+        transaction={selected}
+        onClose={() => setSelected(null)}
+        onResend={sendAgain}
+      />
     </Screen>
   );
 }

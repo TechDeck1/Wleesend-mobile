@@ -45,7 +45,7 @@ export default function ProductsScreen() {
         {product('lec', LEC_NAME, 'Buy and send LEC credit tokens', 'utility')}
         {product('mtn', 'Lonestar Cell MTN', 'Buy and send Lonestar mobile phone credit and packages', 'airtime', 'mtn')}
         {product('orange', 'Orange Liberia', 'Buy and send Orange mobile phone credit and packages', 'airtime', 'orange')}
-        {product('stop-and-shop', 'Stop & Shop', 'Buy and send Stop & Shop shopping vouchers', 'voucher')}
+        {product('voucher', 'Stop & Shop', 'Buy and send Stop & Shop shopping vouchers', 'voucher')}
       </View>
     </Screen>
   );

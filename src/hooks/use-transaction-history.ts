@@ -2,9 +2,10 @@ import { useCallback, useEffect, useState } from 'react';
 
 import type { SendKind } from '@/data';
 import { getTransactionHistory, TRANSACTIONS_PAGE_SIZE } from '@/services/transactionService';
-import type { Transaction } from '@/store';
+import type { Draft, Transaction } from '@/store';
 import type { ApiTransaction, TransactionTotals } from '@/types/transactions';
-
+import { VOUCHER_VENDOR_ID } from '@/data';
+import { digitsOnly, operatorForPhone } from '@/utils/airtime';
 const EMPTY_TOTALS: TransactionTotals = { airtime: 0, utility: 0, voucher: 0 };
 
 type Filter = 'all' | SendKind;
@@ -22,6 +23,50 @@ type Failure = { filter: Filter; message: string };
 const formatDate = (iso: string) =>
   new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
+
+
+function draftFromApi(r: ApiTransaction): Draft {
+  const d = r.draft ?? ({} as Partial<ApiTransaction['draft']>);
+  const amount = Number(d.amount) || Math.max(0, +(r.total - (r.fee ?? 0)).toFixed(2));
+
+  // "+231888008771" -> "888008771"
+  const receiverDigits = digitsOnly(d.receiverPhone ?? (r.kind === 'airtime' ? r.receiver : ''));
+  const phone = receiverDigits.startsWith('231') ? receiverDigits.slice(3) : receiverDigits;
+
+  const operatorId = d.operatorId != null && !Number.isNaN(Number(d.operatorId)) ? Number(d.operatorId) : null;
+  const productId = d.productId != null && !Number.isNaN(Number(d.productId)) ? Number(d.productId) : null;
+
+
+  const fixedProduct = {
+    id: productId ?? 0,
+    name: r.product,
+    stripeProductId: null,
+    isRange: false,
+    price: amount,
+    min: 0,
+    max: 0,
+  };
+
+  return {
+    kind: r.kind,
+    operator: operatorForPhone(phone) ?? 'mtn',
+    operatorId,
+    operatorName: '',
+    product: r.kind === 'airtime' ? fixedProduct : null,
+    topUp: '',
+    phone,
+    phoneEdited: false,
+    meter: d.meterNumber ?? r.receiver.replace(/^Meter\s*/i, ''),
+    amount,
+    vendor: VOUCHER_VENDOR_ID,
+    voucherProduct: r.kind === 'voucher' ? fixedProduct : null,
+    voucherOperatorName: r.kind === 'voucher' ? r.provider : '',
+  };
+}
+
+
+
+
 // Isolated so it is the only place that depends on the store's Transaction/Draft shape.
 // TODO: replace the cast with the real Draft type from src/store.tsx, and make sure
 // brandOf() and resend() understand operatorId/productId/meterNumber.
@@ -34,7 +79,8 @@ const toTransaction = (r: ApiTransaction): Transaction =>
     receiver: r.receiver,
     date: formatDate(r.createdAt),
     total: r.total,
-    draft: r.draft,
+    fee: r.fee,
+    draft: draftFromApi(r),   // <-- was r.draft
   }) as unknown as Transaction;
 
 const messageOf = (e: unknown) => (e instanceof Error ? e.message : 'Could not load transactions.');
@@ -52,7 +98,7 @@ export function useTransactionHistory(filter: Filter) {
 
     getTransactionHistory(filter, 1, TRANSACTIONS_PAGE_SIZE)
       .then((res) => {
-        console.log("response of transaction history" , res);
+        console.log("response of transaction history", res);
         if (cancelled) return;
         setFailure(null);
         setLoaded({
