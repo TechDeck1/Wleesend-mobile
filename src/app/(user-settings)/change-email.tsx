@@ -2,6 +2,8 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, View, type TextInputInstance } from 'react-native';
 
+import { ROUTES } from '@/constants/routes';
+import { SuccessModal } from '@/components/account/ForgetPasswordScreen';
 import { ApiError } from '@/api/client';
 import {
   Button,
@@ -36,7 +38,7 @@ function formatCountdown(seconds: number): string {
 
 export default function ChangeEmailScreen() {
   const theme = useTheme();
-  const { user, changeEmail } = useStore();
+  const { user, changeEmail, signOut } = useStore();
   const firstOtpInput = useRef<TextInputInstance>(null);
   const [newEmail, setNewEmail] = useState('');
   const [sentTo, setSentTo] = useState('');
@@ -47,6 +49,7 @@ export default function ChangeEmailScreen() {
   const [busy, setBusy] = useState<'send' | 'resend' | 'verify' | null>(null);
   const [step, setStep] = useState<1 | 2>(1);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
   const [expiresAt, setExpiresAt] = useState<number | null>(null);
   const [resendAvailableAt, setResendAvailableAt] = useState<number | null>(null);
   const [now, setNow] = useState(0);
@@ -63,6 +66,7 @@ export default function ChangeEmailScreen() {
     setBusy(null);
     setStep(1);
     setIsSuccess(false);
+    setIsSuccessModalVisible(false);
     setExpiresAt(null);
     setResendAvailableAt(null);
     setNow(0);
@@ -201,6 +205,7 @@ export default function ChangeEmailScreen() {
       await changeEmail(sentTo);
       if (generation !== requestGeneration.current) return;
       setIsSuccess(true);
+      setIsSuccessModalVisible(true);
       setOtpError('');
     } catch (error) {
       if (generation !== requestGeneration.current) return;
@@ -217,6 +222,11 @@ export default function ChangeEmailScreen() {
     } finally {
       if (generation === requestGeneration.current) setBusy(null);
     }
+  };
+
+  const handleSuccessContinue = async () => {
+    router.replace(ROUTES.WELCOME);
+    await signOut();
   };
 
   return (
@@ -371,6 +381,14 @@ export default function ChangeEmailScreen() {
           </Pressable>
         </>
       )}
+      <SuccessModal
+        palette={theme}
+        isVisible={isSuccessModalVisible}
+        title="Email changed"
+        message="Your email address has been changed successfully. You will be signed out. Log in again with your new email."
+        buttonLabel="Continue to welcome"
+        onPress={() => void handleSuccessContinue()}
+      />
     </Screen>
   );
 }

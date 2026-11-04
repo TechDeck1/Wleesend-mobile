@@ -14,4 +14,5 @@ export const ROUTES = {
   SUPPORT: '/support',
   TRANSACTIONS: '/transactions',
   VERIFY_EMAIL: '/verify-email',
+  WELCOME: '/welcome',
 } as const;

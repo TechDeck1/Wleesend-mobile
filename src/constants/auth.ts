@@ -1,4 +1,5 @@
 export const MIN_PASSWORD_LENGTH = 8;
+export const MAX_PASSWORD_LENGTH = 14;
 export const OTP_LENGTH = 6;
 export const OTP_CODE_PATTERN = new RegExp(`^\\d{${OTP_LENGTH}}$`);
 export const OTP_RESEND_COOLDOWN_SECONDS = 30;

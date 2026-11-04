@@ -10,6 +10,11 @@ export default function ProfileScreen() {
   const theme = useTheme();
   const { user: userProfile, signOut } = useStore();
 
+  const handleSignOut = async () => {
+    await signOut();
+    router.replace(ROUTES.WELCOME);
+  };
+
   const accountLinks = (
     <Card>
       <LinkRow icon="info" label="About Wleesend" onPress={() => router.push(ROUTES.ABOUT)} />
@@ -164,7 +169,7 @@ export default function ProfileScreen() {
 
       {accountLinks}
 
-      <Button variant="outline" icon="logout" label="Log out" onPress={signOut} />
+      <Button variant="outline" icon="logout" label="Log out" onPress={handleSignOut} />
     </Screen>
   );
 }

@@ -26,7 +26,12 @@ import type {
   PrimaryButtonProps,
   SuccessModalProps,
 } from '@/types/screens/ForgotPasswordScreen.types';
-import { MIN_PASSWORD_LENGTH, OTP_LENGTH, OTP_RESEND_COOLDOWN_SECONDS } from '@/constants/auth';
+import {
+  MAX_PASSWORD_LENGTH,
+  MIN_PASSWORD_LENGTH,
+  OTP_LENGTH,
+  OTP_RESEND_COOLDOWN_SECONDS,
+} from '@/constants/auth';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -262,6 +267,7 @@ export default function ForgotPasswordScreen({ onBack }: ForgotPasswordScreenPro
                 <PasswordField
                   palette={palette}
                   value={password}
+                  maxLength={MAX_PASSWORD_LENGTH}
                   onChangeText={(passwordValue) => {
                     setPassword(passwordValue);
                     if (error) setError(null);
@@ -278,6 +284,7 @@ export default function ForgotPasswordScreen({ onBack }: ForgotPasswordScreenPro
                 <PasswordField
                   palette={palette}
                   value={confirm}
+                  maxLength={MAX_PASSWORD_LENGTH}
                   onChangeText={(confirmValue) => {
                     setConfirm(confirmValue);
                     if (error) setError(null);
@@ -313,7 +320,7 @@ export default function ForgotPasswordScreen({ onBack }: ForgotPasswordScreenPro
   );
 }
 
-function SuccessModal({
+export function SuccessModal({
   palette,
   isVisible,
   title,

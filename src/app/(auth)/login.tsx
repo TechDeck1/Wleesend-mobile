@@ -14,6 +14,7 @@ import { router } from 'expo-router';
 import { useTheme } from '@/theme';
 import { useStore } from '@/store';
 import { useState } from 'react';
+import { MAX_PASSWORD_LENGTH } from '@/constants/auth';
 
 export default function LogInScreen() {
   const theme = useTheme();
@@ -88,6 +89,7 @@ export default function LogInScreen() {
       <View>
         <Field
           label="Password"
+          maxLength={MAX_PASSWORD_LENGTH}
           placeholder="Enter password"
           secureTextEntry={!isPasswordVisible}
           autoCapitalize="none"

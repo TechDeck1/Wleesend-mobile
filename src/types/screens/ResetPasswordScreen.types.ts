@@ -21,4 +21,7 @@ export type ResetPasswordPasswordFieldProps = {
     toggleIcon: ViewStyle;
     fieldError: TextStyle;
   };
-} & Pick<TextInputProps, 'editable' | 'returnKeyType' | 'onSubmitEditing' | 'autoComplete'>;
+} & Pick<
+  TextInputProps,
+  'editable' | 'maxLength' | 'returnKeyType' | 'onSubmitEditing' | 'autoComplete'
+>;

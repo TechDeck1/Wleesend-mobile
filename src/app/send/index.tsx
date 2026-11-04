@@ -1,7 +1,7 @@
 import { ROUTES } from '@/constants/routes';
 import { router } from 'expo-router';
 import { useEffect } from 'react';
-import { ActivityIndicator, Alert, Text, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, Text, View, useWindowDimensions } from 'react-native';
 
 import { BrandLogo } from '@/components/BrandLogo';
 import { PackagePicker, isAvailable } from '@/components/PackagePicker';
@@ -259,9 +259,22 @@ export default function SendDetailsScreen() {
           accessibilityLabel="Receiver phone"
           placeholder="Phone number"
           keyboardType="number-pad"
-          maxLength={isAirtime ? 9 : undefined}
+          maxLength={9}
           error={phoneError}
           value={draft.phone}
+          right={
+            draft.phone ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Clear receiver phone"
+                hitSlop={8}
+                onPress={() => updateDraft({ phone: '', isPhoneEdited: true })}
+                style={{ height: 42, minWidth: 42, alignItems: 'center', justifyContent: 'center' }}
+              >
+                <Text style={{ color: theme.muted, fontSize: 20, lineHeight: 24 }}>×</Text>
+              </Pressable>
+            ) : undefined
+          }
           onChangeText={(phoneValue) =>
             updateDraft({
               phone: phoneValue.replace(/[^0-9]/g, ''),
@@ -471,8 +484,9 @@ export default function SendDetailsScreen() {
               label="Meter number"
               placeholder="Meter number"
               keyboardType="number-pad"
+              maxLength={12}
               value={draft.meter}
-              onChangeText={(meter) => updateDraft({ meter })}
+              onChangeText={(meter) => updateDraft({ meter: meter.replace(/\D/g, '') })}
             />
           </View>
           {phoneField}

@@ -16,7 +16,7 @@ import {
 import { useStore } from '@/store';
 import { useTheme } from '@/theme';
 import type { SignUpErrors, SignUpForm } from '@/types/screens/SignUpScreen.types';
-import { MIN_PASSWORD_LENGTH } from '@/constants/auth';
+import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '@/constants/auth';
 
 const EMPTY: SignUpForm = {
   firstName: '',
@@ -182,10 +182,11 @@ export default function SignUpScreen() {
           required
           placeholder="Enter phone number"
           keyboardType="phone-pad"
+          maxLength={15}
           autoComplete="tel"
           textContentType="telephoneNumber"
           value={form.phone}
-          onChangeText={handleFieldChange('phone')}
+          onChangeText={(phone) => handleFieldChange('phone')(phone.replace(/\D/g, ''))}
           error={errors.phone}
         />
       </View>
@@ -194,6 +195,7 @@ export default function SignUpScreen() {
           label="Password"
           required
           placeholder="Enter password"
+          maxLength={MAX_PASSWORD_LENGTH}
           secureTextEntry={!isPasswordVisible}
           autoCapitalize="none"
           autoComplete="new-password"
@@ -213,6 +215,7 @@ export default function SignUpScreen() {
           label="Re-enter password"
           required
           placeholder="Re-enter your password"
+          maxLength={MAX_PASSWORD_LENGTH}
           secureTextEntry={!isConfirmPasswordVisible}
           autoCapitalize="none"
           autoComplete="new-password"

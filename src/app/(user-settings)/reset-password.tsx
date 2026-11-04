@@ -18,6 +18,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { fonts, useTheme, type Palette } from '@/theme';
 import { ApiError, ApiTimeoutError } from '@/api/request';
 import { resetPassword } from '@/services/accountService';
+import { useStore } from '@/store';
+import { SuccessModal } from '@/components/account/ForgetPasswordScreen';
 import { SymbolView } from 'expo-symbols';
 import type {
   ResetPasswordFieldErrors,
@@ -25,7 +27,7 @@ import type {
   ResetPasswordPasswordFieldProps,
   ResetPasswordValues,
 } from '@/types/screens/ResetPasswordScreen.types';
-import { MIN_PASSWORD_LENGTH } from '@/constants/auth';
+import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '@/constants/auth';
 
 const EMPTY: ResetPasswordValues = { oldPin: '', newPin: '', confirmPin: '' };
 
@@ -77,12 +79,14 @@ export default function ResetPasswordScreen() {
   const theme = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const router = useRouter();
+  const { signOut } = useStore();
 
   const [values, setValues] = useState<ResetPasswordValues>(EMPTY);
   const [fieldErrors, setFieldErrors] = useState<ResetPasswordFieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
 
   const newRef = useRef<TextInputInstance>(null);
   const confirmRef = useRef<TextInputInstance>(null);
@@ -96,6 +100,7 @@ export default function ResetPasswordScreen() {
     setFormError(null);
     setIsSubmitting(false);
     setSuccessMessage(null);
+    setIsSuccessModalVisible(false);
   }, []);
 
   useFocusEffect(
@@ -115,6 +120,11 @@ export default function ResetPasswordScreen() {
     else router.replace(ROUTES.HOME);
   };
 
+  const handleSuccessContinue = async () => {
+    router.replace(ROUTES.WELCOME);
+    await signOut();
+  };
+
   const handleSubmit = async () => {
     if (isSubmitting) return;
 
@@ -126,14 +136,14 @@ export default function ResetPasswordScreen() {
     setIsSubmitting(true);
     setFormError(null);
     try {
-      const message = await resetPassword({
+      await resetPassword({
         oldPin: values.oldPin,
         newPin: values.newPin,
         confirmPin: values.confirmPin,
       });
       if (runId !== runIdRef.current) return;
       setValues(EMPTY);
-      setSuccessMessage(message);
+      setIsSuccessModalVisible(true);
     } catch (error) {
       if (runId !== runIdRef.current) return;
       setFormError(getErrorMessage(error));
@@ -199,6 +209,7 @@ export default function ResetPasswordScreen() {
           <View style={styles.card}>
             <PasswordField
               label="Current password"
+              maxLength={MAX_PASSWORD_LENGTH}
               value={values.oldPin}
               onChangeText={handleFieldChange('oldPin')}
               error={fieldErrors.oldPin}
@@ -212,6 +223,7 @@ export default function ResetPasswordScreen() {
             <PasswordField
               ref={newRef}
               label="New password"
+              maxLength={MAX_PASSWORD_LENGTH}
               value={values.newPin}
               onChangeText={handleFieldChange('newPin')}
               error={fieldErrors.newPin}
@@ -225,6 +237,7 @@ export default function ResetPasswordScreen() {
             <PasswordField
               ref={confirmRef}
               label="Confirm new password"
+              maxLength={MAX_PASSWORD_LENGTH}
               value={values.confirmPin}
               onChangeText={handleFieldChange('confirmPin')}
               error={fieldErrors.confirmPin}
@@ -265,6 +278,14 @@ export default function ResetPasswordScreen() {
           </Pressable>
         </ScrollView>
       </KeyboardAvoidingView>
+      <SuccessModal
+        palette={theme}
+        isVisible={isSuccessModalVisible}
+        title="Password changed"
+        message="Your password was changed successfully. You will be signed out. Log in again with your new password."
+        buttonLabel="Continue to welcome"
+        onPress={() => void handleSuccessContinue()}
+      />
     </SafeAreaView>
   );
 }
