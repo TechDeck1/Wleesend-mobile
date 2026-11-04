@@ -1,3 +1,4 @@
+import { ROUTES } from '@/constants/routes';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
@@ -33,7 +34,7 @@ export default function TransactionsScreen() {
 
   const handleSendAgain = (transaction: Transaction) => {
     resend(transaction);
-    router.push(transaction.draft.phone ? '/send/payment' : '/send');
+    router.push(transaction.draft.phone ? ROUTES.SEND_PAYMENT : ROUTES.SEND);
   };
   return (
     <Screen gap={18} onScrollNearEnd={() => {
@@ -61,7 +62,7 @@ export default function TransactionsScreen() {
           <AppText variant="muted" style={{ textAlign: 'center' }}>
             Credit you send will be listed here.
           </AppText>
-          <Button label="Send credit" onPress={() => router.navigate('/products')} style={{ height: 50, marginTop: 6 }} />
+          <Button label="Send credit" onPress={() => router.navigate(ROUTES.PRODUCTS)} style={{ height: 50, marginTop: 6 }} />
         </View>
       ) : null}
 

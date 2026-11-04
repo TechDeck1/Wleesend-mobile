@@ -1,5 +1,6 @@
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
+import { AUTH_SESSION_STORAGE_KEY } from '@/constants/storage';
 
 export type AuthUser = {
   userId: string;
@@ -17,7 +18,6 @@ export type AuthSession = {
   user: AuthUser;
 };
 
-const SESSION_KEY = 'wleesend.auth.session';
 let cachedSession: AuthSession | null | undefined;
 let webSession: string | null = null;
 const sessionExpiredListeners = new Set<() => void>();
@@ -47,7 +47,7 @@ async function readSessionValue(): Promise<string | null> {
   if (Platform.OS === 'web') {
     return webSession;
   }
-  return SecureStore.getItemAsync(SESSION_KEY);
+  return SecureStore.getItemAsync(AUTH_SESSION_STORAGE_KEY);
 }
 
 async function writeSessionValue(value: string): Promise<void> {
@@ -55,7 +55,7 @@ async function writeSessionValue(value: string): Promise<void> {
     webSession = value;
     return;
   }
-  await SecureStore.setItemAsync(SESSION_KEY, value);
+  await SecureStore.setItemAsync(AUTH_SESSION_STORAGE_KEY, value);
 }
 
 async function removeSessionValue(): Promise<void> {
@@ -63,7 +63,7 @@ async function removeSessionValue(): Promise<void> {
     webSession = null;
     return;
   }
-  await SecureStore.deleteItemAsync(SESSION_KEY);
+  await SecureStore.deleteItemAsync(AUTH_SESSION_STORAGE_KEY);
 }
 
 export async function getAuthSession(): Promise<AuthSession | null> {

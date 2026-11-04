@@ -1,3 +1,4 @@
+import { ROUTES } from '@/constants/routes';
 import {
   AddressCollectionMode,
   CollectionMode,
@@ -57,7 +58,7 @@ export default function PaymentScreen() {
       }
 
       setLastOrder(order);
-      router.replace('/send/sent');
+      router.replace(ROUTES.SEND_SENT);
     } catch (paymentError) {
       setError(paymentError instanceof Error ? paymentError.message : 'Could not start secure checkout. Please try again.');
     } finally {

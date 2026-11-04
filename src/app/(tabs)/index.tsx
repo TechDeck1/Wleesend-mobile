@@ -1,3 +1,4 @@
+import { ROUTES } from '@/constants/routes';
 import { router } from 'expo-router';
 import { Image, Pressable, Text, View } from 'react-native';
 
@@ -14,7 +15,7 @@ export default function HomeScreen() {
 
   const handleStartSend = (kind: SendKind) => {
     startSend(kind);
-    router.push('/send');
+    router.push(ROUTES.SEND);
   };
 
   const renderSendAction = (kind: SendKind, icon: IconName, title: string, detail: string) => (
@@ -40,7 +41,7 @@ export default function HomeScreen() {
           <Logo />
         </View>
         <Pressable
-          onPress={() => router.navigate('/profile')}
+          onPress={() => router.navigate(ROUTES.PROFILE)}
           accessibilityRole="button"
           accessibilityLabel="My profile"
           style={{
@@ -107,8 +108,8 @@ export default function HomeScreen() {
       </View>
 
       <Card>
-        <LinkRow icon="list" label="Transactions history" onPress={() => router.navigate('/transactions')} />
-        <LinkRow icon="user" label="My profile" onPress={() => router.navigate('/profile')} last />
+        <LinkRow icon="list" label="Transactions history" onPress={() => router.navigate(ROUTES.TRANSACTIONS)} />
+        <LinkRow icon="user" label="My profile" onPress={() => router.navigate(ROUTES.PROFILE)} last />
       </Card>
     </Screen>
   );

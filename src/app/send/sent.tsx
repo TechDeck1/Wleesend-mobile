@@ -1,3 +1,4 @@
+import { ROUTES } from '@/constants/routes';
 import { router } from 'expo-router';
 import Stack from 'expo-router/stack';
 import { View } from 'react-native';
@@ -14,7 +15,7 @@ export default function SentScreen() {
   const theme = useTheme();
   const { lastOrder } = useStore();
 
-  const handleLeaveConfirmation = (to: '/' | '/transactions') => {
+  const handleLeaveConfirmation = (to: typeof ROUTES.HOME | typeof ROUTES.TRANSACTIONS) => {
     router.dismissAll();
     router.navigate(to);
   };
@@ -46,8 +47,8 @@ export default function SentScreen() {
         ) : null}
       </View>
       <View style={{ paddingHorizontal: 20, paddingBottom: 12, gap: 6 }}>
-        <Button label="Back to home" onPress={() => handleLeaveConfirmation('/')} />
-        <Button variant="text" label="View transactions" onPress={() => handleLeaveConfirmation('/transactions')} />
+        <Button label="Back to home" onPress={() => handleLeaveConfirmation(ROUTES.HOME)} />
+        <Button variant="text" label="View transactions" onPress={() => handleLeaveConfirmation(ROUTES.TRANSACTIONS)} />
       </View>
     </SafeAreaView>
   );

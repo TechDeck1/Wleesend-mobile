@@ -1,3 +1,4 @@
+import { ROUTES } from '@/constants/routes';
 import { router } from 'expo-router';
 import {  Pressable, Text, View } from 'react-native';
 
@@ -13,8 +14,8 @@ export default function ProfileScreen() {
 
   const accountLinks = (
     <Card>
-      <LinkRow icon="info" label="About Wleesend" onPress={() => router.push('/about')} />
-      <LinkRow icon="mail" label="Support" onPress={() => router.push('/support')} last />
+      <LinkRow icon="info" label="About Wleesend" onPress={() => router.push(ROUTES.ABOUT)} />
+      <LinkRow icon="mail" label="Support" onPress={() => router.push(ROUTES.SUPPORT)} last />
     </Card>
   );
 
@@ -34,7 +35,7 @@ export default function ProfileScreen() {
           </AppText>
           <Button
             label="Create account"
-            onPress={() => router.push('/signup')}
+            onPress={() => router.push(ROUTES.SIGNUP)}
             style={{ alignSelf: 'stretch', marginTop: 6 }}
           />
         </Card>
@@ -105,7 +106,7 @@ export default function ProfileScreen() {
           <View style={{ alignItems: 'flex-end', paddingTop: 10 }}>
             <AppText variant="strong">{userProfile.email}</AppText>
             <Pressable
-              onPress={() => router.push('/change-email')}
+              onPress={() => router.push(ROUTES.CHANGE_EMAIL)}
               accessibilityRole="button"
               style={{ height: 44, justifyContent: 'center', marginTop: -6 }}>
               <Text style={{ color: theme.accentText, fontSize: 14, fontWeight: '600' }}>Change email</Text>
@@ -115,7 +116,7 @@ export default function ProfileScreen() {
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 68 }}>
           <AppText variant="muted">Password</AppText>
           <Pressable
-            onPress={() => router.push('/reset-password')}
+            onPress={() => router.push(ROUTES.RESET_PASSWORD)}
             accessibilityRole="button"
             style={{
               height: 44,

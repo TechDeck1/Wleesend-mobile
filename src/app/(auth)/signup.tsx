@@ -1,3 +1,4 @@
+import { ROUTES } from '@/constants/routes';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
@@ -6,9 +7,9 @@ import { Button, Field, Footer, Icon, NavBar, Screen, AppText, Tile } from '@/co
 import { useStore } from '@/store';
 import { useTheme } from '@/theme';
 import type { SignUpErrors, SignUpForm } from '@/types/screens/SignUpScreen.types';
+import { MIN_PASSWORD_LENGTH } from '@/constants/auth';
 
 const EMPTY: SignUpForm = { firstName: '', lastName: '', email: '', phone: '', password: '', confirm: '' };
-const MIN_PASSWORD = 8;
 
 function validate(form: SignUpForm): SignUpErrors {
   const fieldErrors: SignUpErrors = {};
@@ -17,7 +18,7 @@ function validate(form: SignUpForm): SignUpErrors {
   if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) fieldErrors.email = 'Enter a valid email address, like name@example.com.';
   const phoneDigits = form.phone.replace(/\D/g, '');
   if (phoneDigits.length < 7 || phoneDigits.length > 15) fieldErrors.phone = 'Enter a phone number with 7 to 15 digits.';
-  if (form.password.length < MIN_PASSWORD) fieldErrors.password = `Use at least ${MIN_PASSWORD} characters.`;
+  if (form.password.length < MIN_PASSWORD_LENGTH) fieldErrors.password = `Use at least ${MIN_PASSWORD_LENGTH} characters.`;
   if (form.confirm !== form.password || !form.confirm) fieldErrors.confirm = 'The passwords don’t match.';
   return fieldErrors;
 }
@@ -60,7 +61,7 @@ export default function SignUpScreen() {
         form.password,
         form.confirm,
       );
-      router.replace({ pathname: '/verify-email', params: { email: form.email.trim() } });
+      router.replace({ pathname: ROUTES.VERIFY_EMAIL, params: { email: form.email.trim() } });
     } catch (requestError) {
       setServerError(
         requestError instanceof Error
@@ -188,7 +189,7 @@ export default function SignUpScreen() {
       </AppText>
       <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
         <AppText variant="muted">Already have an account? </AppText>
-        <Pressable onPress={() => router.push('/login')} accessibilityRole="link" hitSlop={8}>
+        <Pressable onPress={() => router.push(ROUTES.LOGIN)} accessibilityRole="link" hitSlop={8}>
           <Text style={{ color: theme.brandText, fontSize: 15, fontWeight: '600' }}>Log in</Text>
         </Pressable>
       </View>

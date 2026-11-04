@@ -1,3 +1,4 @@
+import { ROUTES } from '@/constants/routes';
 import { router } from 'expo-router';
 import { Image, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -45,8 +46,8 @@ export default function WelcomeScreen() {
         </View>
       </View>
       <View style={{ paddingHorizontal: 20, paddingBottom: 12, gap: 6 }}>
-        <Button label="Create account" onPress={() => router.push('/signup')} />
-        <Button variant="text" label="Log in" onPress={() => router.push('/login')} />
+        <Button label="Create account" onPress={() => router.push(ROUTES.SIGNUP)} />
+        <Button variant="text" label="Log in" onPress={() => router.push(ROUTES.LOGIN)} />
       </View>
     </SafeAreaView>
   );

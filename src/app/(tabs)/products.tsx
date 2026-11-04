@@ -1,3 +1,4 @@
+import { ROUTES } from '@/constants/routes';
 import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
@@ -17,7 +18,7 @@ export default function ProductsScreen() {
       accessibilityRole="button"
       onPress={() => {
         startSend(kind, operator);
-        router.push('/send');
+        router.push(ROUTES.SEND);
       }}>
       <Card style={{ padding: 16, flexDirection: 'row', alignItems: 'center', gap: 14 }}>
         <BrandLogo brand={brand} size={52} />

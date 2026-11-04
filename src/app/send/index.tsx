@@ -1,3 +1,4 @@
+import { ROUTES } from '@/constants/routes';
 import { router } from 'expo-router';
 import { useEffect } from 'react';
 import { ActivityIndicator, Alert, Text, View, useWindowDimensions } from 'react-native';
@@ -193,7 +194,7 @@ export default function SendDetailsScreen() {
       }
     }
 
-    router.push('/send/payment');
+    router.push(ROUTES.SEND_PAYMENT);
   };
 
   const phoneField = (

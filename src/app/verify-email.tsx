@@ -1,3 +1,4 @@
+import { ROUTES } from '@/constants/routes';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
@@ -146,7 +147,7 @@ export default function VerifyEmailScreen() {
           ) : null}
 
           <Pressable
-            onPress={() => router.replace('/login')}
+            onPress={() => router.replace(ROUTES.LOGIN)}
             accessibilityRole="link"
             style={{ minHeight: 48, marginTop: 8, paddingHorizontal: 16, justifyContent: 'center' }}>
             <AppText variant="strong" style={{ color: theme.brandText }}>

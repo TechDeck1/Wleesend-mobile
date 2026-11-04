@@ -1,3 +1,4 @@
+import { ROUTES } from '@/constants/routes';
 import { forwardRef, useCallback, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -24,8 +25,7 @@ import type {
   ResetPasswordPasswordFieldProps,
   ResetPasswordValues,
 } from '@/types/screens/ResetPasswordScreen.types';
-
-const MIN_PASSWORD_LENGTH = 8;
+import { MIN_PASSWORD_LENGTH } from '@/constants/auth';
 
 const EMPTY: ResetPasswordValues = { oldPin: '', newPin: '', confirmPin: '' };
 
@@ -112,7 +112,7 @@ export default function ResetPasswordScreen() {
 
   const handleGoBack = () => {
     if (router.canGoBack()) router.back();
-    else router.replace('/');
+    else router.replace(ROUTES.HOME);
   };
 
   const handleSubmit = async () => {

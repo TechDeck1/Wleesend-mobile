@@ -26,10 +26,8 @@ import type {
   PrimaryButtonProps,
   SuccessModalProps,
 } from '@/types/screens/ForgotPasswordScreen.types';
+import { MIN_PASSWORD_LENGTH, OTP_LENGTH, OTP_RESEND_COOLDOWN_SECONDS } from '@/constants/auth';
 
-const OTP_LENGTH = 6;
-const RESEND_SECONDS = 30;
-const MIN_PASSWORD = 8;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function parseOtp(text: string): string {
@@ -78,7 +76,7 @@ export default function ForgotPasswordScreen({ onBack }: ForgotPasswordScreenPro
     runAsyncTask(async () => {
       await forgotPinRequest({ email: trimmedEmail });
       setOtp('');
-      setSecondsLeft(RESEND_SECONDS);
+      setSecondsLeft(OTP_RESEND_COOLDOWN_SECONDS);
       setStep('otp');
     });
   };
@@ -88,7 +86,7 @@ export default function ForgotPasswordScreen({ onBack }: ForgotPasswordScreenPro
     runAsyncTask(async () => {
       await forgotPinRequest({ email: email.trim() });
       setOtp('');
-      setSecondsLeft(RESEND_SECONDS);
+      setSecondsLeft(OTP_RESEND_COOLDOWN_SECONDS);
     });
   };
 
@@ -106,8 +104,8 @@ export default function ForgotPasswordScreen({ onBack }: ForgotPasswordScreenPro
   };
 
   const handleResetPassword = () => {
-    if (password.length < MIN_PASSWORD) {
-      setError(`Use at least ${MIN_PASSWORD} characters for your password.`);
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      setError(`Use at least ${MIN_PASSWORD_LENGTH} characters for your password.`);
       return;
     }
     if (password !== confirm) {
@@ -134,7 +132,7 @@ export default function ForgotPasswordScreen({ onBack }: ForgotPasswordScreenPro
   const copy = {
     email: {
       title: 'Reset your password',
-      body: 'Enter the email you signed up with and we will send you a 6-digit code.',
+      body: `Enter the email you signed up with and we will send you a ${OTP_LENGTH}-digit code.`,
     },
     otp: {
       title: 'Enter the code',
@@ -142,7 +140,7 @@ export default function ForgotPasswordScreen({ onBack }: ForgotPasswordScreenPro
     },
     reset: {
       title: 'Choose a new password',
-      body: `Use at least ${MIN_PASSWORD} characters.`,
+      body: `Use at least ${MIN_PASSWORD_LENGTH} characters.`,
     },
   }[step];
 

@@ -7,10 +7,14 @@ import { Button, Card, Field, Footer, NavBar, Screen, AppText, Tile } from '@/co
 import { useStore } from '@/store';
 import { useTheme } from '@/theme';
 import { sendDualEmailOtp, verifyDualEmailOtp } from '@/services/accountService';
+import {
+  OTP_CODE_PATTERN,
+  OTP_LENGTH,
+  OTP_LIFETIME_MS,
+  OTP_RESEND_COOLDOWN_MS,
+} from '@/constants/auth';
 
 const EMAIL_PATTERN = /^\S+@\S+\.\S+$/;
-const OTP_LIFETIME_MS = 10 * 60 * 1000;
-const RESEND_COOLDOWN_MS = 30 * 1000;
 const GENERIC_ERROR = 'Something went wrong. Please try again.';
 
 function requestError(error: unknown): string {
@@ -118,7 +122,7 @@ export default function ChangeEmailScreen() {
     setBusy(isResend ? 'resend' : 'send');
     const generation = requestGeneration.current;
     const requestedAt = Date.now();
-    if (isResend) setResendAvailableAt(requestedAt + RESEND_COOLDOWN_MS);
+    if (isResend) setResendAvailableAt(requestedAt + OTP_RESEND_COOLDOWN_MS);
 
     try {
       const response = await sendDualEmailOtp({
@@ -138,7 +142,7 @@ export default function ChangeEmailScreen() {
       setFirstOtp('');
       setSecondOtp('');
       setExpiresAt(sentAt + OTP_LIFETIME_MS);
-      setResendAvailableAt(sentAt + RESEND_COOLDOWN_MS);
+      setResendAvailableAt(sentAt + OTP_RESEND_COOLDOWN_MS);
       setNow(sentAt);
       setStep(2);
     } catch (error) {
@@ -159,8 +163,8 @@ export default function ChangeEmailScreen() {
       setOtpError('These OTPs have expired. Resend OTPs to continue.');
       return;
     }
-    if (!/^\d{6}$/.test(firstOtp) || !/^\d{6}$/.test(secondOtp)) {
-      setOtpError('Enter both 6-digit codes.');
+    if (!OTP_CODE_PATTERN.test(firstOtp) || !OTP_CODE_PATTERN.test(secondOtp)) {
+      setOtpError(`Enter both ${OTP_LENGTH}-digit codes.`);
       return;
     }
 
@@ -237,7 +241,7 @@ export default function ChangeEmailScreen() {
             ? 'Your email address has been updated.'
             : step === 1
               ? 'We’ll send a separate code to your current email and your new email.'
-              : 'Enter both 6-digit codes to verify and update your email.'}
+              : `Enter both ${OTP_LENGTH}-digit codes to verify and update your email.`}
         </AppText>
       </View>
 
@@ -286,9 +290,9 @@ export default function ChangeEmailScreen() {
               inputRef={firstOtpInput}
               label="Current email OTP"
               required
-              placeholder="6-digit code"
+              placeholder={`${OTP_LENGTH}-digit code`}
               keyboardType="number-pad"
-              maxLength={6}
+              maxLength={OTP_LENGTH}
               autoComplete="one-time-code"
               value={firstOtp}
               onChangeText={(value) => {
@@ -304,9 +308,9 @@ export default function ChangeEmailScreen() {
             <Field
               label="New email OTP"
               required
-              placeholder="6-digit code"
+              placeholder={`${OTP_LENGTH}-digit code`}
               keyboardType="number-pad"
-              maxLength={6}
+              maxLength={OTP_LENGTH}
               autoComplete="one-time-code"
               value={secondOtp}
               onChangeText={(value) => {

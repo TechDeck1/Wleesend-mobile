@@ -1,3 +1,4 @@
+import { ROUTES } from '@/constants/routes';
 import { Button, Field, Footer, Icon, NavBar, Screen, AppText, Tile } from '@/components/UiComponents';
 import { Pressable, Text, View } from 'react-native';
 import { router } from 'expo-router';
@@ -27,7 +28,7 @@ export default function LogInScreen() {
     try {
       await logIn(email, password);
       if (router.canDismiss()) router.dismissAll();
-      router.replace('/');
+      router.replace(ROUTES.HOME);
     } catch (requestError) {
       setError(
         requestError instanceof Error
@@ -98,12 +99,12 @@ export default function LogInScreen() {
 
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <Pressable
-          onPress={() => router.push("/forget-password")}
+          onPress={() => router.push(ROUTES.FORGET_PASSWORD)}
           accessibilityRole="button"
           hitSlop={8}>
           <Text style={{ color: theme.brandText, fontSize: 15, fontWeight: '600' }}>Forgot password?</Text>
         </Pressable>
-        <Pressable onPress={() => router.push('/signup')} accessibilityRole="link" hitSlop={8}>
+        <Pressable onPress={() => router.push(ROUTES.SIGNUP)} accessibilityRole="link" hitSlop={8}>
           <Text style={{ color: theme.brandText, fontSize: 15, fontWeight: '600' }}>Sign up</Text>
         </Pressable>
       </View>
