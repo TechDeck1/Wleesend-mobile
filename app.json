@@ -24,7 +24,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.wleesend.app"
+      "package": "com.wleesend.app",
+      "versionCode": 1
     },
     "web": {
       "output": "static",
@@ -32,6 +33,14 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "extraProguardRules": "-dontwarn com.stripe.android.pushProvisioning.**"
+          }
+        }
+      ],
       [
         "expo-splash-screen",
         {
@@ -42,6 +51,7 @@
       ],
       "./plugins/with-scene-lifecycle",
       "./plugins/with-source-built-expo-modules",
+      "./plugins/with-stripe-tapandpay-workaround",
       "expo-secure-store",
       [
         "@stripe/stripe-react-native",
@@ -55,11 +65,15 @@
       "reactCompiler": true
     },
     "extra": {
-      "router": {},
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
       "eas": {
-        "projectId": "cbf040a3-89b1-4fc1-a8e2-25df8a97290f"
+        "projectId": "85922ecc-8754-495f-91fd-c7010a1d5c20"
       }
     },
-    "owner": "whalla"
+    "owner": "varun-19"
   }
 }
