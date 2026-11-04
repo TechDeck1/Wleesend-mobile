@@ -1,4 +1,6 @@
 import { ROUTES } from '@/constants/routes';
+import { BlurTargetView } from 'expo-blur';
+import type { ComponentRef } from 'react';
 import {
   Button,
   Field,
@@ -9,15 +11,17 @@ import {
   AppText,
   Tile,
 } from '@/components/UiComponents';
-import { Pressable, Text, View } from 'react-native';
+import { Keyboard, Pressable, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { useTheme } from '@/theme';
 import { useStore } from '@/store';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { MAX_PASSWORD_LENGTH } from '@/constants/auth';
+import { AuthLoadingOverlay } from '@/components/AuthLoadingOverlay';
 
 export default function LogInScreen() {
   const theme = useTheme();
+  const blurTargetRef = useRef<ComponentRef<typeof View>>(null);
   const { logIn, authError } = useStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,6 +38,7 @@ export default function LogInScreen() {
 
     setIsSubmitting(true);
     setError('');
+    Keyboard.dismiss();
     try {
       await logIn(email, password);
       if (router.canDismiss()) router.dismissAll();
@@ -55,18 +60,21 @@ export default function LogInScreen() {
   };
 
   return (
-    <Screen
-      gap={18}
-      header={<NavBar title="Log in" />}
-      footer={
-        <Footer>
-          <Button
-            label={isSubmitting ? 'Logging in...' : 'Log in'}
-            onPress={() => void handleLoginSubmit()}
-          />
-        </Footer>
-      }
-    >
+    <View style={{ flex: 1 }}>
+      <BlurTargetView ref={blurTargetRef} style={{ flex: 1 }}>
+        <Screen
+          gap={18}
+          header={<NavBar title="Log in" />}
+          footer={
+            <Footer>
+              <Button
+                label={isSubmitting ? 'Logging in...' : 'Log in'}
+                disabled={isSubmitting}
+                onPress={() => void handleLoginSubmit()}
+              />
+            </Footer>
+          }
+        >
       <View style={{ alignItems: 'center', gap: 8, paddingTop: 4 }}>
         <Tile icon="user" size={64} />
         <AppText variant="title" style={{ textAlign: 'center' }} accessibilityRole="header">
@@ -136,6 +144,9 @@ export default function LogInScreen() {
           <Text style={{ color: theme.brandText, fontSize: 15, fontWeight: '600' }}>Sign up</Text>
         </Pressable>
       </View>
-    </Screen>
+        </Screen>
+      </BlurTargetView>
+      {isSubmitting ? <AuthLoadingOverlay blurTarget={blurTargetRef} label="Logging in..." /> : null}
+    </View>
   );
 }

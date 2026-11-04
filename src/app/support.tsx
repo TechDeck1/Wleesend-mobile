@@ -1,5 +1,5 @@
 import { View } from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
 import { Button, Card, NavBar, Screen, AppText, Tile } from '@/components/UiComponents';
 
 const SUPPORT_EMAIL = 'support@wleepay.com';
@@ -23,7 +23,7 @@ export default function SupportScreen() {
         </View>
         <Button
           label="Email support"
-          onPress={() => WebBrowser.openBrowserAsync(`mailto:${SUPPORT_EMAIL}`)}
+          onPress={() => Linking.openURL(`mailto:${SUPPORT_EMAIL}`)}
         />
       </Card>
     </Screen>

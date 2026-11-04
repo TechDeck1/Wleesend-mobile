@@ -1,7 +1,9 @@
 import { ROUTES } from '@/constants/routes';
+import { BlurTargetView } from 'expo-blur';
 import { router } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import type { ComponentRef } from 'react';
+import { useRef, useState } from 'react';
+import { Keyboard, Pressable, Text, View } from 'react-native';
 
 import {
   Button,
@@ -17,6 +19,8 @@ import { useStore } from '@/store';
 import { useTheme } from '@/theme';
 import type { SignUpErrors, SignUpForm } from '@/types/screens/SignUpScreen.types';
 import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '@/constants/auth';
+import { AuthLoadingOverlay } from '@/components/AuthLoadingOverlay';
+import { isValidLiberiaPhone, toLocalLiberiaPhone } from '@/utils/airtime';
 
 const EMPTY: SignUpForm = {
   firstName: '',
@@ -33,9 +37,9 @@ function validate(form: SignUpForm): SignUpErrors {
   if (!form.lastName.trim()) fieldErrors.lastName = 'Enter your last name.';
   if (!/^\S+@\S+\.\S+$/.test(form.email.trim()))
     fieldErrors.email = 'Enter a valid email address, like name@example.com.';
-  const phoneDigits = form.phone.replace(/\D/g, '');
-  if (phoneDigits.length < 7 || phoneDigits.length > 15)
-    fieldErrors.phone = 'Enter a phone number with 7 to 15 digits.';
+  if (!isValidLiberiaPhone(toLocalLiberiaPhone(form.phone)))
+    fieldErrors.phone =
+      'Enter a valid 9-digit Liberia MTN or Orange number, with or without the +231 country code.';
   if (form.password.length < MIN_PASSWORD_LENGTH)
     fieldErrors.password = `Use at least ${MIN_PASSWORD_LENGTH} characters.`;
   if (form.confirm !== form.password || !form.confirm)
@@ -45,6 +49,7 @@ function validate(form: SignUpForm): SignUpErrors {
 
 export default function SignUpScreen() {
   const theme = useTheme();
+  const blurTargetRef = useRef<ComponentRef<typeof View>>(null);
   const { signUp } = useStore();
   const [form, setForm] = useState<SignUpForm>(EMPTY);
   const [errors, setErrors] = useState<SignUpErrors>({});
@@ -69,6 +74,7 @@ export default function SignUpScreen() {
     if (Object.keys(found).length > 0) return;
 
     setIsSubmitting(true);
+    Keyboard.dismiss();
     try {
       await signUp(
         {
@@ -116,18 +122,21 @@ export default function SignUpScreen() {
   );
 
   return (
-    <Screen
-      gap={18}
-      header={<NavBar title="Sign up" />}
-      footer={
-        <Footer>
-          <Button
-            label={isSubmitting ? 'Creating account...' : 'Create account'}
-            onPress={() => void handleCreateAccount()}
-          />
-        </Footer>
-      }
-    >
+    <View style={{ flex: 1 }}>
+      <BlurTargetView ref={blurTargetRef} style={{ flex: 1 }}>
+        <Screen
+          gap={18}
+          header={<NavBar title="Sign up" />}
+          footer={
+            <Footer>
+              <Button
+                label={isSubmitting ? 'Creating account...' : 'Create account'}
+                disabled={isSubmitting}
+                onPress={() => void handleCreateAccount()}
+              />
+            </Footer>
+          }
+        >
       <View style={{ alignItems: 'center', gap: 8, paddingTop: 4 }}>
         <Tile icon="personAdd" size={64} />
         <AppText variant="title" style={{ textAlign: 'center' }} accessibilityRole="header">
@@ -246,6 +255,11 @@ export default function SignUpScreen() {
           <Text style={{ color: theme.brandText, fontSize: 15, fontWeight: '600' }}>Log in</Text>
         </Pressable>
       </View>
-    </Screen>
+        </Screen>
+      </BlurTargetView>
+      {isSubmitting ? (
+        <AuthLoadingOverlay blurTarget={blurTargetRef} label="Creating account..." />
+      ) : null}
+    </View>
   );
 }
