@@ -3,18 +3,18 @@ import Stack from 'expo-router/stack';
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { PaymentDone } from '@/components/payment-done';
-import { Button, Card, KeyValue, T } from '@/components/ui';
+import { PaymentDone } from '@/components/PaymentDone';
+import { Button, Card, KeyValue, AppText } from '@/components/UiComponents';
 import { money } from '@/data';
 import { useStore } from '@/store';
 import { useTheme } from '@/theme';
 
 /** Confirmation after payment. */
 export default function SentScreen() {
-  const c = useTheme();
+  const theme = useTheme();
   const { lastOrder } = useStore();
 
-  const leave = (to: '/' | '/transactions') => {
+  const handleLeaveConfirmation = (to: '/' | '/transactions') => {
     router.dismissAll();
     router.navigate(to);
   };
@@ -28,16 +28,16 @@ export default function SentScreen() {
         : `Payment received. Your ${lastOrder.provider} shopping voucher code will be sent to the email on your account.`;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: c.ground }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.ground }}>
       <Stack.Screen options={{ gestureEnabled: false }} />
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16, paddingHorizontal: 28 }}>
         <PaymentDone />
-        <T v="title" accessibilityRole="header">
+        <AppText variant="title" accessibilityRole="header">
           Payment received
-        </T>
-        <T v="muted" style={{ textAlign: 'center' }}>
+        </AppText>
+        <AppText variant="muted" style={{ textAlign: 'center' }}>
           {message}
-        </T>
+        </AppText>
         {lastOrder ? (
           <Card style={{ alignSelf: 'stretch', marginTop: 8, paddingHorizontal: 18, paddingVertical: 6 }}>
             <KeyValue label="Product" value={lastOrder.product} first />
@@ -46,8 +46,8 @@ export default function SentScreen() {
         ) : null}
       </View>
       <View style={{ paddingHorizontal: 20, paddingBottom: 12, gap: 6 }}>
-        <Button label="Back to home" onPress={() => leave('/')} />
-        <Button variant="text" label="View transactions" onPress={() => leave('/transactions')} />
+        <Button label="Back to home" onPress={() => handleLeaveConfirmation('/')} />
+        <Button variant="text" label="View transactions" onPress={() => handleLeaveConfirmation('/transactions')} />
       </View>
     </SafeAreaView>
   );

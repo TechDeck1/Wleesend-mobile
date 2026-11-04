@@ -52,21 +52,21 @@ async function readResponseBody(response: Response): Promise<unknown> {
   return contentType.includes('json') ? JSON.parse(text) : text;
 }
 
-function getErrorMessage(data: unknown, response: Response): string {
-  if (typeof data === 'string' && data.trim()) {
-    return data;
+function getErrorMessage(responseBody: unknown, response: Response): string {
+  if (typeof responseBody === 'string' && responseBody.trim()) {
+    return responseBody;
   }
 
-  if (data && typeof data === 'object') {
-    const body = data as Record<string, unknown>;
-    if (typeof body.message === 'string' && body.message.trim()) {
-      return body.message;
+  if (responseBody && typeof responseBody === 'object') {
+    const responseObject = responseBody as Record<string, unknown>;
+    if (typeof responseObject.message === 'string' && responseObject.message.trim()) {
+      return responseObject.message;
     }
-    if (typeof body.error === 'string' && body.error.trim()) {
-      return body.error;
+    if (typeof responseObject.error === 'string' && responseObject.error.trim()) {
+      return responseObject.error;
     }
-    if (typeof body.errorMessage === 'string' && body.errorMessage.trim()) {
-      return body.errorMessage;
+    if (typeof responseObject.errorMessage === 'string' && responseObject.errorMessage.trim()) {
+      return responseObject.errorMessage;
     }
   }
 
@@ -142,17 +142,17 @@ export async function request<TResponse = unknown, TBody = unknown>(
       body: serializedBody,
       signal: controller.signal,
     });
-    const data = await readResponseBody(response);
+    const responseBody = await readResponseBody(response);
 
     if (!response.ok) {
-      const error = new ApiError(getErrorMessage(data, response), response.status, data);
+      const error = new ApiError(getErrorMessage(responseBody, response), response.status, responseBody);
       if (response.status === 401 && !skipAuth) {
         await clearAuthSession();
       }
       throw error;
     }
 
-    return data as TResponse;
+    return responseBody as TResponse;
   } catch (error) {
     if (timedOut) {
       throw new ApiTimeoutError(timeoutMs);

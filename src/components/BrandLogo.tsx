@@ -1,6 +1,6 @@
 import { Image, View } from 'react-native';
 
-import { Tile, type IconName } from '@/components/ui';
+import { Tile, type IconName } from '@/components/UiComponents';
 import type { OperatorId, VendorId } from '@/data';
 import { useTheme } from '@/theme';
 
@@ -27,7 +27,7 @@ const FALLBACK_ICON: Partial<Record<Brand, IconName>> = {
 
 /** A brand's logo in a rounded tile. Falls back to an icon tile when there is no logo. */
 export function BrandLogo({ brand, size = 48 }: { brand?: Brand; size?: number }) {
-  const c = useTheme();
+  const theme = useTheme();
   const logo = brand ? LOGOS[brand] : undefined;
 
   if (!logo) {
@@ -42,7 +42,7 @@ export function BrandLogo({ brand, size = 48 }: { brand?: Brand; size?: number }
         borderRadius: size * 0.28,
         backgroundColor: logo.bg,
         borderWidth: 1,
-        borderColor: c.line,
+        borderColor: theme.line,
         overflow: 'hidden',
         alignItems: 'center',
         justifyContent: 'center',

@@ -43,8 +43,8 @@ export function useVoucherCatalog(enabled: boolean) {
   }, [enabled, attempt]);
 
   const reload = useCallback(() => {
-    setState((s) => ({ ...s, status: 'loading', error: null }));
-    setAttempt((n) => n + 1);
+    setState((currentState) => ({ ...currentState, status: 'loading', error: null }));
+    setAttempt((currentAttempt) => currentAttempt + 1);
   }, []);
 
   return { ...state, reload };

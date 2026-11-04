@@ -1,6 +1,6 @@
 import { View } from 'react-native';
 
-import { Card, NavBar, Screen, T, Tile, type IconName } from '@/components/ui';
+import { Card, NavBar, Screen, AppText, Tile, type IconName } from '@/components/UiComponents';
 
 const REASONS: { icon: IconName; title: string; text: string }[] = [
   {
@@ -23,37 +23,37 @@ const REASONS: { icon: IconName; title: string; text: string }[] = [
 export default function AboutScreen() {
   return (
     <Screen header={<NavBar title="About" />}>
-      <T v="title" accessibilityRole="header">
+      <AppText variant="title" accessibilityRole="header">
         About Wleesend
-      </T>
-      <T>
+      </AppText>
+      <AppText>
         Wleesend is a Liberian owned and operated company established in 2025. The company is a subsidiary of Wleepay
         Financial Services incorporated in Liberia.
-      </T>
-      <T>
+      </AppText>
+      <AppText>
         Liberians receive cash remittances daily to purchase goods and services. But they have to first retrieve the
         remitted cash from an agent, and then use the cash to purchase a mobile top up (scratch) card or LEC credit
         from another agent.
-      </T>
-      <T>
+      </AppText>
+      <AppText>
         Wleesend solves this problem by allowing those in the diaspora to instantly send both Mobile and LEC credits
         to their family and friends back home. They immediately receive an SMS/Text message with the Mobile or LEC
         Token to top up their phone or electricity meter.
-      </T>
+      </AppText>
       <Card style={{ padding: 18, paddingVertical: 20, gap: 18 }}>
-        <T v="heading" style={{ fontSize: 18 }} accessibilityRole="header">
+        <AppText variant="heading" style={{ fontSize: 18 }} accessibilityRole="header">
           Why Wleesend
-        </T>
-        {REASONS.map((r) => (
-          <View key={r.title} style={{ flexDirection: 'row', gap: 14 }}>
-            <Tile icon={r.icon} tone="soft" size={44} />
+        </AppText>
+        {REASONS.map((reason) => (
+          <View key={reason.title} style={{ flexDirection: 'row', gap: 14 }}>
+            <Tile icon={reason.icon} tone="soft" size={44} />
             <View style={{ flex: 1, gap: 2 }}>
-              <T v="display" style={{ fontSize: 15.5 }}>
-                {r.title}
-              </T>
-              <T v="small" style={{ fontSize: 14, lineHeight: 20 }}>
-                {r.text}
-              </T>
+              <AppText variant="display" style={{ fontSize: 15.5 }}>
+                {reason.title}
+              </AppText>
+              <AppText variant="small" style={{ fontSize: 14, lineHeight: 20 }}>
+                {reason.text}
+              </AppText>
             </View>
           </View>
         ))}

@@ -80,7 +80,7 @@ export default function ResetPasswordScreen() {
   const [values, setValues] = useState<Values>(EMPTY);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const newRef = useRef<TextInputInstance>(null);
@@ -93,7 +93,7 @@ export default function ResetPasswordScreen() {
     setValues(EMPTY);
     setFieldErrors({});
     setFormError(null);
-    setSubmitting(false);
+    setIsSubmitting(false);
     setSuccessMessage(null);
   }, []);
 
@@ -103,26 +103,26 @@ export default function ResetPasswordScreen() {
     }, [resetScreen]),
   );
 
-  const setField = (key: FieldKey) => (text: string) => {
+  const handleFieldChange = (key: FieldKey) => (text: string) => {
     setValues((prev) => ({ ...prev, [key]: text }));
     if (fieldErrors[key]) setFieldErrors((prev) => ({ ...prev, [key]: undefined }));
     if (formError) setFormError(null);
   };
 
-  const goBack = () => {
+  const handleGoBack = () => {
     if (router.canGoBack()) router.back();
     else router.replace('/');
   };
 
-  const onSubmit = async () => {
-    if (submitting) return;
+  const handleSubmit = async () => {
+    if (isSubmitting) return;
 
     const errors = validate(values);
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
     const runId = runIdRef.current;
-    setSubmitting(true);
+    setIsSubmitting(true);
     setFormError(null);
     try {
       const message = await resetPassword({
@@ -137,7 +137,7 @@ export default function ResetPasswordScreen() {
       if (runId !== runIdRef.current) return;
       setFormError(getErrorMessage(error));
     } finally {
-      if (runId === runIdRef.current) setSubmitting(false);
+      if (runId === runIdRef.current) setIsSubmitting(false);
     }
   };
 
@@ -156,7 +156,7 @@ export default function ResetPasswordScreen() {
           </Text>
           <Pressable
             style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
-            onPress={goBack}
+            onPress={handleGoBack}
             accessibilityRole="button"
           >
             <Text style={styles.buttonText}>Done</Text>
@@ -195,11 +195,11 @@ export default function ResetPasswordScreen() {
             <PasswordField
               label="Current password"
               value={values.oldPin}
-              onChangeText={setField('oldPin')}
+              onChangeText={handleFieldChange('oldPin')}
               error={fieldErrors.oldPin}
               theme={theme}
               styles={styles}
-              editable={!submitting}
+              editable={!isSubmitting}
               returnKeyType="next"
               onSubmitEditing={() => newRef.current?.focus()}
               autoComplete="current-password"
@@ -208,11 +208,11 @@ export default function ResetPasswordScreen() {
               ref={newRef}
               label="New password"
               value={values.newPin}
-              onChangeText={setField('newPin')}
+              onChangeText={handleFieldChange('newPin')}
               error={fieldErrors.newPin}
               theme={theme}
               styles={styles}
-              editable={!submitting}
+              editable={!isSubmitting}
               returnKeyType="next"
               onSubmitEditing={() => confirmRef.current?.focus()}
               autoComplete="new-password"
@@ -221,13 +221,13 @@ export default function ResetPasswordScreen() {
               ref={confirmRef}
               label="Confirm new password"
               value={values.confirmPin}
-              onChangeText={setField('confirmPin')}
+              onChangeText={handleFieldChange('confirmPin')}
               error={fieldErrors.confirmPin}
               theme={theme}
               styles={styles}
-              editable={!submitting}
+              editable={!isSubmitting}
               returnKeyType="done"
-              onSubmitEditing={onSubmit}
+              onSubmitEditing={handleSubmit}
               autoComplete="new-password"
             />
           </View>
@@ -236,21 +236,21 @@ export default function ResetPasswordScreen() {
             style={({ pressed }) => [
               styles.button,
               pressed && styles.buttonPressed,
-              submitting && styles.buttonDisabled,
+              isSubmitting && styles.buttonDisabled,
             ]}
-            onPress={onSubmit}
-            disabled={submitting}
+            onPress={handleSubmit}
+            disabled={isSubmitting}
             accessibilityRole="button"
-            accessibilityState={{ disabled: submitting, busy: submitting }}
+            accessibilityState={{ disabled: isSubmitting, busy: isSubmitting }}
           >
-            {submitting ? (
+            {isSubmitting ? (
               <ActivityIndicator color={theme.onBrand} />
             ) : (
               <Text style={styles.buttonText}>Reset password</Text>
             )}
           </Pressable>
 
-          <Pressable onPress={goBack} disabled={submitting} style={styles.linkButton} accessibilityRole="button">
+          <Pressable onPress={handleGoBack} disabled={isSubmitting} style={styles.linkButton} accessibilityRole="button">
             <Text style={styles.linkText}>Cancel</Text>
           </Pressable>
         </ScrollView>
@@ -272,7 +272,7 @@ const PasswordField = forwardRef<TextInputInstance, PasswordFieldProps>(function
   { label, value, onChangeText, error, theme, styles, ...rest },
   ref,
 ) {
-  const [visible, setVisible] = useState(false);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   return (
     <View style={styles.fieldWrap}>
@@ -283,7 +283,7 @@ const PasswordField = forwardRef<TextInputInstance, PasswordFieldProps>(function
           style={styles.input}
           value={value}
           onChangeText={onChangeText}
-          secureTextEntry={!visible}
+          secureTextEntry={!isPasswordVisible}
           keyboardType="default"
           autoCapitalize="none"
           autoCorrect={false}
@@ -292,19 +292,19 @@ const PasswordField = forwardRef<TextInputInstance, PasswordFieldProps>(function
           {...rest}
         />
         <Pressable
-          onPress={() => setVisible((v) => !v)}
+          onPress={() => setIsPasswordVisible((isVisible) => !isVisible)}
           hitSlop={10}
           accessibilityRole="button"
-          accessibilityLabel={visible ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`}
+          accessibilityLabel={isPasswordVisible ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`}
         >
           <SymbolView
-            name={visible ? 'eye.slash' : 'eye'}
+            name={isPasswordVisible ? 'eye.slash' : 'eye'}
             size={22}
             tintColor={theme.muted}
             style={styles.toggleSymbol}
             fallback={
               <Ionicons
-                name={visible ? 'eye-off-outline' : 'eye-outline'}
+                name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
                 size={22}
                 color={theme.muted}
                 style={styles.toggleIcon}
@@ -322,55 +322,55 @@ const PasswordField = forwardRef<TextInputInstance, PasswordFieldProps>(function
   );
 });
 
-function createStyles(t: Palette) {
+function createStyles(theme: Palette) {
   return StyleSheet.create({
     flex: { flex: 1 },
-    screen: { flex: 1, backgroundColor: t.ground },
+    screen: { flex: 1, backgroundColor: theme.ground },
     content: { padding: 20, paddingBottom: 40 },
     title: {
       fontFamily: fonts.display,
       fontSize: 26,
-      color: t.ink,
+      color: theme.ink,
       marginBottom: 6,
     },
-    subtitle: { fontSize: 15, lineHeight: 22, color: t.muted, marginBottom: 20 },
+    subtitle: { fontSize: 15, lineHeight: 22, color: theme.muted, marginBottom: 20 },
     centerText: { textAlign: 'center' },
 
     card: {
-      backgroundColor: t.card,
-      borderColor: t.line,
+      backgroundColor: theme.card,
+      borderColor: theme.line,
       borderWidth: 1,
       borderRadius: 16,
       padding: 16,
       marginBottom: 20,
     },
     fieldWrap: { marginBottom: 16 },
-    label: { fontSize: 14, color: t.label, marginBottom: 6, fontWeight: '500' },
+    label: { fontSize: 14, color: theme.label, marginBottom: 6, fontWeight: '500' },
     inputRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: t.field,
-      borderColor: t.fieldBorder,
+      backgroundColor: theme.field,
+      borderColor: theme.fieldBorder,
       borderWidth: 1,
       borderRadius: 12,
       paddingHorizontal: 14,
     },
-    inputRowError: { borderColor: t.accent },
-    input: { flex: 1, fontSize: 16, color: t.ink, paddingVertical: 13 },
+    inputRowError: { borderColor: theme.accent },
+    input: { flex: 1, fontSize: 16, color: theme.ink, paddingVertical: 13 },
     toggleIcon: { marginLeft: 12 },
     toggleSymbol: { width: 22, height: 22, marginLeft: 12 },
-    fieldError: { marginTop: 6, fontSize: 13, color: t.accentText },
+    fieldError: { marginTop: 6, fontSize: 13, color: theme.accentText },
 
     errorBanner: {
-      backgroundColor: t.accentTint,
+      backgroundColor: theme.accentTint,
       borderRadius: 12,
       padding: 14,
       marginBottom: 16,
     },
-    errorBannerText: { color: t.accentTintText, fontSize: 14, lineHeight: 20 },
+    errorBannerText: { color: theme.accentTintText, fontSize: 14, lineHeight: 20 },
 
     button: {
-      backgroundColor: t.brand,
+      backgroundColor: theme.brand,
       borderRadius: 14,
       minHeight: 52,
       alignItems: 'center',
@@ -380,9 +380,9 @@ function createStyles(t: Palette) {
     },
     buttonPressed: { opacity: 0.88 },
     buttonDisabled: { opacity: 0.7 },
-    buttonText: { fontFamily: fonts.displayMedium, fontSize: 16, color: t.onBrand },
+    buttonText: { fontFamily: fonts.displayMedium, fontSize: 16, color: theme.onBrand },
     linkButton: { alignItems: 'center', paddingVertical: 16 },
-    linkText: { fontSize: 15, color: t.brandText, fontWeight: '600' },
+    linkText: { fontSize: 15, color: theme.brandText, fontWeight: '600' },
 
     successWrap: {
       flex: 1,
@@ -394,11 +394,11 @@ function createStyles(t: Palette) {
       width: 76,
       height: 76,
       borderRadius: 38,
-      backgroundColor: t.brand,
+      backgroundColor: theme.brand,
       alignItems: 'center',
       justifyContent: 'center',
       marginBottom: 20,
     },
-    successTick: { fontSize: 38, color: t.onBrand, fontWeight: '700' },
+    successTick: { fontSize: 38, color: theme.onBrand, fontWeight: '700' },
   });
 }

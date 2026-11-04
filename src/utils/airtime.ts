@@ -16,7 +16,7 @@ export function toLocalLiberiaPhone(value: string): string {
   return digits;
 }
 
-export const roundToTwoDecimals = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
+export const roundToTwoDecimals = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
 
 export function operatorForPhone(digits: string): OperatorId | undefined {
   const leading = digits.charAt(0);
@@ -34,7 +34,7 @@ export function brandForOperatorName(name: string): OperatorId | undefined {
 export function findRestrictedOperator(digits: string, operators: AirtimeOperator[]): AirtimeOperator | undefined {
   if (digits.length < PREFIX_LOOKUP_MIN_DIGITS) return undefined;
   const family = operatorForPhone(digits);
-  return family ? operators.find((op) => brandForOperatorName(op.name) === family) : undefined;
+  return family ? operators.find((operator) => brandForOperatorName(operator.name) === family) : undefined;
 }
 
 export function getPhonePrefixError(digits: string): string | undefined {

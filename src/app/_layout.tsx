@@ -13,22 +13,22 @@ import { useTheme } from '@/theme';
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const c = useTheme();
-  const [fontsLoaded, fontError] = useFonts({ Lexend_500Medium, Lexend_600SemiBold });
-  const ready = fontsLoaded || fontError != null;
+  const theme = useTheme();
+  const [isFontsLoaded, fontError] = useFonts({ Lexend_500Medium, Lexend_600SemiBold });
+  const isReady = isFontsLoaded || fontError != null;
 
   useEffect(() => {
-    if (ready) SplashScreen.hideAsync();
-  }, [ready]);
+    if (isReady) SplashScreen.hideAsync();
+  }, [isReady]);
 
-  if (!ready) return null;
+  if (!isReady) return null;
 
   return (
     <SafeAreaProvider>
       <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY} urlScheme="wleesend">
         <StoreProvider>
           <StatusBar style="auto" />
-          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: c.ground } }} />
+          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.ground } }} />
         </StoreProvider>
       </StripeProvider>
     </SafeAreaProvider>

@@ -3,21 +3,21 @@ import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from '
 
 const DURATION_MS = 260;
 export function CollapsibleRow({
-  visible,
+  isVisible,
   height,
   gap = 0,
   children,
 }: {
-  visible: boolean;
+  isVisible: boolean;
   height: number;
   gap?: number;
   children: ReactNode;
 }) {
-  const progress = useSharedValue(visible ? 1 : 0);
+  const progress = useSharedValue(isVisible ? 1 : 0);
 
   useEffect(() => {
-    progress.set(withTiming(visible ? 1 : 0, { duration: DURATION_MS, easing: Easing.out(Easing.cubic) }));
-  }, [visible, progress]);
+    progress.set(withTiming(isVisible ? 1 : 0, { duration: DURATION_MS, easing: Easing.out(Easing.cubic) }));
+  }, [isVisible, progress]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     height: progress.get() * height,
@@ -28,9 +28,9 @@ export function CollapsibleRow({
 
   return (
     <Animated.View
-      pointerEvents={visible ? 'auto' : 'none'}
-      accessibilityElementsHidden={!visible}
-      importantForAccessibility={visible ? 'auto' : 'no-hide-descendants'}
+      pointerEvents={isVisible ? 'auto' : 'none'}
+      accessibilityElementsHidden={!isVisible}
+      importantForAccessibility={isVisible ? 'auto' : 'no-hide-descendants'}
       style={[{ flexDirection: 'row', overflow: 'hidden' }, animatedStyle]}>
       {children}
     </Animated.View>

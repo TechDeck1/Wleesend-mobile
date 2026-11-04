@@ -27,7 +27,7 @@ function toAuthSession(response: LoginResponse): AuthSession {
   return { token: response.token, user };
 }
 
-export async function Login(email: string, password: string): Promise<AuthSession> {
+export async function login(email: string, password: string): Promise<AuthSession> {
   const response = await apiClient.post<LoginResponse, LoginCredentials>(
     API_ENDPOINTS.auth.login,
     { email: email.trim(), pin: password },
@@ -37,7 +37,7 @@ export async function Login(email: string, password: string): Promise<AuthSessio
   return toAuthSession(response);
 }
 
-export async function Register(
+export async function register(
   user: Omit<AuthUser, 'userId' | 'profilePic' | 'accountNumber' | 'role'>,
   pin: string,
   confirmPin: string,

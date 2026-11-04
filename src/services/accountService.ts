@@ -57,8 +57,8 @@ export async function updatePin(payload: UpdatePinRequest): Promise<string> {
 
 export async function resetPassword(payload: ResetPasswordPayload): Promise<string> {
 
-    const URL = API_ENDPOINTS.account.resetPassword;
-    const response = await apiClient.post<unknown, ResetPasswordPayload>(URL, payload);
+    const url = API_ENDPOINTS.account.resetPassword;
+    const response = await apiClient.post<unknown, ResetPasswordPayload>(url, payload);
 
     if (typeof response === 'string') {
         return response || 'Password reset successfully.';

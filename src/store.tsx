@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
-import type { Brand } from '@/components/brand-logo';
+import type { Brand } from '@/components/BrandLogo';
 import {
   clearAuthSession,
   getAuthSession,
@@ -23,7 +23,7 @@ import {
   type SendKind,
   type VendorId,
 } from '@/data';
-import { Login, Register } from './services/authService';
+import { login, register } from './services/authService';
 
 export type Draft = {
   kind: SendKind;
@@ -33,7 +33,7 @@ export type Draft = {
   product: AirtimeProduct | null;
   topUp: string;
   phone: string;
-  phoneEdited: boolean;
+  isPhoneEdited: boolean;
   meter: string;
   amount: number;
   vendor: VendorId;
@@ -65,8 +65,8 @@ export function brandOf(draft: Draft): Brand {
 function chosenAmount(product: AirtimeProduct | null, topUp: string): number {
   if (!product) return 0;
   if (!product.isRange) return product.price ?? 0;
-  const n = Number(topUp);
-  return n >= product.min && n <= product.max ? roundToTwoDecimals(n) : 0;
+  const topUpAmount = Number(topUp);
+  return topUpAmount >= product.min && topUpAmount <= product.max ? roundToTwoDecimals(topUpAmount) : 0;
 }
 
 export function buildOrder(draft: Draft): Order {
@@ -119,7 +119,7 @@ function newDraft(kind: SendKind, operator: OperatorId, personalPhone = ''): Dra
     product: null,
     topUp: '',
     phone: kind === 'voucher' ? '' : toLocalLiberiaPhone(personalPhone),
-    phoneEdited: false,
+    isPhoneEdited: false,
     meter: '',
     amount: 10,
     vendor: VOUCHER_VENDOR_ID,
@@ -136,7 +136,7 @@ type Store = {
   setLastOrder: (order: Order | null) => void;
   resend: (transaction: Transaction) => void;
   user: User | null;
-  authReady: boolean;
+  isAuthReady: boolean;
   authError: string | null;
   signUp: (
     user: Pick<User, 'firstName' | 'lastName' | 'email' | 'phone'>,
@@ -154,7 +154,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [draft, setDraft] = useState<Draft>(() => newDraft('airtime', 'mtn'));
   const [lastOrder, setLastOrder] = useState<Order | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [authReady, setAuthReady] = useState(false);
+  const [isAuthReady, setIsAuthReady] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -173,7 +173,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }
       })
       .finally(() => {
-        if (active) setAuthReady(true);
+        if (active) setIsAuthReady(true);
       });
 
     return () => {
@@ -188,20 +188,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setLastOrder(null);
       setDraft(newDraft(kind, operator ?? (kind === 'airtime' ? 'mtn' : 'orange'), user?.phone ?? ''));
     },
-    updateDraft: (patch) => setDraft((d) => ({ ...d, ...patch })),
+    updateDraft: (patch) => setDraft((currentDraft) => ({ ...currentDraft, ...patch })),
     lastOrder,
     setLastOrder,
     resend: (transaction) => setDraft({ ...transaction.draft }),
     user,
-    authReady,
+    isAuthReady,
     authError,
     signUp: async (newUser, pin, confirmPin) => {
       setAuthError(null);
-      await Register(newUser, pin, confirmPin);
+      await register(newUser, pin, confirmPin);
     },
     logIn: async (email, password) => {
       setAuthError(null);
-      const session = await Login(email, password);
+      const session = await login(email, password);
       await saveAuthSession(session);
       setUser(session.user);
     },

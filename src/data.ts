@@ -28,7 +28,7 @@ export const TRANSFER_TYPE_ID = { airtime: 10, utility: 11, voucher: 17 } as con
 export const LEC_NAME = 'Liberia Electricity Corporation (LEC)';
 export const KW_PER_DOLLAR = 3.77;
 export const approxKw = (dollars: number) => `${(dollars * KW_PER_DOLLAR).toFixed(2)} kW`;
-export const money = (n: number) => `$${(Number(n) || 0).toFixed(2)}`;
+export const money = (amount: number) => `$${(Number(amount) || 0).toFixed(2)}`;
 
 
 

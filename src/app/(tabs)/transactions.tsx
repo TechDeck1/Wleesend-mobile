@@ -2,14 +2,14 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 
-import { BrandLogo } from '@/components/brand-logo';
-import { Button, Card, Icon, Screen, Segment, T, Tile } from '@/components/ui';
+import { BrandLogo } from '@/components/BrandLogo';
+import { Button, Card, Icon, Screen, Segment, AppText, Tile } from '@/components/UiComponents';
 import { money, type SendKind } from '@/data';
 import { useTransactionHistory } from '@/hooks/use-transaction-history';
 import { useStore, type Transaction } from '@/store';
 import { fonts, useTheme } from '@/theme';
 import { brandForTransaction } from '@/services/transactionService';
-import { TransactionDetailsModal } from '@/components/transaction-details-modal';
+import { TransactionDetailsModal } from '@/components/TransactionDetailsModal';
 
 
 const FILTERS: { id: 'all' | SendKind; label: string }[] = [
@@ -23,84 +23,84 @@ const KIND_LABEL: Record<SendKind, string> = { airtime: 'Airtime', utility: 'Uti
 const KINDS = Object.keys(KIND_LABEL) as SendKind[];
 
 export default function TransactionsScreen() {
-  const c = useTheme();
+  const theme = useTheme();
   const { resend } = useStore();
   const [filter, setFilter] = useState<'all' | SendKind>('all');
-  const { rows, totals, loading, error, hasMore, refresh, loadMore } = useTransactionHistory(filter);
-  const [selected, setSelected] = useState<Transaction | null>(null);
+  const { rows, totals, isLoading, error, hasMore, handleRefresh, handleLoadMore } = useTransactionHistory(filter);
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
 
-  const totalSent = filter === 'all' ? KINDS.reduce((s, k) => s + totals[k], 0) : totals[filter];
+  const totalSent = filter === 'all' ? KINDS.reduce((subtotal, kind) => subtotal + totals[kind], 0) : totals[filter];
 
-  const sendAgain = (t: Transaction) => {
-    resend(t);
-    router.push(t.draft.phone ? '/send/payment' : '/send');
+  const handleSendAgain = (transaction: Transaction) => {
+    resend(transaction);
+    router.push(transaction.draft.phone ? '/send/payment' : '/send');
   };
   return (
     <Screen gap={18} onScrollNearEnd={() => {
-      if (hasMore && !loading && !error) void loadMore();
+      if (hasMore && !isLoading && !error) void handleLoadMore();
     }}>
-      <T v="title" accessibilityRole="header">
+      <AppText variant="title" accessibilityRole="header">
         Transactions
-      </T>
+      </AppText>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-        {FILTERS.map((f) => (
-          <Segment key={f.id} shape="chip" label={f.label} selected={filter === f.id} onPress={() => setFilter(f.id)} />
+          {FILTERS.map((transactionFilter) => (
+          <Segment key={transactionFilter.id} shape="chip" label={transactionFilter.label} isSelected={filter === transactionFilter.id} onPress={() => setFilter(transactionFilter.id)} />
         ))}
       </View>
 
-      {loading && rows.length === 0 ? (
+      {isLoading && rows.length === 0 ? (
         <ActivityIndicator style={{ paddingTop: 72 }} accessibilityLabel="Loading transactions" />
       ) : null}
 
-      {!loading && !error && rows.length === 0 ? (
+      {!isLoading && !error && rows.length === 0 ? (
         <View style={{ alignItems: 'center', gap: 14, paddingTop: 72, paddingHorizontal: 24 }}>
           <Tile icon="list" size={72} />
-          <T v="heading" style={{ fontSize: 18 }}>
+          <AppText variant="heading" style={{ fontSize: 18 }}>
             No transactions found.
-          </T>
-          <T v="muted" style={{ textAlign: 'center' }}>
+          </AppText>
+          <AppText variant="muted" style={{ textAlign: 'center' }}>
             Credit you send will be listed here.
-          </T>
+          </AppText>
           <Button label="Send credit" onPress={() => router.navigate('/products')} style={{ height: 50, marginTop: 6 }} />
         </View>
       ) : null}
 
       {rows.length > 0 ? (
         <Card>
-          {rows.map((t, i) => (
+          {rows.map((transaction, index) => (
             <Pressable
-              key={t.id}
-              onPress={() => setSelected(t)}
+              key={transaction.id}
+              onPress={() => setSelectedTransaction(transaction)}
               accessibilityRole="button"
-              accessibilityLabel={`View details of ${t.product}`}
+              accessibilityLabel={`View details of ${transaction.product}`}
               style={({ pressed }) => ({
                 flexDirection: 'row',
                 alignItems: 'center',
                 gap: 12,
                 padding: 14,
                 paddingHorizontal: 16,
-                borderTopWidth: i === 0 ? 0 : 1,
-                borderTopColor: c.lineSoft,
+                borderTopWidth: index === 0 ? 0 : 1,
+                borderTopColor: theme.lineSoft,
                 opacity: pressed ? 0.7 : 1,
               })}>
-              <BrandLogo brand={brandForTransaction(t)} size={40} />
+              <BrandLogo brand={brandForTransaction(transaction)} size={40} />
               <View style={{ flex: 1, gap: 2 }}>
-                <T v="strong" style={{ fontSize: 14.5 }}>
-                  {t.product}
-                </T>
-                <T v="small" style={{ fontSize: 12.5 }}>
-                  {t.provider}
-                </T>
-                <T v="small" style={{ fontSize: 12.5 }}>
-                  {t.receiver}, {t.date}
-                </T>
+                <AppText variant="strong" style={{ fontSize: 14.5 }}>
+                  {transaction.product}
+                </AppText>
+                <AppText variant="small" style={{ fontSize: 12.5 }}>
+                  {transaction.provider}
+                </AppText>
+                <AppText variant="small" style={{ fontSize: 12.5 }}>
+                  {transaction.receiver}, {transaction.date}
+                </AppText>
               </View>
               <View style={{ alignItems: 'flex-end', gap: 6 }}>
-                <T style={{ fontFamily: fonts.display, fontSize: 15 }}>{money(t.total)}</T>
+                <AppText style={{ fontFamily: fonts.display, fontSize: 15 }}>{money(transaction.total)}</AppText>
                 <Pressable
-                  onPress={() => sendAgain(t)}
+                  onPress={() => handleSendAgain(transaction)}
                   accessibilityRole="button"
-                  accessibilityLabel={`Resend ${t.product} to ${t.receiver}`}
+                  accessibilityLabel={`Resend ${transaction.product} to ${transaction.receiver}`}
                   hitSlop={6}
                   style={{
                     flexDirection: 'row',
@@ -109,10 +109,10 @@ export default function TransactionsScreen() {
                     paddingHorizontal: 10,
                     paddingVertical: 6,
                     borderRadius: 999,
-                    backgroundColor: c.brandTint,
+                    backgroundColor: theme.brandTint,
                   }}>
-                  <Icon name="resend" size={13} color={c.brandText} />
-                  <Text style={{ color: c.brandText, fontSize: 13, fontWeight: '600' }}>Resend</Text>
+                  <Icon name="resend" size={13} color={theme.brandText} />
+                  <Text style={{ color: theme.brandText, fontSize: 13, fontWeight: '600' }}>Resend</Text>
                 </Pressable>
               </View>
             </Pressable>
@@ -122,22 +122,22 @@ export default function TransactionsScreen() {
 
       {error ? (
         <View style={{ alignItems: 'center', gap: 12, paddingTop: rows.length === 0 ? 48 : 0 }}>
-          <T v="muted" style={{ textAlign: 'center' }}>
+          <AppText variant="muted" style={{ textAlign: 'center' }}>
             {error}
-          </T>
-          <Button label="Try again" onPress={rows.length === 0 ? refresh : loadMore} style={{ height: 50 }} />
+          </AppText>
+          <Button label="Try again" onPress={rows.length === 0 ? handleRefresh : handleLoadMore} style={{ height: 50 }} />
         </View>
       ) : null}
 
-      {loading && rows.length > 0 ? <ActivityIndicator accessibilityLabel="Loading more transactions" /> : null}
+      {isLoading && rows.length > 0 ? <ActivityIndicator accessibilityLabel="Loading more transactions" /> : null}
 
       {rows.length > 0 ? (
         <Card style={{ padding: 16, paddingHorizontal: 18, gap: 10 }}>
           {filter === 'all'
-            ? KINDS.map((k) => (
-              <View key={k} style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <T v="muted">{KIND_LABEL[k]}</T>
-                <T v="strong">{money(totals[k])}</T>
+            ? KINDS.map((kind) => (
+              <View key={kind} style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <AppText variant="muted">{KIND_LABEL[kind]}</AppText>
+                <AppText variant="strong">{money(totals[kind])}</AppText>
               </View>
             ))
             : null}
@@ -148,22 +148,22 @@ export default function TransactionsScreen() {
               justifyContent: 'space-between',
               paddingTop: filter === 'all' ? 10 : 0,
               borderTopWidth: filter === 'all' ? 1 : 0,
-              borderTopColor: c.lineSoft,
+              borderTopColor: theme.lineSoft,
             }}>
-            <T v="strong">Total sent{filter === 'all' ? '' : `: ${KIND_LABEL[filter]}`}</T>
-            <Text style={{ fontFamily: fonts.display, fontSize: 20, color: c.brandText }}>{money(totalSent)}</Text>
+            <AppText variant="strong">Total sent{filter === 'all' ? '' : `: ${KIND_LABEL[filter]}`}</AppText>
+            <Text style={{ fontFamily: fonts.display, fontSize: 20, color: theme.brandText }}>{money(totalSent)}</Text>
           </View>
-          <T v="small" style={{ fontSize: 12.5 }}>
+          <AppText variant="small" style={{ fontSize: 12.5 }}>
             Amounts include transaction fees.
-          </T>
+          </AppText>
         </Card>
       ) : null}
 
 
       <TransactionDetailsModal
-        transaction={selected}
-        onClose={() => setSelected(null)}
-        onResend={sendAgain}
+        transaction={selectedTransaction}
+        onClose={() => setSelectedTransaction(null)}
+        onResend={handleSendAgain}
       />
     </Screen>
   );

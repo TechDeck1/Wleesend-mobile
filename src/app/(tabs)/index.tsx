@@ -1,32 +1,32 @@
 import { router } from 'expo-router';
 import { Image, Pressable, Text, View } from 'react-native';
 
-import { Logo } from '@/components/logo';
-import { Card, Icon, LinkRow, Screen, T, Tile, type IconName } from '@/components/ui';
+import { Logo } from '@/components/LogoComponent';
+import { Card, Icon, LinkRow, Screen, AppText, Tile, type IconName } from '@/components/UiComponents';
 import type { SendKind } from '@/data';
 import { useStore } from '@/store';
 import { fonts, useTheme } from '@/theme';
 
 export default function HomeScreen() {
-  const c = useTheme();
+  const theme = useTheme();
   const { startSend, user } = useStore();
 
-  const send = (kind: SendKind) => {
+  const handleStartSend = (kind: SendKind) => {
     startSend(kind);
     router.push('/send');
   };
 
-  const action = (kind: SendKind, icon: IconName, title: string, detail: string) => (
-    <Pressable onPress={() => send(kind)} accessibilityRole="button" style={{ flex: 1 }}>
+  const renderSendAction = (kind: SendKind, icon: IconName, title: string, detail: string) => (
+    <Pressable onPress={() => handleStartSend(kind)} accessibilityRole="button" style={{ flex: 1 }}>
       <Card style={{ flex: 1, padding: 12, minHeight: 138, justifyContent: 'space-between', gap: 14 }}>
         <Tile icon={icon} tone="accent" size={42} />
         <View style={{ gap: 2 }}>
-          <T v="display" style={{ fontSize: 14.5, lineHeight: 19 }}>
+          <AppText variant="display" style={{ fontSize: 14.5, lineHeight: 19 }}>
             {title}
-          </T>
-          <T v="small" style={{ fontSize: 12.5, lineHeight: 16 }}>
+          </AppText>
+          <AppText variant="small" style={{ fontSize: 12.5, lineHeight: 16 }}>
             {detail}
-          </T>
+          </AppText>
         </View>
       </Card>
     </Pressable>
@@ -46,29 +46,29 @@ export default function HomeScreen() {
             width: 44,
             height: 44,
             borderRadius: 22,
-            backgroundColor: c.brandTint,
+            backgroundColor: theme.brandTint,
             alignItems: 'center',
             justifyContent: 'center',
           }}>
           {user ? (
-            <Text style={{ fontFamily: fonts.display, fontSize: 15, color: c.brandText }}>
+            <Text style={{ fontFamily: fonts.display, fontSize: 15, color: theme.brandText }}>
               {user.firstName[0]}
               {user.lastName[0]}
             </Text>
           ) : (
-            <Icon name="user" size={20} color={c.brandText} />
+            <Icon name="user" size={20} color={theme.brandText} />
           )}
         </Pressable>
       </View>
 
       <View
-        style={{ backgroundColor: c.hero, borderRadius: 26, padding: 22, paddingTop: 24, paddingBottom: 26, gap: 14 }}>
-        <Text style={{ fontSize: 14, fontWeight: '600', color: c.heroSub }}>
+        style={{ backgroundColor: theme.hero, borderRadius: 26, padding: 22, paddingTop: 24, paddingBottom: 26, gap: 14 }}>
+        <Text style={{ fontSize: 14, fontWeight: '600', color: theme.heroSub }}>
           {user ? `Hello, ${user.firstName}` : 'Welcome to Wleesend'}
         </Text>
         <Text
           accessibilityRole="header"
-          style={{ fontFamily: fonts.displayMedium, fontSize: 25, lineHeight: 32, color: c.onBrand }}>
+          style={{ fontFamily: fonts.displayMedium, fontSize: 25, lineHeight: 32, color: theme.onBrand }}>
           Send data, utility and shopping voucher credit to friends and relatives around the world.
         </Text>
         <View
@@ -81,27 +81,27 @@ export default function HomeScreen() {
             paddingRight: 12,
             paddingVertical: 6,
             borderRadius: 999,
-            backgroundColor: c.heroChip,
+            backgroundColor: theme.heroChip,
           }}>
           <Image
             source={require('@/assets/images/flag-liberia.png')}
             style={{ width: 22, height: 12, borderRadius: 2 }}
             accessibilityLabel="Flag of Liberia"
           />
-          <Text style={{ fontSize: 12.5, fontWeight: '600', color: c.onBrand }}>
+          <Text style={{ fontSize: 12.5, fontWeight: '600', color: theme.onBrand }}>
             Currently available in Liberia only
           </Text>
         </View>
       </View>
 
       <View style={{ gap: 12 }}>
-        <T v="heading" accessibilityRole="header">
+        <AppText variant="heading" accessibilityRole="header">
           Send credit
-        </T>
+        </AppText>
         <View style={{ flexDirection: 'row', gap: 10 }}>
-          {action('utility', 'bolt', 'Utility credit', 'LEC electricity')}
-          {action('airtime', 'phone', 'Mobile airtime', 'MTN & Orange')}
-          {action('voucher', 'voucher', 'Shopping voucher', 'Stop & Shop')}
+          {renderSendAction('utility', 'bolt', 'Utility credit', 'LEC electricity')}
+          {renderSendAction('airtime', 'phone', 'Mobile airtime', 'MTN & Orange')}
+          {renderSendAction('voucher', 'voucher', 'Shopping voucher', 'Stop & Shop')}
         </View>
       </View>
 

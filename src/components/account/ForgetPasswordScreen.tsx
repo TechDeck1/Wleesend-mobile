@@ -35,7 +35,7 @@ function parseOtp(text: string): string {
 }
 
 export default function ForgotPasswordScreen({ onBack }: Props) {
-  const t = useTheme();
+  const palette = useTheme();
 
   const [step, setStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
@@ -43,36 +43,36 @@ export default function ForgotPasswordScreen({ onBack }: Props) {
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(0);
-  const [successVisible, setSuccessVisible] = useState(false);
+  const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
 
   useEffect(() => {
     if (secondsLeft <= 0) return;
-    const id = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
-    return () => clearTimeout(id);
+    const timeoutId = setTimeout(() => setSecondsLeft((secondsRemaining) => secondsRemaining - 1), 1000);
+    return () => clearTimeout(timeoutId);
   }, [secondsLeft]);
 
-  const run = async (task: () => Promise<void>) => {
+  const runAsyncTask = async (task: () => Promise<void>) => {
     setError(null);
-    setLoading(true);
+    setIsLoading(true);
     try {
       await task();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Something went wrong. Try again.');
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Something went wrong. Try again.');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   const handleSendOtp = () => {
-    const value = email.trim();
-    if (!EMAIL_RE.test(value)) {
+    const trimmedEmail = email.trim();
+    if (!EMAIL_RE.test(trimmedEmail)) {
       setError('Enter a valid email address.');
       return;
     }
-    run(async () => {
-      await forgotPinRequest({ email: value });
+    runAsyncTask(async () => {
+      await forgotPinRequest({ email: trimmedEmail });
       setOtp('');
       setSecondsLeft(RESEND_SECONDS);
       setStep('otp');
@@ -81,7 +81,7 @@ export default function ForgotPasswordScreen({ onBack }: Props) {
 
   const handleResend = () => {
     if (secondsLeft > 0) return;
-    run(async () => {
+    runAsyncTask(async () => {
       await forgotPinRequest({ email: email.trim() });
       setOtp('');
       setSecondsLeft(RESEND_SECONDS);
@@ -93,7 +93,7 @@ export default function ForgotPasswordScreen({ onBack }: Props) {
       setError(`Enter the ${OTP_LENGTH}-digit code.`);
       return;
     }
-    run(async () => {
+    runAsyncTask(async () => {
       await verifyCode({ email: email.trim(), code: otp });
       setPassword('');
       setConfirm('');
@@ -110,14 +110,14 @@ export default function ForgotPasswordScreen({ onBack }: Props) {
       setError('The passwords do not match.');
       return;
     }
-    run(async () => {
+    runAsyncTask(async () => {
       await updatePin({
         email: email.trim(),
         code: otp,
         newPin: password,
         confirmPin: confirm,
       });
-      setSuccessVisible(true);
+      setIsSuccessModalVisible(true);
     });
   };
 
@@ -143,7 +143,7 @@ export default function ForgotPasswordScreen({ onBack }: Props) {
   }[step];
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: t.ground }]}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: palette.ground }]}>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -156,28 +156,28 @@ export default function ForgotPasswordScreen({ onBack }: Props) {
             hitSlop={12}
             style={styles.back}
           >
-            <View style={[styles.backCircle, { backgroundColor: t.card, borderColor: t.line }]}>
-              <View style={[styles.chevron, { borderColor: t.brandText }]} />
+            <View style={[styles.backCircle, { backgroundColor: palette.card, borderColor: palette.line }]}>
+              <View style={[styles.chevron, { borderColor: palette.brandText }]} />
             </View>
-            <Text style={[styles.backText, { color: t.brandText, fontFamily: fonts.displayMedium }]}>
+            <Text style={[styles.backText, { color: palette.brandText, fontFamily: fonts.displayMedium }]}>
               {step === 'otp' ? 'Change email' : 'Sign in'}
             </Text>
           </Pressable>
 
-          <View style={[styles.card, { backgroundColor: t.card, borderColor: t.line }]}>
-            <Text style={[styles.title, { color: t.ink, fontFamily: fonts.display }]}>
+          <View style={[styles.card, { backgroundColor: palette.card, borderColor: palette.line }]}>
+            <Text style={[styles.title, { color: palette.ink, fontFamily: fonts.display }]}>
               {copy.title}
             </Text>
-            <Text style={[styles.body, { color: t.muted }]}>{copy.body}</Text>
+            <Text style={[styles.body, { color: palette.muted }]}>{copy.body}</Text>
 
             {step === 'email' && (
               <>
-                <Text style={[styles.label, { color: t.label }]}>Email</Text>
+                <Text style={[styles.label, { color: palette.label }]}>Email</Text>
                 <TextField
-                  t={t}
+                  palette={palette}
                   value={email}
-                  onChangeText={(v) => {
-                    setEmail(v);
+                  onChangeText={(emailValue) => {
+                    setEmail(emailValue);
                     if (error) setError(null);
                   }}
                   placeholder="you@example.com"
@@ -188,36 +188,36 @@ export default function ForgotPasswordScreen({ onBack }: Props) {
                   textContentType="emailAddress"
                   returnKeyType="send"
                   onSubmitEditing={handleSendOtp}
-                  editable={!loading}
+                  editable={!isLoading}
                   hasError={!!error}
                 />
-                <ErrorText t={t} message={error} />
-                <PrimaryButton t={t} label="Send code" loading={loading} onPress={handleSendOtp} />
+                <ErrorText palette={palette} message={error} />
+                <PrimaryButton palette={palette} label="Send code" isLoading={isLoading} onPress={handleSendOtp} />
               </>
             )}
 
             {step === 'otp' && (
               <>
                 <OtpInput
-                  t={t}
+                  palette={palette}
                   value={otp}
-                  onChange={(v) => {
-                    setOtp(v);
+                  onChange={(otpValue) => {
+                    setOtp(otpValue);
                     if (error) setError(null);
                   }}
                   hasError={!!error}
-                  disabled={loading}
+                  disabled={isLoading}
                 />
-                <ErrorText t={t} message={error} />
-                <PrimaryButton t={t} label="Verify code" loading={loading} onPress={handleVerifyOtp} />
+                <ErrorText palette={palette} message={error} />
+                <PrimaryButton palette={palette} label="Verify code" isLoading={isLoading} onPress={handleVerifyOtp} />
 
                 <Pressable
                   onPress={handleResend}
-                  disabled={secondsLeft > 0 || loading}
+                  disabled={secondsLeft > 0 || isLoading}
                   accessibilityRole="button"
                   style={styles.linkWrap}
                 >
-                  <Text style={[styles.link, { color: secondsLeft > 0 ? t.muted : t.brandText }]}>
+                  <Text style={[styles.link, { color: secondsLeft > 0 ? palette.muted : palette.brandText }]}>
                     {secondsLeft > 0 ? `Resend code in ${secondsLeft}s` : 'Resend code'}
                   </Text>
                 </Pressable>
@@ -226,41 +226,41 @@ export default function ForgotPasswordScreen({ onBack }: Props) {
 
             {step === 'reset' && (
               <>
-                <Text style={[styles.label, { color: t.label }]}>New password</Text>
+                <Text style={[styles.label, { color: palette.label }]}>New password</Text>
                 <PasswordField
-                  t={t}
+                  palette={palette}
                   value={password}
-                  onChangeText={(v) => {
-                    setPassword(v);
+                  onChangeText={(passwordValue) => {
+                    setPassword(passwordValue);
                     if (error) setError(null);
                   }}
                   placeholder="New password"
                   returnKeyType="next"
-                  editable={!loading}
+                  editable={!isLoading}
                   hasError={!!error}
                 />
 
-                <Text style={[styles.label, styles.labelSpaced, { color: t.label }]}>
+                <Text style={[styles.label, styles.labelSpaced, { color: palette.label }]}>
                   Confirm password
                 </Text>
                 <PasswordField
-                  t={t}
+                  palette={palette}
                   value={confirm}
-                  onChangeText={(v) => {
-                    setConfirm(v);
+                  onChangeText={(confirmValue) => {
+                    setConfirm(confirmValue);
                     if (error) setError(null);
                   }}
                   placeholder="Re-enter new password"
                   returnKeyType="done"
                   onSubmitEditing={handleResetPassword}
-                  editable={!loading}
+                  editable={!isLoading}
                   hasError={!!error}
                 />
-                <ErrorText t={t} message={error} />
+                <ErrorText palette={palette} message={error} />
                 <PrimaryButton
-                  t={t}
+                  palette={palette}
                   label="Update password"
-                  loading={loading}
+                  isLoading={isLoading}
                   onPress={handleResetPassword}
                 />
               </>
@@ -270,8 +270,8 @@ export default function ForgotPasswordScreen({ onBack }: Props) {
       </KeyboardAvoidingView>
 
       <SuccessModal
-        t={t}
-        visible={successVisible}
+        palette={palette}
+        isVisible={isSuccessModalVisible}
         title="Password updated"
         message="Your password has been changed. Sign in with your new password to continue."
         buttonLabel="Back to sign in"
@@ -282,15 +282,15 @@ export default function ForgotPasswordScreen({ onBack }: Props) {
 }
 
 function SuccessModal({
-  t,
-  visible,
+  palette,
+  isVisible,
   title,
   message,
   buttonLabel,
   onPress,
 }: {
-  t: Palette;
-  visible: boolean;
+  palette: Palette;
+  isVisible: boolean;
   title: string;
   message: string;
   buttonLabel: string;
@@ -299,35 +299,35 @@ function SuccessModal({
   const [scale] = useState(() => new Animated.Value(0.6));
 
   useEffect(() => {
-    if (!visible) return;
+    if (!isVisible) return;
     scale.setValue(0.6);
     Animated.spring(scale, { toValue: 1, friction: 5, tension: 80, useNativeDriver: true }).start();
-  }, [visible, scale]);
+  }, [isVisible, scale]);
 
   return (
     <Modal
-      visible={visible}
+      visible={isVisible}
       transparent
       animationType="fade"
       statusBarTranslucent
       onRequestClose={onPress}
     >
       <View style={styles.backdrop}>
-        <View style={[styles.modalCard, { backgroundColor: t.card, borderColor: t.line }]}>
+        <View style={[styles.modalCard, { backgroundColor: palette.card, borderColor: palette.line }]}>
           <Animated.View
-            style={[styles.tickRing, { backgroundColor: t.brandTint, transform: [{ scale }] }]}
+            style={[styles.tickRing, { backgroundColor: palette.brandTint, transform: [{ scale }] }]}
           >
-            <View style={[styles.tickCircle, { backgroundColor: t.brand }]}>
-              <View style={[styles.tick, { borderColor: t.onBrand }]} />
+            <View style={[styles.tickCircle, { backgroundColor: palette.brand }]}>
+              <View style={[styles.tick, { borderColor: palette.onBrand }]} />
             </View>
           </Animated.View>
 
-          <Text style={[styles.modalTitle, { color: t.ink, fontFamily: fonts.display }]}>
+          <Text style={[styles.modalTitle, { color: palette.ink, fontFamily: fonts.display }]}>
             {title}
           </Text>
-          <Text style={[styles.modalBody, { color: t.muted }]}>{message}</Text>
+          <Text style={[styles.modalBody, { color: palette.muted }]}>{message}</Text>
 
-          <PrimaryButton t={t} label={buttonLabel} onPress={onPress} style={styles.modalButton} />
+          <PrimaryButton palette={palette} label={buttonLabel} onPress={onPress} style={styles.modalButton} />
         </View>
       </View>
     </Modal>
@@ -335,30 +335,30 @@ function SuccessModal({
 }
 
 type TextFieldProps = React.ComponentProps<typeof TextInput> & {
-  t: Palette;
+  palette: Palette;
   hasError?: boolean;
 };
 
-function TextField({ t, hasError, style, ...rest }: TextFieldProps) {
-  const [focused, setFocused] = useState(false);
+function TextField({ palette, hasError, style, ...rest }: TextFieldProps) {
+  const [isFocused, setIsFocused] = useState(false);
   return (
     <TextInput
       {...rest}
-      onFocus={(e) => {
-        setFocused(true);
-        rest.onFocus?.(e);
+      onFocus={(focusEvent) => {
+        setIsFocused(true);
+        rest.onFocus?.(focusEvent);
       }}
-      onBlur={(e) => {
-        setFocused(false);
-        rest.onBlur?.(e);
+      onBlur={(blurEvent) => {
+        setIsFocused(false);
+        rest.onBlur?.(blurEvent);
       }}
-      placeholderTextColor={t.muted}
+      placeholderTextColor={palette.muted}
       style={[
         styles.input,
         {
-          backgroundColor: t.field,
-          color: t.ink,
-          borderColor: hasError ? t.accent : focused ? t.brand : t.fieldBorder,
+          backgroundColor: palette.field,
+          color: palette.ink,
+          borderColor: hasError ? palette.accent : isFocused ? palette.brand : palette.fieldBorder,
         },
         style,
       ]}
@@ -367,46 +367,46 @@ function TextField({ t, hasError, style, ...rest }: TextFieldProps) {
 }
 
 function PasswordField(props: TextFieldProps) {
-  const [visible, setVisible] = useState(false);
-  const { t } = props;
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const { palette } = props;
   return (
     <View>
       <TextField
         {...props}
-        secureTextEntry={!visible}
+        secureTextEntry={!isPasswordVisible}
         autoCapitalize="none"
         autoCorrect={false}
         textContentType="newPassword"
         style={{ paddingRight: 64 }}
       />
       <Pressable
-        onPress={() => setVisible((v) => !v)}
+        onPress={() => setIsPasswordVisible((isVisible) => !isVisible)}
         accessibilityRole="button"
-        accessibilityLabel={visible ? 'Hide password' : 'Show password'}
+        accessibilityLabel={isPasswordVisible ? 'Hide password' : 'Show password'}
         hitSlop={8}
         style={styles.eye}
       >
-        <Text style={[styles.eyeText, { color: t.brandText }]}>{visible ? 'Hide' : 'Show'}</Text>
+        <Text style={[styles.eyeText, { color: palette.brandText }]}>{isPasswordVisible ? 'Hide' : 'Show'}</Text>
       </Pressable>
     </View>
   );
 }
 
 function OtpInput({
-  t,
+  palette,
   value,
   onChange,
   hasError,
   disabled,
 }: {
-  t: Palette;
+  palette: Palette;
   value: string;
-  onChange: (v: string) => void;
+  onChange: (otpValue: string) => void;
   hasError: boolean;
   disabled: boolean;
 }) {
   const inputRef = useRef<TextInputInstance>(null);
-  const [focused, setFocused] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
 
   useEffect(() => {
     const id = setTimeout(() => inputRef.current?.focus(), 250);
@@ -419,19 +419,19 @@ function OtpInput({
     <Pressable onPress={() => inputRef.current?.focus()} accessibilityLabel="One-time code">
       <View style={styles.otpRow}>
         {Array.from({ length: OTP_LENGTH }).map((_, i) => {
-          const isActive = focused && i === activeIndex;
+          const isActive = isFocused && i === activeIndex;
           return (
             <View
               key={i}
               style={[
                 styles.otpBox,
                 {
-                  backgroundColor: t.field,
-                  borderColor: hasError ? t.accent : isActive ? t.brand : t.fieldBorder,
+                  backgroundColor: palette.field,
+                  borderColor: hasError ? palette.accent : isActive ? palette.brand : palette.fieldBorder,
                 },
               ]}
             >
-              <Text style={[styles.otpDigit, { color: t.ink, fontFamily: fonts.display }]}>
+              <Text style={[styles.otpDigit, { color: palette.ink, fontFamily: fonts.display }]}>
                 {value[i] ?? ''}
               </Text>
             </View>
@@ -442,9 +442,9 @@ function OtpInput({
       <TextInput
         ref={inputRef}
         value={value}
-        onChangeText={(v) => onChange(parseOtp(v))}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
+        onChangeText={(otpValue) => onChange(parseOtp(otpValue))}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
         keyboardType="number-pad"
         textContentType="oneTimeCode"
         autoComplete="sms-otp"
@@ -456,43 +456,43 @@ function OtpInput({
   );
 }
 
-function ErrorText({ t, message }: { t: Palette; message: string | null }) {
+function ErrorText({ palette, message }: { palette: Palette; message: string | null }) {
   if (!message) return null;
   return (
-    <Text accessibilityLiveRegion="polite" style={[styles.error, { color: t.accentText }]}>
+    <Text accessibilityLiveRegion="polite" style={[styles.error, { color: palette.accentText }]}>
       {message}
     </Text>
   );
 }
 
 function PrimaryButton({
-  t,
+  palette,
   label,
   onPress,
-  loading,
+  isLoading,
   style,
 }: {
-  t: Palette;
+  palette: Palette;
   label: string;
   onPress: () => void;
-  loading?: boolean;
+  isLoading?: boolean;
   style?: React.ComponentProps<typeof View>['style'];
 }) {
   return (
     <Pressable
       onPress={onPress}
-      disabled={loading}
+      disabled={isLoading}
       accessibilityRole="button"
       style={({ pressed }) => [
         styles.button,
-        { backgroundColor: t.brand, opacity: pressed || loading ? 0.85 : 1 },
+        { backgroundColor: palette.brand, opacity: pressed || isLoading ? 0.85 : 1 },
         style,
       ]}
     >
-      {loading ? (
-        <ActivityIndicator color={t.onBrand} />
+      {isLoading ? (
+        <ActivityIndicator color={palette.onBrand} />
       ) : (
-        <Text style={[styles.buttonText, { color: t.onBrand, fontFamily: fonts.displayMedium }]}>
+        <Text style={[styles.buttonText, { color: palette.onBrand, fontFamily: fonts.displayMedium }]}>
           {label}
         </Text>
       )}

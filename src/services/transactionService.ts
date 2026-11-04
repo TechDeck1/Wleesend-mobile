@@ -1,5 +1,5 @@
 import { apiClient } from '@/api/client';
-import type { Brand } from '@/components/brand-logo';
+import type { Brand } from '@/components/BrandLogo';
 import { API_ENDPOINTS } from '@/config/api';
 import type { SendKind } from '@/data';
 import type { TransactionHistoryResponse } from '@/types/transactions';
@@ -7,11 +7,11 @@ import { operatorForPhone } from '@/utils/airtime';
 
 export const TRANSACTIONS_PAGE_SIZE = 20;
 
-export function brandForTransaction(t: { kind: SendKind; receiver: string }): Brand {
-  if (t.kind === 'utility') return 'lec';
-  if (t.kind === 'voucher') return 'voucher';
+export function brandForTransaction(transaction: { kind: SendKind; receiver: string }): Brand {
+  if (transaction.kind === 'utility') return 'lec';
+  if (transaction.kind === 'voucher') return 'voucher';
 
-  const digits = t.receiver.replace(/\D/g, '');
+  const digits = transaction.receiver.replace(/\D/g, '');
   const local = digits.startsWith('231') ? digits.slice(3) : digits;
   return operatorForPhone(local) ?? 'airtime';
 }

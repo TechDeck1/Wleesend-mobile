@@ -78,19 +78,19 @@ export function Icon({ name, size = 24, color }: { name: IconName; size?: number
 
 type TextVariant = 'body' | 'muted' | 'small' | 'strong' | 'label' | 'title' | 'heading' | 'display';
 
-export function T({ v = 'body', style, ...rest }: TextProps & { v?: TextVariant }) {
-  const c = useTheme();
+export function AppText({ variant = 'body', style, ...rest }: TextProps & { variant?: TextVariant }) {
+  const theme = useTheme();
   const variants = {
-    body: { fontSize: 15, lineHeight: 22, color: c.ink },
-    muted: { fontSize: 15, lineHeight: 22, color: c.muted },
-    small: { fontSize: 13, lineHeight: 18, color: c.muted },
-    strong: { fontSize: 15, lineHeight: 20, color: c.ink, fontWeight: '600' },
-    label: { fontSize: 13, lineHeight: 18, color: c.label, fontWeight: '600' },
-    title: { fontSize: 28, lineHeight: 34, color: c.ink, fontFamily: fonts.display },
-    heading: { fontSize: 17, lineHeight: 22, color: c.ink, fontFamily: fonts.display },
-    display: { fontSize: 16, lineHeight: 21, color: c.ink, fontFamily: fonts.display },
+    body: { fontSize: 15, lineHeight: 22, color: theme.ink },
+    muted: { fontSize: 15, lineHeight: 22, color: theme.muted },
+    small: { fontSize: 13, lineHeight: 18, color: theme.muted },
+    strong: { fontSize: 15, lineHeight: 20, color: theme.ink, fontWeight: '600' },
+    label: { fontSize: 13, lineHeight: 18, color: theme.label, fontWeight: '600' },
+    title: { fontSize: 28, lineHeight: 34, color: theme.ink, fontFamily: fonts.display },
+    heading: { fontSize: 17, lineHeight: 22, color: theme.ink, fontFamily: fonts.display },
+    display: { fontSize: 16, lineHeight: 21, color: theme.ink, fontFamily: fonts.display },
   } as const;
-  return <Text {...rest} style={[variants[v], style]} />;
+  return <Text {...rest} style={[variants[variant], style]} />;
 }
 
 /* ---------- Layout ---------- */
@@ -120,7 +120,7 @@ const FIELD_CLEARANCE = 16;
 const RevealContext = createContext<() => void>(() => {});
 
 function KeyboardDoneBar({ bottom }: { bottom: number }) {
-  const c = useTheme();
+  const theme = useTheme();
   return (
     <View
       style={{
@@ -132,20 +132,20 @@ function KeyboardDoneBar({ bottom }: { bottom: number }) {
         flexDirection: 'row',
         justifyContent: 'flex-end',
         alignItems: 'center',
-        backgroundColor: c.card,
+        backgroundColor: theme.card,
         borderTopWidth: 1,
-        borderTopColor: c.line,
+        borderTopColor: theme.line,
         paddingHorizontal: 20,
       }}>
       <Pressable onPress={Keyboard.dismiss} accessibilityRole="button" hitSlop={10}>
-        <Text style={{ color: c.brandText, fontSize: 16, fontWeight: '600' }}>Done</Text>
+        <Text style={{ color: theme.brandText, fontSize: 16, fontWeight: '600' }}>Done</Text>
       </Pressable>
     </View>
   );
 }
 
 export function Screen({ children, header, footer, gap = 20, contentContainerStyle, onScrollNearEnd }: ScreenProps) {
-  const c = useTheme();
+  const theme = useTheme();
   const root = useRef<ViewInstance>(null);
   const scroll = useRef<ScrollViewInstance>(null);
   const scrollY = useRef(0);
@@ -168,10 +168,10 @@ export function Screen({ children, header, footer, gap = 20, contentContainerSty
   useEffect(() => {
     const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
     const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
-    const show = Keyboard.addListener(showEvent, (e) => {
-      keyboardTop.current = e.endCoordinates.screenY;
+    const show = Keyboard.addListener(showEvent, (keyboardEvent) => {
+      keyboardTop.current = keyboardEvent.endCoordinates.screenY;
       if (Platform.OS === 'ios') {
-        root.current?.measureInWindow((_x, y, _w, h) => setBarBottom(y + h - e.endCoordinates.screenY));
+        root.current?.measureInWindow((_x, y, _w, height) => setBarBottom(y + height - keyboardEvent.endCoordinates.screenY));
       }
       // Wait for the keyboard to finish sliding in and the inset to apply.
       setTimeout(reveal, Platform.OS === 'ios' ? 320 : 60);
@@ -186,10 +186,10 @@ export function Screen({ children, header, footer, gap = 20, contentContainerSty
     };
   }, [reveal]);
 
-  const barShown = barBottom !== null && barBottom > 0;
+  const isBarShown = barBottom !== null && barBottom > 0;
   return (
     <RevealContext.Provider value={reveal}>
-      <SafeAreaView ref={root} edges={['top']} style={{ flex: 1, backgroundColor: c.ground }}>
+      <SafeAreaView ref={root} edges={['top']} style={{ flex: 1, backgroundColor: theme.ground }}>
         {header}
         <ScrollView
           ref={scroll}
@@ -199,14 +199,14 @@ export function Screen({ children, header, footer, gap = 20, contentContainerSty
               flexGrow: 1,
               padding: 20,
               paddingTop: header ? 20 : 12,
-              paddingBottom: 20 + (barShown ? DONE_BAR_HEIGHT + FIELD_CLEARANCE : 0),
+              paddingBottom: 20 + (isBarShown ? DONE_BAR_HEIGHT + FIELD_CLEARANCE : 0),
               gap,
             },
             contentContainerStyle,
           ]}
-          onScroll={(e) => {
-            scrollY.current = e.nativeEvent.contentOffset.y;
-            const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
+          onScroll={(scrollEvent) => {
+            scrollY.current = scrollEvent.nativeEvent.contentOffset.y;
+            const { contentOffset, contentSize, layoutMeasurement } = scrollEvent.nativeEvent;
             if (contentOffset.y + layoutMeasurement.height >= contentSize.height - 240) onScrollNearEnd?.();
           }}
           scrollEventThrottle={16}
@@ -217,21 +217,21 @@ export function Screen({ children, header, footer, gap = 20, contentContainerSty
           {children}
         </ScrollView>
         {footer}
-        {barShown ? <KeyboardDoneBar bottom={barBottom} /> : null}
+        {isBarShown ? <KeyboardDoneBar bottom={barBottom} /> : null}
       </SafeAreaView>
     </RevealContext.Provider>
   );
 }
 
 export function Footer({ children, row }: { children: ReactNode; row?: boolean }) {
-  const c = useTheme();
+  const theme = useTheme();
   const insets = useSafeAreaInsets();
   return (
     <View
       style={{
-        backgroundColor: c.card,
+        backgroundColor: theme.card,
         borderTopWidth: 1,
-        borderTopColor: c.line,
+        borderTopColor: theme.line,
         paddingHorizontal: 20,
         paddingTop: 14,
         paddingBottom: Math.max(insets.bottom, 16),
@@ -245,7 +245,7 @@ export function Footer({ children, row }: { children: ReactNode; row?: boolean }
 }
 
 export function NavBar({ title, step, onBack }: { title: string; step?: 1 | 2; onBack?: () => void }) {
-  const c = useTheme();
+  const theme = useTheme();
   return (
     <View>
       <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, gap: 2 }}>
@@ -254,22 +254,22 @@ export function NavBar({ title, step, onBack }: { title: string; step?: 1 | 2; o
           accessibilityRole="button"
           accessibilityLabel="Back"
           style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
-          <Icon name="left" size={22} color={c.ink} />
+          <Icon name="left" size={22} color={theme.ink} />
         </Pressable>
-        <T v="heading" style={{ flex: 1 }}>
+        <AppText variant="heading" style={{ flex: 1 }}>
           {title}
-        </T>
+        </AppText>
         {step ? (
-          <T v="small" style={{ fontWeight: '600', paddingRight: 12 }}>
+          <AppText variant="small" style={{ fontWeight: '600', paddingRight: 12 }}>
             Step {step} of 2
-          </T>
+          </AppText>
         ) : null}
       </View>
       {step ? (
         <View style={{ flexDirection: 'row', gap: 6, paddingHorizontal: 20, paddingTop: 8 }}>
-          <View style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: c.brandText }} />
+          <View style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: theme.brandText }} />
           <View
-            style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: step === 2 ? c.brandText : c.fieldBorder }}
+            style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: step === 2 ? theme.brandText : theme.fieldBorder }}
           />
         </View>
       ) : null}
@@ -278,9 +278,9 @@ export function NavBar({ title, step, onBack }: { title: string; step?: 1 | 2; o
 }
 
 export function Card({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
-  const c = useTheme();
+  const theme = useTheme();
   return (
-    <View style={[{ backgroundColor: c.card, borderWidth: 1, borderColor: c.line, borderRadius: 20 }, style]}>
+    <View style={[{ backgroundColor: theme.card, borderWidth: 1, borderColor: theme.line, borderRadius: 20 }, style]}>
       {children}
     </View>
   );
@@ -289,11 +289,11 @@ export function Card({ children, style }: { children: ReactNode; style?: StylePr
 type TileTone = 'brand' | 'accent' | 'soft';
 
 export function Tile({ icon, tone = 'brand', size = 48 }: { icon: IconName; tone?: TileTone; size?: number }) {
-  const c = useTheme();
+  const theme = useTheme();
   const tones = {
-    brand: [c.brandTint, c.brandText],
-    accent: [c.accent, c.onBrand],
-    soft: [c.accentTint, c.accentTintText],
+    brand: [theme.brandTint, theme.brandText],
+    accent: [theme.accent, theme.onBrand],
+    soft: [theme.accentTint, theme.accentTintText],
   } as const;
   const [background, foreground] = tones[tone];
   return (
@@ -323,11 +323,11 @@ type ButtonProps = {
 };
 
 export function Button({ label, onPress, variant = 'primary', icon, style, disabled }: ButtonProps) {
-  const c = useTheme();
+  const theme = useTheme();
   const look = {
-    primary: { background: c.accent, color: c.onBrand, border: c.accent, height: 54 },
-    text: { background: 'transparent', color: c.brandText, border: 'transparent', height: 50 },
-    outline: { background: c.card, color: c.accentText, border: c.line, height: 52 },
+    primary: { background: theme.accent, color: theme.onBrand, border: theme.accent, height: 54 },
+    text: { background: 'transparent', color: theme.brandText, border: 'transparent', height: 50 },
+    outline: { background: theme.card, color: theme.accentText, border: theme.line, height: 52 },
   }[variant];
   return (
     <Pressable
@@ -357,7 +357,7 @@ export function Button({ label, onPress, variant = 'primary', icon, style, disab
 
 type SegmentProps = {
   label: string;
-  selected: boolean;
+  isSelected: boolean;
   onPress: () => void;
   shape?: 'block' | 'chip';
   /** Shown before the label, e.g. a brand logo. */
@@ -365,29 +365,29 @@ type SegmentProps = {
 };
 
 /** A selectable option: operator, amount or filter. */
-export function Segment({ label, selected, onPress, shape = 'block', leading }: SegmentProps) {
-  const c = useTheme();
+export function Segment({ label, isSelected, onPress, shape = 'block', leading }: SegmentProps) {
+  const theme = useTheme();
   const chip = shape === 'chip';
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityState={{ selected }}
+      accessibilityState={{ selected: isSelected }}
       style={{
         flex: chip ? undefined : 1,
         height: chip ? 44 : 52,
         paddingHorizontal: chip ? 18 : 8,
         borderRadius: chip ? 22 : 14,
         borderWidth: 1,
-        borderColor: selected ? c.brand : c.fieldBorder,
-        backgroundColor: selected ? c.brand : c.field,
+        borderColor: isSelected ? theme.brand : theme.fieldBorder,
+        backgroundColor: isSelected ? theme.brand : theme.field,
         flexDirection: 'row',
         gap: 8,
         alignItems: 'center',
         justifyContent: 'center',
       }}>
       {leading}
-      <Text style={{ color: selected ? c.onBrand : c.ink, fontSize: chip ? 14 : 15, fontWeight: '600' }}>{label}</Text>
+      <Text style={{ color: isSelected ? theme.onBrand : theme.ink, fontSize: chip ? 14 : 15, fontWeight: '600' }}>{label}</Text>
     </Pressable>
   );
 }
@@ -404,24 +404,24 @@ type FieldProps = TextInputProps & {
 };
 
 export function Field({ label, required, error, right, inputRef, style, onFocus, ...input }: FieldProps) {
-  const c = useTheme();
+  const theme = useTheme();
   const reveal = useContext(RevealContext);
   return (
     <View style={{ gap: 6, flex: 1 }}>
       {label ? (
-        <T v="label">
+        <AppText variant="label">
           {label}
-          {required ? <Text style={{ color: c.accentText }}> *</Text> : null}
-        </T>
+          {required ? <Text style={{ color: theme.accentText }}> *</Text> : null}
+        </AppText>
       ) : null}
       <View style={{ justifyContent: 'center' }}>
         <TextInput
           ref={inputRef}
           accessibilityLabel={label}
-          placeholderTextColor={c.muted}
+          placeholderTextColor={theme.muted}
           {...input}
-          onFocus={(e) => {
-            onFocus?.(e);
+          onFocus={(focusEvent) => {
+            onFocus?.(focusEvent);
             // When the keyboard is already up, moving to another field fires no keyboard event.
             setTimeout(reveal, 50);
           }}
@@ -431,10 +431,10 @@ export function Field({ label, required, error, right, inputRef, style, onFocus,
               paddingHorizontal: 14,
               paddingRight: right ? 48 : 14,
               borderWidth: 1,
-              borderColor: error ? c.accentText : c.fieldBorder,
+              borderColor: error ? theme.accentText : theme.fieldBorder,
               borderRadius: 12,
-              backgroundColor: c.field,
-              color: c.ink,
+              backgroundColor: theme.field,
+              color: theme.ink,
               fontSize: 16,
             },
             style,
@@ -443,7 +443,7 @@ export function Field({ label, required, error, right, inputRef, style, onFocus,
         {right ? <View style={{ position: 'absolute', right: 4 }}>{right}</View> : null}
       </View>
       {error ? (
-        <Text style={{ color: c.accentText, fontSize: 13 }} accessibilityLiveRegion="polite">
+        <Text style={{ color: theme.accentText, fontSize: 13 }} accessibilityLiveRegion="polite">
           {error}
         </Text>
       ) : null}
@@ -452,7 +452,7 @@ export function Field({ label, required, error, right, inputRef, style, onFocus,
 }
 
 export function LinkRow({ icon, label, onPress, last }: { icon: IconName; label: string; onPress: () => void; last?: boolean }) {
-  const c = useTheme();
+  const theme = useTheme();
   return (
     <Pressable
       onPress={onPress}
@@ -464,20 +464,20 @@ export function LinkRow({ icon, label, onPress, last }: { icon: IconName; label:
         minHeight: 60,
         paddingHorizontal: 16,
         borderBottomWidth: last ? 0 : 1,
-        borderBottomColor: c.lineSoft,
+        borderBottomColor: theme.lineSoft,
       }}>
       <Tile icon={icon} size={36} />
-      <T v="strong" style={{ flex: 1 }}>
+      <AppText variant="strong" style={{ flex: 1 }}>
         {label}
-      </T>
-      <Icon name="right" size={18} color={c.muted} />
+      </AppText>
+      <Icon name="right" size={18} color={theme.muted} />
     </Pressable>
   );
 }
 
 /** Label/value line used in the order summary and profile. */
 export function KeyValue({ label, value, first }: { label: string; value: string; first?: boolean }) {
-  const c = useTheme();
+  const theme = useTheme();
   return (
     <View
       style={{
@@ -486,14 +486,14 @@ export function KeyValue({ label, value, first }: { label: string; value: string
         gap: 16,
         paddingVertical: 10,
         borderTopWidth: first ? 0 : 1,
-        borderTopColor: c.lineSoft,
+        borderTopColor: theme.lineSoft,
       }}>
-      <T v="small" style={{ fontSize: 14 }}>
+      <AppText variant="small" style={{ fontSize: 14 }}>
         {label}
-      </T>
-      <T v="strong" style={{ fontSize: 14, flexShrink: 1, textAlign: 'right' }}>
+      </AppText>
+      <AppText variant="strong" style={{ fontSize: 14, flexShrink: 1, textAlign: 'right' }}>
         {value}
-      </T>
+      </AppText>
     </View>
   );
 }

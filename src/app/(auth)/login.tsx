@@ -1,4 +1,4 @@
-import { Button, Field, Footer, Icon, NavBar, Screen, T, Tile } from '@/components/ui';
+import { Button, Field, Footer, Icon, NavBar, Screen, AppText, Tile } from '@/components/UiComponents';
 import { Pressable, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { useTheme } from '@/theme';
@@ -7,22 +7,22 @@ import { useState } from 'react';
 
 
 export default function LogInScreen() {
-  const c = useTheme();
+  const theme = useTheme();
   const { logIn, authError } = useStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [error, setError] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const submit = async () => {
-    if (submitting) return;
+  const handleLoginSubmit = async () => {
+    if (isSubmitting) return;
     if (!email.trim() || !password) {
       setError('Enter your email and password.');
       return;
     }
 
-    setSubmitting(true);
+    setIsSubmitting(true);
     setError('');
     try {
       await logIn(email, password);
@@ -35,13 +35,13 @@ export default function LogInScreen() {
           : 'Unable to log in. Please try again.',
       );
     } finally {
-      setSubmitting(false);
+      setIsSubmitting(false);
     }
 
   };
 
-  const edit = (setter: (v: string) => void) => (v: string) => {
-    setter(v);
+  const handleFieldChange = (setter: (fieldValue: string) => void) => (fieldValue: string) => {
+    setter(fieldValue);
     setError('');
   };
 
@@ -51,14 +51,14 @@ export default function LogInScreen() {
       header={<NavBar title="Log in" />}
       footer={
         <Footer>
-          <Button label={submitting ? 'Logging in...' : 'Log in'} onPress={() => void submit()} />
+          <Button label={isSubmitting ? 'Logging in...' : 'Log in'} onPress={() => void handleLoginSubmit()} />
         </Footer>
       }>
       <View style={{ alignItems: 'center', gap: 8, paddingTop: 4 }}>
         <Tile icon="user" size={64} />
-        <T v="title" style={{ textAlign: 'center' }} accessibilityRole="header">
+        <AppText variant="title" style={{ textAlign: 'center' }} accessibilityRole="header">
           My account log in
-        </T>
+        </AppText>
       </View>
 
       <View>
@@ -70,27 +70,27 @@ export default function LogInScreen() {
           autoComplete="email"
           textContentType="emailAddress"
           value={email}
-          onChangeText={edit(setEmail)}
+          onChangeText={handleFieldChange(setEmail)}
         />
       </View>
       <View>
         <Field
           label="Password"
           placeholder="Enter password"
-          secureTextEntry={!showPassword}
+          secureTextEntry={!isPasswordVisible}
           autoCapitalize="none"
           autoComplete="current-password"
           textContentType="password"
           value={password}
-          onChangeText={edit(setPassword)}
+          onChangeText={handleFieldChange(setPassword)}
           error={error || authError || undefined}
           right={
             <Pressable
-              onPress={() => setShowPassword((v) => !v)}
+              onPress={() => setIsPasswordVisible((isVisible) => !isVisible)}
               accessibilityRole="button"
-              accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+              accessibilityLabel={isPasswordVisible ? 'Hide password' : 'Show password'}
               style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
-              <Icon name={showPassword ? 'eyeOff' : 'eye'} size={20} color={c.muted} />
+              <Icon name={isPasswordVisible ? 'eyeOff' : 'eye'} size={20} color={theme.muted} />
             </Pressable>
           }
         />
@@ -101,10 +101,10 @@ export default function LogInScreen() {
           onPress={() => router.push("/forget-password")}
           accessibilityRole="button"
           hitSlop={8}>
-          <Text style={{ color: c.brandText, fontSize: 15, fontWeight: '600' }}>Forgot password?</Text>
+          <Text style={{ color: theme.brandText, fontSize: 15, fontWeight: '600' }}>Forgot password?</Text>
         </Pressable>
         <Pressable onPress={() => router.push('/signup')} accessibilityRole="link" hitSlop={8}>
-          <Text style={{ color: c.brandText, fontSize: 15, fontWeight: '600' }}>Sign up</Text>
+          <Text style={{ color: theme.brandText, fontSize: 15, fontWeight: '600' }}>Sign up</Text>
         </Pressable>
       </View>
     </Screen>

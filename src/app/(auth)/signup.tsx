@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
-import { Button, Field, Footer, Icon, NavBar, Screen, T, Tile } from '@/components/ui';
+import { Button, Field, Footer, Icon, NavBar, Screen, AppText, Tile } from '@/components/UiComponents';
 import { useStore, type User } from '@/store';
 import { useTheme } from '@/theme';
 
@@ -15,45 +15,45 @@ type Errors = Partial<Record<keyof Form, string>>;
 const EMPTY: Form = { firstName: '', lastName: '', email: '', phone: '', password: '', confirm: '' };
 const MIN_PASSWORD = 8;
 
-function validate(f: Form): Errors {
-  const e: Errors = {};
-  if (!f.firstName.trim()) e.firstName = 'Enter your first name.';
-  if (!f.lastName.trim()) e.lastName = 'Enter your last name.';
-  if (!/^\S+@\S+\.\S+$/.test(f.email.trim())) e.email = 'Enter a valid email address, like name@example.com.';
-  const digits = f.phone.replace(/\D/g, '');
-  if (digits.length < 7 || digits.length > 15) e.phone = 'Enter a phone number with 7 to 15 digits.';
-  if (f.password.length < MIN_PASSWORD) e.password = `Use at least ${MIN_PASSWORD} characters.`;
-  if (f.confirm !== f.password || !f.confirm) e.confirm = 'The passwords don’t match.';
-  return e;
+function validate(form: Form): Errors {
+  const fieldErrors: Errors = {};
+  if (!form.firstName.trim()) fieldErrors.firstName = 'Enter your first name.';
+  if (!form.lastName.trim()) fieldErrors.lastName = 'Enter your last name.';
+  if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) fieldErrors.email = 'Enter a valid email address, like name@example.com.';
+  const phoneDigits = form.phone.replace(/\D/g, '');
+  if (phoneDigits.length < 7 || phoneDigits.length > 15) fieldErrors.phone = 'Enter a phone number with 7 to 15 digits.';
+  if (form.password.length < MIN_PASSWORD) fieldErrors.password = `Use at least ${MIN_PASSWORD} characters.`;
+  if (form.confirm !== form.password || !form.confirm) fieldErrors.confirm = 'The passwords don’t match.';
+  return fieldErrors;
 }
 
 /** Sign-up form, matching the website's Create Your Account page. */
 export default function SignUpScreen() {
-  const c = useTheme();
+  const theme = useTheme();
   const { signUp } = useStore();
   const [form, setForm] = useState<Form>(EMPTY);
   const [errors, setErrors] = useState<Errors>({});
-  const [submitted, setSubmitted] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [serverError, setServerError] = useState('');
 
-  const set = (key: keyof Form) => (value: string) => {
-    const next = { ...form, [key]: value };
-    setForm(next);
+  const handleFieldChange = (key: keyof Form) => (value: string) => {
+    const updatedForm = { ...form, [key]: value };
+    setForm(updatedForm);
     setServerError('');
-    if (submitted) setErrors(validate(next));
+    if (hasSubmitted) setErrors(validate(updatedForm));
   };
 
-  const create = async () => {
-    if (submitting) return;
-    setSubmitted(true);
+  const handleCreateAccount = async () => {
+    if (isSubmitting) return;
+    setHasSubmitted(true);
     const found = validate(form);
     setErrors(found);
     if (Object.keys(found).length > 0) return;
 
-    setSubmitting(true);
+    setIsSubmitting(true);
     try {
       await signUp(
         {
@@ -73,17 +73,17 @@ export default function SignUpScreen() {
           : 'Unable to create your account. Please try again.',
       );
     } finally {
-      setSubmitting(false);
+      setIsSubmitting(false);
     }
   };
 
-  const eye = (shown: boolean, toggle: () => void, what: string) => (
+  const renderPasswordVisibilityToggle = (isVisible: boolean, onToggle: () => void, fieldLabel: string) => (
     <Pressable
-      onPress={toggle}
+      onPress={onToggle}
       accessibilityRole="button"
-      accessibilityLabel={shown ? `Hide ${what}` : `Show ${what}`}
+      accessibilityLabel={isVisible ? `Hide ${fieldLabel}` : `Show ${fieldLabel}`}
       style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
-      <Icon name={shown ? 'eyeOff' : 'eye'} size={20} color={c.muted} />
+      <Icon name={isVisible ? 'eyeOff' : 'eye'} size={20} color={theme.muted} />
     </Pressable>
   );
 
@@ -93,17 +93,17 @@ export default function SignUpScreen() {
       header={<NavBar title="Sign up" />}
       footer={
         <Footer>
-          <Button label={submitting ? 'Creating account...' : 'Create account'} onPress={() => void create()} />
+          <Button label={isSubmitting ? 'Creating account...' : 'Create account'} onPress={() => void handleCreateAccount()} />
         </Footer>
       }>
       <View style={{ alignItems: 'center', gap: 8, paddingTop: 4 }}>
         <Tile icon="personAdd" size={64} />
-        <T v="title" style={{ textAlign: 'center' }} accessibilityRole="header">
+        <AppText variant="title" style={{ textAlign: 'center' }} accessibilityRole="header">
           Create your account
-        </T>
-        <T v="muted" style={{ textAlign: 'center' }}>
+        </AppText>
+        <AppText variant="muted" style={{ textAlign: 'center' }}>
           Sign up to create your account and get started.
-        </T>
+        </AppText>
       </View>
 
       <View style={{ flexDirection: 'row', gap: 12 }}>
@@ -115,7 +115,7 @@ export default function SignUpScreen() {
           autoComplete="given-name"
           textContentType="givenName"
           value={form.firstName}
-          onChangeText={set('firstName')}
+          onChangeText={handleFieldChange('firstName')}
           error={errors.firstName}
         />
         <Field
@@ -126,7 +126,7 @@ export default function SignUpScreen() {
           autoComplete="family-name"
           textContentType="familyName"
           value={form.lastName}
-          onChangeText={set('lastName')}
+          onChangeText={handleFieldChange('lastName')}
           error={errors.lastName}
         />
       </View>
@@ -140,7 +140,7 @@ export default function SignUpScreen() {
           autoComplete="email"
           textContentType="emailAddress"
           value={form.email}
-          onChangeText={set('email')}
+          onChangeText={handleFieldChange('email')}
           error={errors.email}
         />
       </View>
@@ -153,7 +153,7 @@ export default function SignUpScreen() {
           autoComplete="tel"
           textContentType="telephoneNumber"
           value={form.phone}
-          onChangeText={set('phone')}
+          onChangeText={handleFieldChange('phone')}
           error={errors.phone}
         />
       </View>
@@ -162,14 +162,14 @@ export default function SignUpScreen() {
           label="Password"
           required
           placeholder="Enter password"
-          secureTextEntry={!showPassword}
+          secureTextEntry={!isPasswordVisible}
           autoCapitalize="none"
           autoComplete="new-password"
           textContentType="newPassword"
           value={form.password}
-          onChangeText={set('password')}
+          onChangeText={handleFieldChange('password')}
           error={errors.password}
-          right={eye(showPassword, () => setShowPassword((v) => !v), 'password')}
+          right={renderPasswordVisibilityToggle(isPasswordVisible, () => setIsPasswordVisible((isVisible) => !isVisible), 'password')}
         />
       </View>
       <View>
@@ -177,24 +177,24 @@ export default function SignUpScreen() {
           label="Re-enter password"
           required
           placeholder="Re-enter your password"
-          secureTextEntry={!showConfirm}
+          secureTextEntry={!isConfirmPasswordVisible}
           autoCapitalize="none"
           autoComplete="new-password"
           textContentType="newPassword"
           value={form.confirm}
-          onChangeText={set('confirm')}
+          onChangeText={handleFieldChange('confirm')}
           error={errors.confirm}
-          right={eye(showConfirm, () => setShowConfirm((v) => !v), 'password')}
+          right={renderPasswordVisibilityToggle(isConfirmPasswordVisible, () => setIsConfirmPasswordVisible((isVisible) => !isVisible), 'password')}
         />
       </View>
-      {serverError ? <T style={{ color: c.accentText }}>{serverError}</T> : null}
-      <T v="small">
-        <Text style={{ color: c.accentText }}>*</Text> Required fields
-      </T>
+      {serverError ? <AppText style={{ color: theme.accentText }}>{serverError}</AppText> : null}
+      <AppText variant="small">
+        <Text style={{ color: theme.accentText }}>*</Text> Required fields
+      </AppText>
       <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-        <T v="muted">Already have an account? </T>
+        <AppText variant="muted">Already have an account? </AppText>
         <Pressable onPress={() => router.push('/login')} accessibilityRole="link" hitSlop={8}>
-          <Text style={{ color: c.brandText, fontSize: 15, fontWeight: '600' }}>Log in</Text>
+          <Text style={{ color: theme.brandText, fontSize: 15, fontWeight: '600' }}>Log in</Text>
         </Pressable>
       </View>
     </Screen>

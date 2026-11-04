@@ -1,7 +1,7 @@
 import { Redirect } from 'expo-router';
 import { Tabs } from 'expo-router/js-tabs';
 
-import { TabBar } from '@/components/tab-bar';
+import { TabBar } from '@/components/TabBar';
 import { useStore } from '@/store';
 
 export default function TabsLayout() {

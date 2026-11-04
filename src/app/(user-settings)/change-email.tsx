@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, View, type TextInputInstance } from 'react-native';
 
 import { ApiError} from '@/api/client';
-import { Button, Card, Field, Footer, NavBar, Screen, T, Tile } from '@/components/ui';
+import { Button, Card, Field, Footer, NavBar, Screen, AppText, Tile } from '@/components/UiComponents';
 import { useStore } from '@/store';
 import { useTheme } from '@/theme';
 import { sendDualEmailOtp, verifyDualEmailOtp } from '@/services/accountService';
@@ -22,7 +22,7 @@ function formatCountdown(seconds: number): string {
 }
 
 export default function ChangeEmailScreen() {
-  const c = useTheme();
+  const theme = useTheme();
   const { user, changeEmail } = useStore();
   const firstOtpInput = useRef<TextInputInstance>(null);
   const [newEmail, setNewEmail] = useState('');
@@ -33,7 +33,7 @@ export default function ChangeEmailScreen() {
   const [otpError, setOtpError] = useState('');
   const [busy, setBusy] = useState<'send' | 'resend' | 'verify' | null>(null);
   const [step, setStep] = useState<1 | 2>(1);
-  const [success, setSuccess] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [expiresAt, setExpiresAt] = useState<number | null>(null);
   const [resendAvailableAt, setResendAvailableAt] = useState<number | null>(null);
   const [now, setNow] = useState(0);
@@ -49,7 +49,7 @@ export default function ChangeEmailScreen() {
     setOtpError('');
     setBusy(null);
     setStep(1);
-    setSuccess(false);
+    setIsSuccess(false);
     setExpiresAt(null);
     setResendAvailableAt(null);
     setNow(0);
@@ -73,7 +73,7 @@ export default function ChangeEmailScreen() {
     resendAvailableAt === null ? 0 : Math.max(0, Math.ceil((resendAvailableAt - now) / 1000));
 
   useEffect(() => {
-    if (step !== 2 || success) return;
+    if (step !== 2 || isSuccess) return;
     const timer = setInterval(() => {
       const currentTime = Date.now();
       setNow(currentTime);
@@ -85,7 +85,7 @@ export default function ChangeEmailScreen() {
       }
     }, 1000);
     return () => clearInterval(timer);
-  }, [expiresAt, step, success]);
+  }, [expiresAt, step, isSuccess]);
 
   useEffect(() => {
     if (step !== 2) return;
@@ -95,46 +95,46 @@ export default function ChangeEmailScreen() {
 
   if (!user) return null;
 
-  const send = async (resend = false) => {
-    const next = newEmail.trim();
-    if (!resend) {
-      if (!EMAIL_PATTERN.test(next)) {
+  const handleSendOtp = async (isResend = false) => {
+    const trimmedEmail = newEmail.trim();
+    if (!isResend) {
+      if (!EMAIL_PATTERN.test(trimmedEmail)) {
         setEmailError('Enter a valid email address, like name@example.com.');
         return;
       }
-      if (next.toLowerCase() === user.email.toLowerCase()) {
+      if (trimmedEmail.toLowerCase() === user.email.toLowerCase()) {
         setEmailError('That is already your email address.');
         return;
       }
     }
-    if (busy !== null || (resend && resendSeconds > 0)) return;
+    if (busy !== null || (isResend && resendSeconds > 0)) return;
 
     setEmailError('');
     setOtpError('');
-    if (resend) {
+    if (isResend) {
       setFirstOtp('');
       setSecondOtp('');
     }
-    setBusy(resend ? 'resend' : 'send');
+    setBusy(isResend ? 'resend' : 'send');
     const generation = requestGeneration.current;
     const requestedAt = Date.now();
-    if (resend) setResendAvailableAt(requestedAt + RESEND_COOLDOWN_MS);
+    if (isResend) setResendAvailableAt(requestedAt + RESEND_COOLDOWN_MS);
 
     try {
       const response = await sendDualEmailOtp({
         firstEmail: user.email.trim(),
-        secondEmail: next,
+        secondEmail: trimmedEmail,
       });
       if (generation !== requestGeneration.current) return;
       if (!response.success) {
         const message = response.message || GENERIC_ERROR;
-        if (resend) setOtpError(message);
+        if (isResend) setOtpError(message);
         else setEmailError(message);
         return;
       }
 
       const sentAt = Date.now();
-      setSentTo(next);
+      setSentTo(trimmedEmail);
       setFirstOtp('');
       setSecondOtp('');
       setExpiresAt(sentAt + OTP_LIFETIME_MS);
@@ -144,14 +144,14 @@ export default function ChangeEmailScreen() {
     } catch (error) {
       if (generation !== requestGeneration.current) return;
       const message = requestError(error);
-      if (resend) setOtpError(message);
+      if (isResend) setOtpError(message);
       else setEmailError(message);
     } finally {
       if (generation === requestGeneration.current) setBusy(null);
     }
   };
 
-  const verify = async () => {
+  const handleVerify = async () => {
     if (busy !== null) return;
     if (expirySeconds === 0) {
       setFirstOtp('');
@@ -190,7 +190,7 @@ export default function ChangeEmailScreen() {
 
       await changeEmail(sentTo);
       if (generation !== requestGeneration.current) return;
-      setSuccess(true);
+      setIsSuccess(true);
       setOtpError('');
     } catch (error) {
       if (generation !== requestGeneration.current) return;
@@ -217,42 +217,42 @@ export default function ChangeEmailScreen() {
       gap={18}
       header={<NavBar title="Change email" />}
       footer={
-        step === 2 && !success ? (
+        step === 2 && !isSuccess ? (
           <Footer>
             <Button
               label={busy === 'verify' ? 'Verifying…' : 'Verify and change email'}
               disabled={busy !== null || expirySeconds === 0}
-              onPress={() => void verify()}
+              onPress={() => void handleVerify()}
             />
           </Footer>
         ) : null
       }>
       <View style={{ alignItems: 'center', gap: 8, paddingTop: 4 }}>
-        <Tile icon={success ? 'check' : 'mail'} size={64} />
-        <T v="title" style={{ textAlign: 'center' }} accessibilityRole="header">
-          {success ? 'Email changed' : 'Change your email'}
-        </T>
-        <T v="muted" style={{ textAlign: 'center' }}>
-          {success
+        <Tile icon={isSuccess ? 'check' : 'mail'} size={64} />
+        <AppText variant="title" style={{ textAlign: 'center' }} accessibilityRole="header">
+          {isSuccess ? 'Email changed' : 'Change your email'}
+        </AppText>
+        <AppText variant="muted" style={{ textAlign: 'center' }}>
+          {isSuccess
             ? 'Your email address has been updated.'
             : step === 1
               ? 'We’ll send a separate code to your current email and your new email.'
               : 'Enter both 6-digit codes to verify and update your email.'}
-        </T>
+        </AppText>
       </View>
 
-      {success ? (
+      {isSuccess ? (
         <Card style={{ padding: 18, alignItems: 'center', gap: 16 }}>
-          <T v="strong" style={{ textAlign: 'center' }} accessibilityLiveRegion="polite">
+          <AppText variant="strong" style={{ textAlign: 'center' }} accessibilityLiveRegion="polite">
             Your email is now {sentTo}.
-          </T>
+          </AppText>
           <Button label="Done" onPress={() => router.back()} />
         </Card>
       ) : step === 1 ? (
         <>
           <Card style={{ padding: 18, gap: 6 }}>
-            <T v="small">Current email</T>
-            <T v="strong">{user.email}</T>
+            <AppText variant="small">Current email</AppText>
+            <AppText variant="strong">{user.email}</AppText>
           </Card>
           <Field
             label="New email address"
@@ -272,15 +272,15 @@ export default function ChangeEmailScreen() {
           <Button
             label={busy === 'send' ? 'Sending…' : 'Send OTP'}
             disabled={busy !== null}
-            onPress={() => void send()}
+            onPress={() => void handleSendOtp()}
           />
         </>
       ) : (
         <>
           <Card style={{ padding: 18, gap: 16 }}>
             <View style={{ gap: 4 }}>
-              <T v="label">Current email</T>
-              <T v="strong">{user.email}</T>
+              <AppText variant="label">Current email</AppText>
+              <AppText variant="strong">{user.email}</AppText>
             </View>
             <Field
               inputRef={firstOtpInput}
@@ -296,10 +296,10 @@ export default function ChangeEmailScreen() {
                 setOtpError('');
               }}
             />
-            <View style={{ height: 1, backgroundColor: c.lineSoft }} />
+            <View style={{ height: 1, backgroundColor: theme.lineSoft }} />
             <View style={{ gap: 4 }}>
-              <T v="label">New email</T>
-              <T v="strong">{sentTo}</T>
+              <AppText variant="label">New email</AppText>
+              <AppText variant="strong">{sentTo}</AppText>
             </View>
             <Field
               label="New email OTP"
@@ -316,29 +316,29 @@ export default function ChangeEmailScreen() {
             />
           </Card>
 
-          <T v="small" accessibilityLiveRegion="polite">
+          <AppText variant="small" accessibilityLiveRegion="polite">
             {expirySeconds > 0
               ? `Codes expire in ${formatCountdown(expirySeconds)}.`
               : 'Codes expired. Resend OTPs to continue.'}
-          </T>
+          </AppText>
           {otpError ? (
-            <T v="small" accessibilityLiveRegion="polite" style={{ color: c.accentText }}>
+            <AppText variant="small" accessibilityLiveRegion="polite" style={{ color: theme.accentText }}>
               {otpError}
-            </T>
+            </AppText>
           ) : null}
           <Pressable
-            onPress={() => void send(true)}
+            onPress={() => void handleSendOtp(true)}
             disabled={busy !== null || resendSeconds > 0}
             accessibilityRole="button"
             accessibilityState={{ disabled: busy !== null || resendSeconds > 0, busy: busy === 'resend' }}
             style={{ minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
-            <T v="strong" style={{ color: resendSeconds > 0 ? c.muted : c.brandText }}>
+            <AppText variant="strong" style={{ color: resendSeconds > 0 ? theme.muted : theme.brandText }}>
               {busy === 'resend'
                 ? 'Resending…'
                 : resendSeconds > 0
                   ? `Resend OTP in ${resendSeconds}s`
                   : 'Resend OTP'}
-            </T>
+            </AppText>
           </Pressable>
         </>
       )}

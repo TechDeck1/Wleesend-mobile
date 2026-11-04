@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Animated, Easing } from 'react-native';
 
-import { Icon } from '@/components/ui';
+import { Icon } from '@/components/UiComponents';
 import { useTheme } from '@/theme';
 
 /**
@@ -9,7 +9,7 @@ import { useTheme } from '@/theme';
  * from a CDN at runtime, which hosted previews block. Same end frame, scaled in.
  */
 export function PaymentDone({ size = 168 }: { size?: number }) {
-  const c = useTheme();
+  const theme = useTheme();
   const [scale] = useState(() => new Animated.Value(0.4));
   const circle = Math.round(size * 0.57);
 
@@ -33,11 +33,11 @@ export function PaymentDone({ size = 168 }: { size?: number }) {
           width: circle,
           height: circle,
           borderRadius: circle / 2,
-          backgroundColor: c.brand,
+          backgroundColor: theme.brand,
           alignItems: 'center',
           justifyContent: 'center',
         }}>
-        <Icon name="check" size={Math.round(circle * 0.45)} color={c.onBrand} />
+        <Icon name="check" size={Math.round(circle * 0.45)} color={theme.onBrand} />
       </Animated.View>
     </Animated.View>
   );

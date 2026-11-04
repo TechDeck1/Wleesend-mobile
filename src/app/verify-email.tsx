@@ -2,22 +2,22 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 
-import { Icon, Screen, T } from '@/components/ui';
+import { Icon, Screen, AppText } from '@/components/UiComponents';
 import { resendVerificationEmail } from '@/services/accountService';
 import { useTheme } from '@/theme';
 
 export default function VerifyEmailScreen() {
-  const c = useTheme();
+  const theme = useTheme();
   const { email: emailParam } = useLocalSearchParams<{ email?: string }>();
   const email = typeof emailParam === 'string' ? emailParam : '';
-  const [resending, setResending] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
-  const resend = async () => {
-    if (resending || !email) return;
+  const handleResend = async () => {
+    if (isResending || !email) return;
 
-    setResending(true);
+    setIsResending(true);
     setMessage('');
     setError('');
     try {
@@ -29,7 +29,7 @@ export default function VerifyEmailScreen() {
           : 'Unable to resend the verification email. Please try again.',
       );
     } finally {
-      setResending(false);
+      setIsResending(false);
     }
   };
 
@@ -45,8 +45,8 @@ export default function VerifyEmailScreen() {
             paddingVertical: 36,
             borderRadius: 20,
             borderWidth: 1,
-            borderColor: c.lineSoft,
-            backgroundColor: c.card,
+            borderColor: theme.lineSoft,
+            backgroundColor: theme.card,
             shadowColor: '#171B4D',
             shadowOffset: { width: 0, height: 12 },
             shadowOpacity: 0.08,
@@ -77,19 +77,19 @@ export default function VerifyEmailScreen() {
             </View>
           </View>
 
-          <T
-            v="heading"
+          <AppText
+            variant="heading"
             accessibilityRole="header"
-            style={{ color: c.brandText, fontSize: 24, lineHeight: 31, textAlign: 'center' }}>
+            style={{ color: theme.brandText, fontSize: 24, lineHeight: 31, textAlign: 'center' }}>
             Check Your Email
-          </T>
-          <T style={{ marginTop: 12, textAlign: 'center' }}>
+          </AppText>
+          <AppText style={{ marginTop: 12, textAlign: 'center' }}>
             We&apos;ve sent a verification link to{' '}
-            <T style={{ fontWeight: '600' }}>{email || 'your email address'}</T>.
-          </T>
-          <T v="muted" style={{ marginTop: 4, textAlign: 'center' }}>
+            <AppText style={{ fontWeight: '600' }}>{email || 'your email address'}</AppText>.
+          </AppText>
+          <AppText variant="muted" style={{ marginTop: 4, textAlign: 'center' }}>
             Please check your inbox and click the verification link to activate your account.
-          </T>
+          </AppText>
 
           <View
             style={{
@@ -97,18 +97,18 @@ export default function VerifyEmailScreen() {
               height: 1,
               marginTop: 24,
               marginBottom: 18,
-              backgroundColor: c.lineSoft,
+              backgroundColor: theme.lineSoft,
             }}
           />
 
-          <T v="small" style={{ textAlign: 'center' }}>
+          <AppText variant="small" style={{ textAlign: 'center' }}>
             Didn&apos;t receive the email?
-          </T>
+          </AppText>
           <Pressable
-            onPress={() => void resend()}
-            disabled={resending || !email}
+            onPress={() => void handleResend()}
+            disabled={isResending || !email}
             accessibilityRole="button"
-            accessibilityState={{ disabled: resending || !email, busy: resending }}
+            accessibilityState={{ disabled: isResending || !email, busy: isResending }}
             style={({ pressed }) => ({
               width: '100%',
               minHeight: 52,
@@ -119,39 +119,39 @@ export default function VerifyEmailScreen() {
               justifyContent: 'center',
               gap: 8,
               borderWidth: 1,
-              borderColor: c.brandText,
+              borderColor: theme.brandText,
               borderRadius: 12,
-              backgroundColor: c.card,
-              opacity: resending || !email ? 0.6 : pressed ? 0.8 : 1,
+              backgroundColor: theme.card,
+              opacity: isResending || !email ? 0.6 : pressed ? 0.8 : 1,
             })}>
-            {resending ? <ActivityIndicator size="small" color={c.brandText} /> : null}
-            <T v="strong" style={{ color: c.brandText }}>
-              {resending ? 'Sending...' : 'Resend Verification Email'}
-            </T>
+            {isResending ? <ActivityIndicator size="small" color={theme.brandText} /> : null}
+            <AppText variant="strong" style={{ color: theme.brandText }}>
+              {isResending ? 'Sending...' : 'Resend Verification Email'}
+            </AppText>
           </Pressable>
 
           {message ? (
-            <T
+            <AppText
               accessibilityLiveRegion="polite"
               style={{ marginTop: 12, color: '#2E7D32', textAlign: 'center' }}>
               {message}
-            </T>
+            </AppText>
           ) : null}
           {error ? (
-            <T
+            <AppText
               accessibilityLiveRegion="polite"
-              style={{ marginTop: 12, color: c.accentText, textAlign: 'center' }}>
+              style={{ marginTop: 12, color: theme.accentText, textAlign: 'center' }}>
               {error}
-            </T>
+            </AppText>
           ) : null}
 
           <Pressable
             onPress={() => router.replace('/login')}
             accessibilityRole="link"
             style={{ minHeight: 48, marginTop: 8, paddingHorizontal: 16, justifyContent: 'center' }}>
-            <T v="strong" style={{ color: c.brandText }}>
+            <AppText variant="strong" style={{ color: theme.brandText }}>
               Go to Login
-            </T>
+            </AppText>
           </Pressable>
         </View>
       </View>

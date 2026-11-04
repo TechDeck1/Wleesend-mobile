@@ -59,9 +59,9 @@ export function useAirtimeCatalog(operatorId: number | null) {
 
   const reloadOperators = useCallback(() => {
     setOperatorsState((state) => ({ ...state, status: 'loading', error: null }));
-    setOperatorsAttempt((n) => n + 1);
+    setOperatorsAttempt((currentAttempt) => currentAttempt + 1);
   }, []);
-  const reloadProducts = useCallback(() => setProductsAttempt((n) => n + 1), []);
+  const reloadProducts = useCallback(() => setProductsAttempt((currentAttempt) => currentAttempt + 1), []);
 
   // The products state only counts while it belongs to the current operator and attempt;
   // otherwise a request is still pending.

@@ -1,49 +1,49 @@
 import { router } from 'expo-router';
 import {  Pressable, Text, View } from 'react-native';
 
-import { Button, Card, LinkRow, Screen, T, Tile } from '@/components/ui';
+import { Button, Card, LinkRow, Screen, AppText, Tile } from '@/components/UiComponents';
 import { useStore } from '@/store';
 import { fonts, useTheme } from '@/theme';
 
 // const notConnected = (what: string) => Alert.alert(what, 'This action is not connected yet.');
 
 export default function ProfileScreen() {
-  const c = useTheme();
-  const { user: USER, signOut } = useStore();
+  const theme = useTheme();
+  const { user: userProfile, signOut } = useStore();
 
-  const links = (
+  const accountLinks = (
     <Card>
       <LinkRow icon="info" label="About Wleesend" onPress={() => router.push('/about')} />
       <LinkRow icon="mail" label="Support" onPress={() => router.push('/support')} last />
     </Card>
   );
 
-  if (!USER) {
+  if (!userProfile) {
     return (
       <Screen gap={18}>
-        <T v="title" accessibilityRole="header">
+        <AppText variant="title" accessibilityRole="header">
           My profile
-        </T>
+        </AppText>
         <Card style={{ padding: 20, alignItems: 'center', gap: 10 }}>
           <Tile icon="personAdd" size={56} />
-          <T v="heading" style={{ fontSize: 18 }}>
+          <AppText variant="heading" style={{ fontSize: 18 }}>
             You&rsquo;re signed out
-          </T>
-          <T v="muted" style={{ textAlign: 'center' }}>
+          </AppText>
+          <AppText variant="muted" style={{ textAlign: 'center' }}>
             Create an account to send credit and see your transactions.
-          </T>
+          </AppText>
           <Button
             label="Create account"
             onPress={() => router.push('/signup')}
             style={{ alignSelf: 'stretch', marginTop: 6 }}
           />
         </Card>
-        {links}
+        {accountLinks}
       </Screen>
     );
   }
 
-  const detail = (label: string, value: string) => (
+  const renderProfileDetail = (label: string, value: string) => (
     <View
       style={{
         flexDirection: 'row',
@@ -51,18 +51,18 @@ export default function ProfileScreen() {
         justifyContent: 'space-between',
         minHeight: 54,
         borderBottomWidth: 1,
-        borderBottomColor: c.lineSoft,
+        borderBottomColor: theme.lineSoft,
       }}>
-      <T v="muted">{label}</T>
-      <T v="strong">{value}</T>
+      <AppText variant="muted">{label}</AppText>
+      <AppText variant="strong">{value}</AppText>
     </View>
   );
 
   return (
     <Screen gap={18}>
-      <T v="title" accessibilityRole="header">
+      <AppText variant="title" accessibilityRole="header">
         My profile
-      </T>
+      </AppText>
 
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
         <View
@@ -70,50 +70,50 @@ export default function ProfileScreen() {
             width: 56,
             height: 56,
             borderRadius: 28,
-            backgroundColor: c.brand,
+            backgroundColor: theme.brand,
             alignItems: 'center',
             justifyContent: 'center',
           }}>
-          <Text style={{ fontFamily: fonts.display, fontSize: 19, color: c.onBrand }}>
-            {USER.firstName[0]}
-            {USER.lastName[0]}
+          <Text style={{ fontFamily: fonts.display, fontSize: 19, color: theme.onBrand }}>
+            {userProfile.firstName[0]}
+            {userProfile.lastName[0]}
           </Text>
         </View>
         <View>
-          <T v="heading" style={{ fontSize: 18 }}>
-            {USER.firstName} {USER.lastName}
-          </T>
-          <T v="small" style={{ fontSize: 14 }}>
-            {USER.email}
-          </T>
+          <AppText variant="heading" style={{ fontSize: 18 }}>
+            {userProfile.firstName} {userProfile.lastName}
+          </AppText>
+          <AppText variant="small" style={{ fontSize: 14 }}>
+            {userProfile.email}
+          </AppText>
         </View>
       </View>
 
       <Card style={{ paddingHorizontal: 16 }}>
-        {detail('First name', USER.firstName)}
-        {detail('Last name', USER.lastName)}
-        {USER.phone ? detail('Phone', USER.phone) : null}
+        {renderProfileDetail('First name', userProfile.firstName)}
+        {renderProfileDetail('Last name', userProfile.lastName)}
+        {userProfile.phone ? renderProfileDetail('Phone', userProfile.phone) : null}
         <View
           style={{
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
             borderBottomWidth: 1,
-            borderBottomColor: c.lineSoft,
+            borderBottomColor: theme.lineSoft,
           }}>
-          <T v="muted">Email</T>
+          <AppText variant="muted">Email</AppText>
           <View style={{ alignItems: 'flex-end', paddingTop: 10 }}>
-            <T v="strong">{USER.email}</T>
+            <AppText variant="strong">{userProfile.email}</AppText>
             <Pressable
               onPress={() => router.push('/change-email')}
               accessibilityRole="button"
               style={{ height: 44, justifyContent: 'center', marginTop: -6 }}>
-              <Text style={{ color: c.accentText, fontSize: 14, fontWeight: '600' }}>Change email</Text>
+              <Text style={{ color: theme.accentText, fontSize: 14, fontWeight: '600' }}>Change email</Text>
             </Pressable>
           </View>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 68 }}>
-          <T v="muted">Password</T>
+          <AppText variant="muted">Password</AppText>
           <Pressable
             onPress={() => router.push('/reset-password')}
             accessibilityRole="button"
@@ -121,15 +121,15 @@ export default function ProfileScreen() {
               height: 44,
               paddingHorizontal: 16,
               borderRadius: 12,
-              backgroundColor: c.accentTint,
+              backgroundColor: theme.accentTint,
               justifyContent: 'center',
             }}>
-            <Text style={{ color: c.accentTintText, fontSize: 14, fontWeight: '600' }}>Reset password</Text>
+            <Text style={{ color: theme.accentTintText, fontSize: 14, fontWeight: '600' }}>Reset password</Text>
           </Pressable>
         </View>
       </Card>
 
-      {links}
+      {accountLinks}
 
       <Button variant="outline" icon="logout" label="Log out" onPress={signOut} />
     </Screen>
