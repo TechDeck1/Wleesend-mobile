@@ -103,6 +103,7 @@ type ScreenProps = {
   footer?: ReactNode;
   gap?: number;
   contentContainerStyle?: StyleProp<ViewStyle>;
+  onScrollNearEnd?: () => void;
 };
 
 /**
@@ -143,7 +144,7 @@ function KeyboardDoneBar({ bottom }: { bottom: number }) {
   );
 }
 
-export function Screen({ children, header, footer, gap = 20, contentContainerStyle }: ScreenProps) {
+export function Screen({ children, header, footer, gap = 20, contentContainerStyle, onScrollNearEnd }: ScreenProps) {
   const c = useTheme();
   const root = useRef<ViewInstance>(null);
   const scroll = useRef<ScrollViewInstance>(null);
@@ -205,6 +206,8 @@ export function Screen({ children, header, footer, gap = 20, contentContainerSty
           ]}
           onScroll={(e) => {
             scrollY.current = e.nativeEvent.contentOffset.y;
+            const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent;
+            if (contentOffset.y + layoutMeasurement.height >= contentSize.height - 240) onScrollNearEnd?.();
           }}
           scrollEventThrottle={16}
           keyboardShouldPersistTaps="handled"

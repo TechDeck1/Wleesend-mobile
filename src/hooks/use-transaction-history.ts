@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { SendKind } from '@/data';
 import { getTransactionHistory, TRANSACTIONS_PAGE_SIZE } from '@/services/transactionService';
@@ -89,6 +89,7 @@ export function useTransactionHistory(filter: Filter) {
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [failure, setFailure] = useState<Failure | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
+  const loadingMoreRef = useRef(false);
   const [reloadKey, setReloadKey] = useState(0);
 
   // First page for the current filter. State is only set inside the promise callbacks,
@@ -130,8 +131,9 @@ export function useTransactionHistory(filter: Filter) {
   }, []);
 
   const loadMore = useCallback(async () => {
-    if (!current || loadingMore || current.rows.length >= current.totalCount) return;
+    if (!current || loadingMoreRef.current || current.rows.length >= current.totalCount) return;
     const nextPage = current.page + 1;
+    loadingMoreRef.current = true;
     setLoadingMore(true);
     setFailure(null);
     try {
@@ -146,9 +148,10 @@ export function useTransactionHistory(filter: Filter) {
     } catch (e) {
       setFailure({ filter, message: messageOf(e) });
     } finally {
+      loadingMoreRef.current = false;
       setLoadingMore(false);
     }
-  }, [current, filter, loadingMore]);
+  }, [current, filter]);
 
   const initialLoading = !current && !error;
 

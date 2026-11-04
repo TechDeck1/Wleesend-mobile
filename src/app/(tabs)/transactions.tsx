@@ -36,7 +36,9 @@ export default function TransactionsScreen() {
     router.push(t.draft.phone ? '/send/payment' : '/send');
   };
   return (
-    <Screen gap={18}>
+    <Screen gap={18} onScrollNearEnd={() => {
+      if (hasMore && !loading && !error) void loadMore();
+    }}>
       <T v="title" accessibilityRole="header">
         Transactions
       </T>
@@ -127,7 +129,6 @@ export default function TransactionsScreen() {
         </View>
       ) : null}
 
-      {hasMore && !loading && !error ? <Button label="Load more" onPress={loadMore} style={{ height: 50 }} /> : null}
       {loading && rows.length > 0 ? <ActivityIndicator accessibilityLabel="Loading more transactions" /> : null}
 
       {rows.length > 0 ? (

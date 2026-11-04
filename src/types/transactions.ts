@@ -6,7 +6,7 @@ export type ApiTransactionDraft = {
   productId: string | null;
   receiverPhone: string | null;
   meterNumber: string | null;
-  amount: number; // base amount before fee
+  amount: number; 
 };
 
 export type ApiTransaction = {
@@ -15,8 +15,8 @@ export type ApiTransaction = {
   product: string;
   provider: string;
   receiver: string;
-  createdAt: string; // UTC ISO
-  total: number; // fee-inclusive
+  createdAt: string; 
+  total: number; 
   fee: number;
   draft: ApiTransactionDraft;
 };

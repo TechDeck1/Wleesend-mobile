@@ -1,4 +1,4 @@
-import ForgotPasswordScreen from '@/screens/forgetPassword';
+import ForgotPasswordScreen from '@/components/account/ForgetPasswordScreen';
 import { useRouter } from 'expo-router';
 
 export default function ForgotPasswordRoute() {

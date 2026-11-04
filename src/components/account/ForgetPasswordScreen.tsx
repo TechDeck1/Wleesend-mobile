@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { forgotPinRequest, updatePin, verifyCode } from '@/services/accountService';
-import { fonts, useTheme, type Palette } from '../theme';
+import { fonts, useTheme, type Palette } from '@/theme';
 
 type Props = {
   onBack: () => void;

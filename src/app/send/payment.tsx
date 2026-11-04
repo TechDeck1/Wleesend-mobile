@@ -6,7 +6,7 @@ import {
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Linking, Text, View } from 'react-native';
-
+import * as WebBrowser from 'expo-web-browser';
 import { Button, Card, Footer, KeyValue, NavBar, Screen, T } from '@/components/ui';
 import { STRIPE_PUBLISHABLE_KEY, WEBSITE_URL } from '@/config/api';
 import { money } from '@/data';
@@ -65,10 +65,10 @@ export default function PaymentScreen() {
     }
   };
 
-  const link = (label: string , path : string) => (
+  const link = (label: string, path: string) => (
     <Text
       accessibilityRole="link"
-      onPress={() => Linking.openURL(`${WEBSITE_URL}/${path}`)}
+      onPress={() => WebBrowser.openBrowserAsync(`${WEBSITE_URL}/${path}`)}
       style={{ color: c.brandText, fontWeight: '600', textDecorationLine: 'underline' }}>
       {label}
     </Text>
@@ -119,7 +119,7 @@ export default function PaymentScreen() {
       </Card>
 
       <T v="small" style={{ fontSize: 12.5 }}>
-        By placing your order, you agree to Wleesend&rsquo;s {link('privacy notice' , 'privacy-policy')} and{' '}
+        By placing your order, you agree to Wleesend&rsquo;s {link('privacy notice', 'privacy-policy')} and{' '}
         {link('terms and conditions of use', 'terms-and-conditions')}.
       </T>
     </Screen>
