@@ -2,10 +2,11 @@ import { router } from 'expo-router';
 import { Image, Pressable, Text, View } from 'react-native';
 
 import { Logo } from '@/components/LogoComponent';
-import { Card, Icon, LinkRow, Screen, AppText, Tile, type IconName } from '@/components/UiComponents';
+import { Card, Icon, LinkRow, Screen, AppText, Tile } from '@/components/UiComponents';
 import type { SendKind } from '@/data';
 import { useStore } from '@/store';
 import { fonts, useTheme } from '@/theme';
+import type { IconName } from '@/types/components/UiComponents.types';
 
 export default function HomeScreen() {
   const theme = useTheme();

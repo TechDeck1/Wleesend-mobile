@@ -5,9 +5,9 @@ import { BrandLogo } from '@/components/BrandLogo';
 import { Button, KeyValue, AppText } from '@/components/UiComponents';
 import { money, type SendKind } from '@/data';
 import { brandForTransaction } from '@/services/transactionService';
-import type { Transaction } from '@/store';
 import { fonts, useTheme } from '@/theme';
 import { roundToTwoDecimals } from '@/utils/airtime';
+import type { TransactionDetailsModalProps } from '@/types/components/TransactionDetailsModal.types';
 
 const KIND_LABEL: Record<SendKind, string> = {
   airtime: 'Airtime',
@@ -15,14 +15,8 @@ const KIND_LABEL: Record<SendKind, string> = {
   voucher: 'Shopping voucher',
 };
 
-type Props = {
-  transaction: Transaction | null;
-  onClose: () => void;
-  onResend: (transaction: Transaction) => void;
-};
-
 /** Bottom sheet with the full details of one transaction. Shown while `transaction` is not null. */
-export function TransactionDetailsModal({ transaction, onClose, onResend }: Props) {
+export function TransactionDetailsModal({ transaction, onClose, onResend }: TransactionDetailsModalProps) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const transactionDetails = transaction;

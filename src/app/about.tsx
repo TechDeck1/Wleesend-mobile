@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 
-import { Card, NavBar, Screen, AppText, Tile, type IconName } from '@/components/UiComponents';
+import { Card, NavBar, Screen, AppText, Tile } from '@/components/UiComponents';
+import type { IconName } from '@/types/components/UiComponents.types';
 
 const REASONS: { icon: IconName; title: string; text: string }[] = [
   {

@@ -9,7 +9,6 @@ import {
   Text,
   TextInput,
   type TextInputInstance,
-  type TextInputProps,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,14 +18,16 @@ import { fonts, useTheme, type Palette } from '@/theme';
 import { ApiError, ApiTimeoutError } from '@/api/request';
 import { resetPassword } from '@/services/accountService';
 import { SymbolView } from 'expo-symbols';
+import type {
+  ResetPasswordFieldErrors,
+  ResetPasswordFieldKey,
+  ResetPasswordPasswordFieldProps,
+  ResetPasswordValues,
+} from '@/types/screens/ResetPasswordScreen.types';
 
 const MIN_PASSWORD_LENGTH = 8;
 
-type FieldKey = 'oldPin' | 'newPin' | 'confirmPin';
-type Values = Record<FieldKey, string>;
-type FieldErrors = Partial<Record<FieldKey, string>>;
-
-const EMPTY: Values = { oldPin: '', newPin: '', confirmPin: '' };
+const EMPTY: ResetPasswordValues = { oldPin: '', newPin: '', confirmPin: '' };
 
 
 function getPasswordRuleError(password: string): string | null {
@@ -40,8 +41,8 @@ function getPasswordRuleError(password: string): string | null {
   return missing.length > 0 ? `Password needs ${missing.join(', ')}.` : null;
 }
 
-function validate(values: Values): FieldErrors {
-  const errors: FieldErrors = {};
+function validate(values: ResetPasswordValues): ResetPasswordFieldErrors {
+  const errors: ResetPasswordFieldErrors = {};
 
   if (!values.oldPin) errors.oldPin = 'Enter your current password.';
 
@@ -77,8 +78,8 @@ export default function ResetPasswordScreen() {
   const styles = useMemo(() => createStyles(theme), [theme]);
   const router = useRouter();
 
-  const [values, setValues] = useState<Values>(EMPTY);
-  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [values, setValues] = useState<ResetPasswordValues>(EMPTY);
+  const [fieldErrors, setFieldErrors] = useState<ResetPasswordFieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -103,7 +104,7 @@ export default function ResetPasswordScreen() {
     }, [resetScreen]),
   );
 
-  const handleFieldChange = (key: FieldKey) => (text: string) => {
+  const handleFieldChange = (key: ResetPasswordFieldKey) => (text: string) => {
     setValues((prev) => ({ ...prev, [key]: text }));
     if (fieldErrors[key]) setFieldErrors((prev) => ({ ...prev, [key]: undefined }));
     if (formError) setFormError(null);
@@ -259,16 +260,7 @@ export default function ResetPasswordScreen() {
   );
 }
 
-type PasswordFieldProps = {
-  label: string;
-  value: string;
-  onChangeText: (text: string) => void;
-  error?: string;
-  theme: Palette;
-  styles: ReturnType<typeof createStyles>;
-} & Pick<TextInputProps, 'editable' | 'returnKeyType' | 'onSubmitEditing' | 'autoComplete'>;
-
-const PasswordField = forwardRef<TextInputInstance, PasswordFieldProps>(function PasswordField(
+const PasswordField = forwardRef<TextInputInstance, ResetPasswordPasswordFieldProps>(function PasswordField(
   { label, value, onChangeText, error, theme, styles, ...rest },
   ref,
 ) {

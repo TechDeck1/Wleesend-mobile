@@ -3,20 +3,15 @@ import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
 import { Button, Field, Footer, Icon, NavBar, Screen, AppText, Tile } from '@/components/UiComponents';
-import { useStore, type User } from '@/store';
+import { useStore } from '@/store';
 import { useTheme } from '@/theme';
+import type { SignUpErrors, SignUpForm } from '@/types/screens/SignUpScreen.types';
 
-type Form = Pick<User, 'firstName' | 'lastName' | 'email' | 'phone'> & {
-  password: string;
-  confirm: string;
-};
-type Errors = Partial<Record<keyof Form, string>>;
-
-const EMPTY: Form = { firstName: '', lastName: '', email: '', phone: '', password: '', confirm: '' };
+const EMPTY: SignUpForm = { firstName: '', lastName: '', email: '', phone: '', password: '', confirm: '' };
 const MIN_PASSWORD = 8;
 
-function validate(form: Form): Errors {
-  const fieldErrors: Errors = {};
+function validate(form: SignUpForm): SignUpErrors {
+  const fieldErrors: SignUpErrors = {};
   if (!form.firstName.trim()) fieldErrors.firstName = 'Enter your first name.';
   if (!form.lastName.trim()) fieldErrors.lastName = 'Enter your last name.';
   if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) fieldErrors.email = 'Enter a valid email address, like name@example.com.';
@@ -31,15 +26,15 @@ function validate(form: Form): Errors {
 export default function SignUpScreen() {
   const theme = useTheme();
   const { signUp } = useStore();
-  const [form, setForm] = useState<Form>(EMPTY);
-  const [errors, setErrors] = useState<Errors>({});
+  const [form, setForm] = useState<SignUpForm>(EMPTY);
+  const [errors, setErrors] = useState<SignUpErrors>({});
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [serverError, setServerError] = useState('');
 
-  const handleFieldChange = (key: keyof Form) => (value: string) => {
+  const handleFieldChange = (key: keyof SignUpForm) => (value: string) => {
     const updatedForm = { ...form, [key]: value };
     setForm(updatedForm);
     setServerError('');

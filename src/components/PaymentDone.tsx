@@ -4,6 +4,7 @@ import { View } from 'react-native';
 
 import animation from '../../assets/animations/payment-done.json';
 import { useTheme } from '@/theme';
+import type { PaymentDoneProps } from '@/types/components/PaymentDone.types';
 
 /** The animation's own blue, as Lottie stores it (RGBA, 0–1). */
 const SOURCE_BLUE = '[0.1607843137254902,0.3843137254901961,1,1]';
@@ -16,7 +17,7 @@ const toLottieColor = (hex: string) => {
 };
 
 /** Send arrow → checkmark, in the brand color. Plays once when shown. */
-export function PaymentDone({ size = 168 }: { size?: number }) {
+export function PaymentDone({ size = 168 }: PaymentDoneProps) {
   const theme = useTheme();
   const ref = useRef<LottieView>(null);
   const source = useMemo(

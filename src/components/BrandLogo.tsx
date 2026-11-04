@@ -1,14 +1,10 @@
 import { Image, View } from 'react-native';
 
-import { Tile, type IconName } from '@/components/UiComponents';
-import type { OperatorId, VendorId } from '@/data';
+import { Tile } from '@/components/UiComponents';
 import { useTheme } from '@/theme';
+import type { Brand, BrandFallbackIcons, BrandLogoAsset, BrandLogoProps } from '@/types/components/BrandLogo.types';
 
-export type Brand = OperatorId | VendorId | 'lec' | 'voucher' | 'airtime';
-
-type Logo = { source: number; label: string; bg: string };
-
-const LOGOS: Partial<Record<Brand, Logo>> = {
+const LOGOS: Partial<Record<Brand, BrandLogoAsset>> = {
   mtn: { source: require('@/assets/images/brands/lonestar-mtn.png'), label: 'Lonestar Cell MTN logo', bg: '#FFCB05' },
   orange: { source: require('@/assets/images/brands/orange.png'), label: 'Orange logo', bg: '#FFFFFF' },
   lec: { source: require('@/assets/images/lec.png'), label: 'LEC logo', bg: '#FFFFFF' },
@@ -19,14 +15,14 @@ const LOGOS: Partial<Record<Brand, Logo>> = {
   },
 };
 
-const FALLBACK_ICON: Partial<Record<Brand, IconName>> = {
+const FALLBACK_ICON: BrandFallbackIcons = {
   airtime: 'phone',
   voucher: 'voucher',
   lec: 'bolt',
 };
 
 /** A brand's logo in a rounded tile. Falls back to an icon tile when there is no logo. */
-export function BrandLogo({ brand, size = 48 }: { brand?: Brand; size?: number }) {
+export function BrandLogo({ brand, size = 48 }: BrandLogoProps) {
   const theme = useTheme();
   const logo = brand ? LOGOS[brand] : undefined;
 

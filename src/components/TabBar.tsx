@@ -2,7 +2,8 @@ import type { BottomTabBarProps } from 'expo-router/js-tabs';
 import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Icon, type IconName } from '@/components/UiComponents';
+import { Icon } from '@/components/UiComponents';
+import type { IconName } from '@/types/components/UiComponents.types';
 import { useTheme } from '@/theme';
 
 const TAB_ICONS: Record<string, IconName> = {

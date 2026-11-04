@@ -3,12 +3,13 @@ import { Animated, Easing } from 'react-native';
 
 import { Icon } from '@/components/UiComponents';
 import { useTheme } from '@/theme';
+import type { PaymentDoneProps } from '@/types/components/PaymentDone.types';
 
 /**
  * Web stand-in for the Lottie animation: its web player downloads its engine
  * from a CDN at runtime, which hosted previews block. Same end frame, scaled in.
  */
-export function PaymentDone({ size = 168 }: { size?: number }) {
+export function PaymentDone({ size = 168 }: PaymentDoneProps) {
   const theme = useTheme();
   const [scale] = useState(() => new Animated.Value(0.4));
   const circle = Math.round(size * 0.57);

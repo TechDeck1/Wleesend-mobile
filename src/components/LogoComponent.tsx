@@ -1,11 +1,12 @@
 import { Image, Text, View } from 'react-native';
 
 import { fonts, useTheme } from '@/theme';
+import type { LogoProps } from '@/types/components/LogoComponent.types';
 
 const MARK_RATIO = 1650 / 640;
 
 /** The Wleesend lockup: the arrow mark above the name and tagline. */
-export function Logo({ width = 92 }: { width?: number }) {
+export function Logo({ width = 92 }: LogoProps) {
   const theme = useTheme();
   return (
     <View

@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
-import type { Brand } from '@/components/BrandLogo';
+import type { Brand } from '@/types/components/BrandLogo.types';
 import {
   clearAuthSession,
   getAuthSession,

@@ -1,11 +1,12 @@
 import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
-import { BrandLogo, type Brand } from '@/components/BrandLogo';
+import { BrandLogo } from '@/components/BrandLogo';
 import { Card, Icon, Screen, AppText } from '@/components/UiComponents';
 import { LEC_NAME, type OperatorId, type SendKind } from '@/data';
 import { useStore } from '@/store';
 import { useTheme } from '@/theme';
+import type { Brand } from '@/types/components/BrandLogo.types';
 
 export default function ProductsScreen() {
   const theme = useTheme();

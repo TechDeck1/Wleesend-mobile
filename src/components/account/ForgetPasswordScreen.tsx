@@ -15,13 +15,17 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { forgotPinRequest, updatePin, verifyCode } from '@/services/accountService';
-import { fonts, useTheme, type Palette } from '@/theme';
-
-type Props = {
-  onBack: () => void;
-};
-
-type Step = 'email' | 'otp' | 'reset';
+import { fonts, useTheme } from '@/theme';
+import type {
+  ErrorTextProps,
+  ForgotPasswordPasswordFieldProps,
+  ForgotPasswordScreenProps,
+  ForgotPasswordStep,
+  ForgotPasswordTextFieldProps,
+  OtpInputProps,
+  PrimaryButtonProps,
+  SuccessModalProps,
+} from '@/types/screens/ForgotPasswordScreen.types';
 
 const OTP_LENGTH = 6;
 const RESEND_SECONDS = 30;
@@ -34,10 +38,10 @@ function parseOtp(text: string): string {
   return text.replace(/\D/g, '').slice(0, OTP_LENGTH);
 }
 
-export default function ForgotPasswordScreen({ onBack }: Props) {
+export default function ForgotPasswordScreen({ onBack }: ForgotPasswordScreenProps) {
   const palette = useTheme();
 
-  const [step, setStep] = useState<Step>('email');
+  const [step, setStep] = useState<ForgotPasswordStep>('email');
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [password, setPassword] = useState('');
@@ -288,14 +292,7 @@ function SuccessModal({
   message,
   buttonLabel,
   onPress,
-}: {
-  palette: Palette;
-  isVisible: boolean;
-  title: string;
-  message: string;
-  buttonLabel: string;
-  onPress: () => void;
-}) {
+}: SuccessModalProps) {
   const [scale] = useState(() => new Animated.Value(0.6));
 
   useEffect(() => {
@@ -334,12 +331,7 @@ function SuccessModal({
   );
 }
 
-type TextFieldProps = React.ComponentProps<typeof TextInput> & {
-  palette: Palette;
-  hasError?: boolean;
-};
-
-function TextField({ palette, hasError, style, ...rest }: TextFieldProps) {
+function TextField({ palette, hasError, style, ...rest }: ForgotPasswordTextFieldProps) {
   const [isFocused, setIsFocused] = useState(false);
   return (
     <TextInput
@@ -366,7 +358,7 @@ function TextField({ palette, hasError, style, ...rest }: TextFieldProps) {
   );
 }
 
-function PasswordField(props: TextFieldProps) {
+function PasswordField(props: ForgotPasswordPasswordFieldProps) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const { palette } = props;
   return (
@@ -398,13 +390,7 @@ function OtpInput({
   onChange,
   hasError,
   disabled,
-}: {
-  palette: Palette;
-  value: string;
-  onChange: (otpValue: string) => void;
-  hasError: boolean;
-  disabled: boolean;
-}) {
+}: OtpInputProps) {
   const inputRef = useRef<TextInputInstance>(null);
   const [isFocused, setIsFocused] = useState(false);
 
@@ -456,7 +442,7 @@ function OtpInput({
   );
 }
 
-function ErrorText({ palette, message }: { palette: Palette; message: string | null }) {
+function ErrorText({ palette, message }: ErrorTextProps) {
   if (!message) return null;
   return (
     <Text accessibilityLiveRegion="polite" style={[styles.error, { color: palette.accentText }]}>
@@ -471,13 +457,7 @@ function PrimaryButton({
   onPress,
   isLoading,
   style,
-}: {
-  palette: Palette;
-  label: string;
-  onPress: () => void;
-  isLoading?: boolean;
-  style?: React.ComponentProps<typeof View>['style'];
-}) {
+}: PrimaryButtonProps) {
   return (
     <Pressable
       onPress={onPress}

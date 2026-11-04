@@ -5,6 +5,7 @@ import { Icon, AppText } from '@/components/UiComponents';
 import { money } from '@/data';
 import { useTheme } from '@/theme';
 import type { AirtimeProduct } from '@/types/airtime';
+import type { PackagePickerAnchor, PackagePickerProps } from '@/types/components/PackagePicker.types';
 
 const priceLabel = (product: AirtimeProduct) =>
   product.isRange ? `$${product.min}–$${product.max}` : product.price === null ? 'Price TBC' : money(product.price);
@@ -16,8 +17,6 @@ export const isAvailable = (product: AirtimeProduct) =>
 const LIST_MAX_HEIGHT = 330;
 const GAP = 6;
 
-type Anchor = { x: number; y: number; width: number; height: number };
-
 /**
  * A select field for the packages the API returned for an operator. The list drops down from the
  * field over the page; it opens upward when there isn't room below.
@@ -26,16 +25,12 @@ export function PackagePicker({
   packages,
   selectedId,
   onSelect,
-}: {
-  packages: AirtimeProduct[];
-  selectedId: number | null;
-  onSelect: (id: number) => void;
-}) {
+}: PackagePickerProps) {
   const theme = useTheme();
   const windowDimensions = useWindowDimensions();
   const field = useRef<ViewInstance>(null);
   const listRef = useRef<ScrollViewInstance>(null);
-  const [anchor, setAnchor] = useState<Anchor | null>(null);
+  const [anchor, setAnchor] = useState<PackagePickerAnchor | null>(null);
   const options = packages;
   const selectedProduct = options.find((option) => option.id === selectedId);
 

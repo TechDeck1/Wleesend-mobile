@@ -1,5 +1,5 @@
 import { apiClient } from '@/api/client';
-import type { Brand } from '@/components/BrandLogo';
+import type { Brand } from '@/types/components/BrandLogo.types';
 import { API_ENDPOINTS } from '@/config/api';
 import type { SendKind } from '@/data';
 import type { TransactionHistoryResponse } from '@/types/transactions';

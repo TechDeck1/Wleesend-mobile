@@ -27,6 +27,7 @@ import {
 } from '@/utils/airtime';
 import { CollapsibleRow } from '@/components/CollapsibleRow';
 import { useVoucherCatalog } from '@/hooks/use-voucher-catalog';
+import type { AmountGridProps, CatalogNoticeProps } from '@/types/screens/SendDetailsScreen.types';
 
 
 const TITLES = {
@@ -35,7 +36,7 @@ const TITLES = {
   voucher: { nav: 'Shopping voucher', heading: 'Send a shopping voucher' },
 } as const;
 
-function AmountGrid({ amounts, value, onChange }: { amounts: number[]; value: number; onChange: (n: number) => void }) {
+function AmountGrid({ amounts, value, onChange }: AmountGridProps) {
   const { width } = useWindowDimensions();
   const chip = Math.floor((Math.min(width, 430) - 40 - 3 * 8) / 4);
   return (
@@ -49,7 +50,7 @@ function AmountGrid({ amounts, value, onChange }: { amounts: number[]; value: nu
   );
 }
 
-function CatalogNotice({ loadingMessage, error, onRetry }: { loadingMessage: string; error: string | null; onRetry: () => void }) {
+function CatalogNotice({ loadingMessage, error, onRetry }: CatalogNoticeProps) {
   const theme = useTheme();
   if (!error) {
     return (

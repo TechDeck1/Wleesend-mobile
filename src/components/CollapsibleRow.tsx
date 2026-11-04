@@ -1,5 +1,6 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect } from 'react';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import type { CollapsibleRowProps } from '@/types/components/CollapsibleRow.types';
 
 const DURATION_MS = 260;
 export function CollapsibleRow({
@@ -7,12 +8,7 @@ export function CollapsibleRow({
   height,
   gap = 0,
   children,
-}: {
-  isVisible: boolean;
-  height: number;
-  gap?: number;
-  children: ReactNode;
-}) {
+}: CollapsibleRowProps) {
   const progress = useSharedValue(isVisible ? 1 : 0);
 
   useEffect(() => {

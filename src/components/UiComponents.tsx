@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { SymbolView, type SymbolViewProps } from 'expo-symbols';
+import { SymbolView } from 'expo-symbols';
 import {
   createContext,
   useCallback,
@@ -7,8 +7,6 @@ import {
   useEffect,
   useRef,
   useState,
-  type ReactNode,
-  type Ref,
 } from 'react';
 import {
   Keyboard,
@@ -18,21 +16,30 @@ import {
   Text,
   TextInput,
   View,
-  type StyleProp,
-  type TextInputProps,
-  type TextInputInstance,
-  type TextProps,
-  type ViewStyle,
   type ViewInstance,
   type ScrollViewInstance,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { fonts, useTheme } from '@/theme';
+import type {
+  AppTextProps,
+  ButtonProps,
+  CardProps,
+  FieldProps,
+  FooterProps,
+  IconProps,
+  KeyValueProps,
+  KeyboardDoneBarProps,
+  LinkRowProps,
+  NavBarProps,
+  ScreenProps,
+  SegmentProps,
+  SymbolNames,
+  TileProps,
+} from '@/types/components/UiComponents.types';
 
 /* ---------- Icons: SF Symbols on iOS, Material Symbols on Android ---------- */
-
-type SymbolNames = Extract<SymbolViewProps['name'], object>;
 
 const ICONS = {
   home: { ios: 'house', android: 'home' },
@@ -61,9 +68,7 @@ const ICONS = {
   logout: { ios: 'rectangle.portrait.and.arrow.right', android: 'logout' },
 } satisfies Record<string, SymbolNames>;
 
-export type IconName = keyof typeof ICONS;
-
-export function Icon({ name, size = 24, color }: { name: IconName; size?: number; color: string }) {
+export function Icon({ name, size = 24, color }: IconProps) {
   const symbol = ICONS[name];
   return (
     <SymbolView
@@ -76,9 +81,7 @@ export function Icon({ name, size = 24, color }: { name: IconName; size?: number
 
 /* ---------- Text ---------- */
 
-type TextVariant = 'body' | 'muted' | 'small' | 'strong' | 'label' | 'title' | 'heading' | 'display';
-
-export function AppText({ variant = 'body', style, ...rest }: TextProps & { variant?: TextVariant }) {
+export function AppText({ variant = 'body', style, ...rest }: AppTextProps) {
   const theme = useTheme();
   const variants = {
     body: { fontSize: 15, lineHeight: 22, color: theme.ink },
@@ -95,17 +98,6 @@ export function AppText({ variant = 'body', style, ...rest }: TextProps & { vari
 
 /* ---------- Layout ---------- */
 
-type ScreenProps = {
-  children: ReactNode;
-  /** Fixed content above the scroll area, e.g. <NavBar />. */
-  header?: ReactNode;
-  /** Fixed content below the scroll area, e.g. a total + button bar. */
-  footer?: ReactNode;
-  gap?: number;
-  contentContainerStyle?: StyleProp<ViewStyle>;
-  onScrollNearEnd?: () => void;
-};
-
 /**
  * iOS number pads have no return key, so a Done bar rides on top of the keyboard.
  * (React Native's InputAccessoryView doesn't render on this RN version, so the bar
@@ -119,7 +111,7 @@ const FIELD_CLEARANCE = 16;
 /** Lets a field ask its screen to scroll it into view once it gains focus. */
 const RevealContext = createContext<() => void>(() => {});
 
-function KeyboardDoneBar({ bottom }: { bottom: number }) {
+function KeyboardDoneBar({ bottom }: KeyboardDoneBarProps) {
   const theme = useTheme();
   return (
     <View
@@ -223,7 +215,7 @@ export function Screen({ children, header, footer, gap = 20, contentContainerSty
   );
 }
 
-export function Footer({ children, row }: { children: ReactNode; row?: boolean }) {
+export function Footer({ children, row }: FooterProps) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   return (
@@ -244,7 +236,7 @@ export function Footer({ children, row }: { children: ReactNode; row?: boolean }
   );
 }
 
-export function NavBar({ title, step, onBack }: { title: string; step?: 1 | 2; onBack?: () => void }) {
+export function NavBar({ title, step, onBack }: NavBarProps) {
   const theme = useTheme();
   return (
     <View>
@@ -277,7 +269,7 @@ export function NavBar({ title, step, onBack }: { title: string; step?: 1 | 2; o
   );
 }
 
-export function Card({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
+export function Card({ children, style }: CardProps) {
   const theme = useTheme();
   return (
     <View style={[{ backgroundColor: theme.card, borderWidth: 1, borderColor: theme.line, borderRadius: 20 }, style]}>
@@ -286,9 +278,7 @@ export function Card({ children, style }: { children: ReactNode; style?: StylePr
   );
 }
 
-type TileTone = 'brand' | 'accent' | 'soft';
-
-export function Tile({ icon, tone = 'brand', size = 48 }: { icon: IconName; tone?: TileTone; size?: number }) {
+export function Tile({ icon, tone = 'brand', size = 48 }: TileProps) {
   const theme = useTheme();
   const tones = {
     brand: [theme.brandTint, theme.brandText],
@@ -312,15 +302,6 @@ export function Tile({ icon, tone = 'brand', size = 48 }: { icon: IconName; tone
 }
 
 /* ---------- Controls ---------- */
-
-type ButtonProps = {
-  label: string;
-  onPress: () => void;
-  variant?: 'primary' | 'text' | 'outline';
-  icon?: IconName;
-  disabled?: boolean;
-  style?: StyleProp<ViewStyle>;
-};
 
 export function Button({ label, onPress, variant = 'primary', icon, style, disabled }: ButtonProps) {
   const theme = useTheme();
@@ -355,15 +336,6 @@ export function Button({ label, onPress, variant = 'primary', icon, style, disab
   );
 }
 
-type SegmentProps = {
-  label: string;
-  isSelected: boolean;
-  onPress: () => void;
-  shape?: 'block' | 'chip';
-  /** Shown before the label, e.g. a brand logo. */
-  leading?: ReactNode;
-};
-
 /** A selectable option: operator, amount or filter. */
 export function Segment({ label, isSelected, onPress, shape = 'block', leading }: SegmentProps) {
   const theme = useTheme();
@@ -391,17 +363,6 @@ export function Segment({ label, isSelected, onPress, shape = 'block', leading }
     </Pressable>
   );
 }
-
-type FieldProps = TextInputProps & {
-  label?: string;
-  /** Adds a red asterisk after the label. */
-  required?: boolean;
-  /** Shown under the field in red; also outlines the field. */
-  error?: string;
-  /** A control inside the field's right edge, e.g. a show-password button. */
-  right?: ReactNode;
-  inputRef?: Ref<TextInputInstance>;
-};
 
 export function Field({ label, required, error, right, inputRef, style, onFocus, ...input }: FieldProps) {
   const theme = useTheme();
@@ -451,7 +412,7 @@ export function Field({ label, required, error, right, inputRef, style, onFocus,
   );
 }
 
-export function LinkRow({ icon, label, onPress, last }: { icon: IconName; label: string; onPress: () => void; last?: boolean }) {
+export function LinkRow({ icon, label, onPress, last }: LinkRowProps) {
   const theme = useTheme();
   return (
     <Pressable
@@ -476,7 +437,7 @@ export function LinkRow({ icon, label, onPress, last }: { icon: IconName; label:
 }
 
 /** Label/value line used in the order summary and profile. */
-export function KeyValue({ label, value, first }: { label: string; value: string; first?: boolean }) {
+export function KeyValue({ label, value, first }: KeyValueProps) {
   const theme = useTheme();
   return (
     <View
