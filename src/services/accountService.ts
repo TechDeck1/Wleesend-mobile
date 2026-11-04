@@ -1,5 +1,4 @@
 import { apiClient } from '@/api/client';
-import { request } from '@/api/request';
 import { GenericResponse } from '@/api/types';
 import { API_ENDPOINTS } from '@/config/api';
 import { ForgotPinRequest, ResendVerificationResponse, ResetPasswordPayload, SendDualEmailOtpPayload, UpdatePinRequest, VerifyCodeRequest, VerifyDualEmailOtpPayload } from '@/types/account';
@@ -81,13 +80,10 @@ export async function resetPassword(payload: ResetPasswordPayload): Promise<stri
 
 
 export async function resendVerificationEmail(email: string): Promise<string> {
-    const response = await request<ResendVerificationResponse, { email: string }>(
-        'POST',
+    const response = await apiClient.post<ResendVerificationResponse, { email: string }>(
         API_ENDPOINTS.auth.resendVerificationEmail,
-        {
-            body: { email: email.trim() },
-            skipAuth: true,
-        },
+        { email: email.trim() },
+        { skipAuth: true },
     );
 
     if (!response?.success) {

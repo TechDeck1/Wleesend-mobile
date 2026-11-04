@@ -42,7 +42,13 @@
       ],
       "./plugins/with-scene-lifecycle",
       "./plugins/with-source-built-expo-modules",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "@stripe/stripe-react-native",
+        {
+          "enableGooglePay": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

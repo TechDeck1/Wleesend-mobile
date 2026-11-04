@@ -4,8 +4,10 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { StripeProvider } from '@stripe/stripe-react-native';
 
 import { StoreProvider } from '@/store';
+import { STRIPE_PUBLISHABLE_KEY } from '@/config/api';
 import { useTheme } from '@/theme';
 
 SplashScreen.preventAutoHideAsync();
@@ -23,10 +25,12 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <StoreProvider>
-        <StatusBar style="auto" />
-        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: c.ground } }} />
-      </StoreProvider>
+      <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY} urlScheme="wleesend">
+        <StoreProvider>
+          <StatusBar style="auto" />
+          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: c.ground } }} />
+        </StoreProvider>
+      </StripeProvider>
     </SafeAreaProvider>
   );
 }

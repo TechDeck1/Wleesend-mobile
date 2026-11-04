@@ -1,4 +1,4 @@
-import { AIRTIME_FEE_RATE, type OperatorId } from '@/data';
+import { AIRTIME_FEE_RATE, COUNTRY_CODE, type OperatorId } from '@/data';
 import type { AirtimeOperator, AirtimePricing } from '@/types/airtime';
 
 const PHONE_PATTERN = /^[578][0-9]{8}$/;
@@ -7,6 +7,14 @@ const ORANGE_PREFIXES = new Set(['770', '775', '776', '777', '778', '779']);
 const PREFIX_LOOKUP_MIN_DIGITS = 3;
 
 export const digitsOnly = (value: string) => value.replace(/\D/g, '');
+
+export function toLocalLiberiaPhone(value: string): string {
+  let digits = digitsOnly(value);
+  const dialCode = COUNTRY_CODE.replace('+', '');
+  if (digits.startsWith(dialCode) && digits.length > 9) digits = digits.slice(dialCode.length);
+  if (digits.length === 10 && digits.startsWith('0')) digits = digits.slice(1);
+  return digits;
+}
 
 export const roundToTwoDecimals = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
 

@@ -98,7 +98,6 @@ export function useTransactionHistory(filter: Filter) {
 
     getTransactionHistory(filter, 1, TRANSACTIONS_PAGE_SIZE)
       .then((res) => {
-        console.log("response of transaction history", res);
         if (cancelled) return;
         setFailure(null);
         setLoaded({

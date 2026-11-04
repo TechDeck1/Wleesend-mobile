@@ -9,7 +9,7 @@ import {
 } from '@/api/auth-session';
 import type { AuthUser } from '@/api/auth-session';
 import type { AirtimeProduct } from '@/types/airtime';
-import { calculateAirtimePricing, roundToTwoDecimals } from '@/utils/airtime';
+import { calculateAirtimePricing, roundToTwoDecimals, toLocalLiberiaPhone } from '@/utils/airtime';
 import {
   COUNTRY_CODE,
   FEE_RATE,
@@ -70,8 +70,8 @@ function chosenAmount(product: AirtimeProduct | null, topUp: string): number {
 }
 
 export function buildOrder(draft: Draft): Order {
-  const receiver = COUNTRY_CODE + draft.phone;
-  const rows: Order['rows'] = [['Receiver phone', receiver]];
+  const receiver = draft.kind === 'voucher' ? '' : COUNTRY_CODE + draft.phone;
+  const rows: Order['rows'] = receiver ? [['Receiver phone', receiver]] : [];
   let amount: number;
   let product: string;
   let provider: string;
@@ -110,7 +110,7 @@ export function buildOrder(draft: Draft): Order {
   return { kind: draft.kind, rows, product, provider, receiver, fee, total };
 }
 
-function newDraft(kind: SendKind, operator: OperatorId): Draft {
+function newDraft(kind: SendKind, operator: OperatorId, personalPhone = ''): Draft {
   return {
     kind,
     operator,
@@ -118,7 +118,7 @@ function newDraft(kind: SendKind, operator: OperatorId): Draft {
     operatorName: '',
     product: null,
     topUp: '',
-    phone: kind === 'airtime' ? '' : OPERATORS[operator].samplePhone,
+    phone: kind === 'voucher' ? '' : toLocalLiberiaPhone(personalPhone),
     phoneEdited: false,
     meter: '',
     amount: 10,
@@ -132,9 +132,8 @@ type Store = {
   draft: Draft;
   startSend: (kind: SendKind, operator?: OperatorId) => void;
   updateDraft: (patch: Partial<Draft>) => void;
-  transactions: Transaction[];
   lastOrder: Order | null;
-  completeOrder: (order: Order) => void;
+  setLastOrder: (order: Order | null) => void;
   resend: (transaction: Transaction) => void;
   user: User | null;
   authReady: boolean;
@@ -153,7 +152,6 @@ const StoreContext = createContext<Store | null>(null);
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [draft, setDraft] = useState<Draft>(() => newDraft('airtime', 'mtn'));
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [lastOrder, setLastOrder] = useState<Order | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [authReady, setAuthReady] = useState(false);
@@ -186,20 +184,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const store: Store = {
     draft,
-    startSend: (kind, operator) =>
-      setDraft(newDraft(kind, operator ?? (kind === 'airtime' ? 'mtn' : 'orange'))),
-    updateDraft: (patch) => setDraft((d) => ({ ...d, ...patch })),
-    transactions,
-    lastOrder,
-    completeOrder: (order) => {
-      const date = new Date().toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      });
-      setLastOrder(order);
-      setTransactions((list) => [{ ...order, id: String(Date.now()), date, draft }, ...list]);
+    startSend: (kind, operator) => {
+      setLastOrder(null);
+      setDraft(newDraft(kind, operator ?? (kind === 'airtime' ? 'mtn' : 'orange'), user?.phone ?? ''));
     },
+    updateDraft: (patch) => setDraft((d) => ({ ...d, ...patch })),
+    lastOrder,
+    setLastOrder,
     resend: (transaction) => setDraft({ ...transaction.draft }),
     user,
     authReady,

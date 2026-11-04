@@ -30,7 +30,7 @@ Do not begin implementation until this review is complete. Recheck these rules a
 
 ## Expo, mobile, and dependencies
 
-- Check `package.json` before relying on an Expo or React Native API. This project uses Expo SDK 57; for Expo API changes, consult the matching versioned docs at `https://docs.expo.dev/versions/v57.0.0/` and the relevant official page before coding.
+- Check `package.json` before relying on an Expo or React Native API. This project uses Expo SDK 58; for Expo API changes, consult the matching versioned docs at `https://docs.expo.dev/versions/v58.0.0/` and the relevant official page before coding.
 - Design and validate UI for phones on both iOS and Android, and preserve web behavior where a platform-specific implementation exists. Account for safe areas, keyboard interaction, loading/error states, and usable touch targets.
 - The project uses npm (`package-lock.json`; no Bun lockfile). Use `npm` scripts for project commands and `npx expo install <package>` for Expo-compatible dependency versions.
 - `android/` exists and `ios/` does not. Do not create native project files by hand. Prefer `app.json` and config plugins for Expo-managed native configuration; only edit native project files when the task specifically requires it, and avoid destructive regeneration.

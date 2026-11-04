@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Modal, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
+import { Modal, Pressable, ScrollView, View, useWindowDimensions, type ScrollViewInstance, type ViewInstance } from 'react-native';
 
 import { Icon, T } from '@/components/ui';
 import { money } from '@/data';
@@ -32,8 +32,8 @@ export function PackagePicker({
 }) {
   const c = useTheme();
   const window = useWindowDimensions();
-  const field = useRef<View>(null);
-  const list = useRef<ScrollView>(null);
+  const field = useRef<ViewInstance>(null);
+  const list = useRef<ScrollViewInstance>(null);
   const [anchor, setAnchor] = useState<Anchor | null>(null);
   const options = packages;
   const selected = options.find((o) => o.id === selectedId);

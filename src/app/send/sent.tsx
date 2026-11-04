@@ -22,10 +22,10 @@ export default function SentScreen() {
   const message = !lastOrder
     ? ''
     : lastOrder.kind === 'airtime'
-      ? `${lastOrder.receiver} will receive an SMS with the token to top up their phone.`
+      ? `Payment received. ${lastOrder.receiver} will receive an SMS when the airtime recharge is processed.`
       : lastOrder.kind === 'utility'
-        ? `${lastOrder.receiver} will receive an SMS with the LEC token to top up their electricity meter.`
-        : `${lastOrder.receiver} will receive an SMS with their ${lastOrder.provider} shopping voucher code.`;
+        ? `Payment received. ${lastOrder.receiver} will receive an SMS when the LEC token is processed.`
+        : `Payment received. Your ${lastOrder.provider} shopping voucher code will be sent to the email on your account.`;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.ground }}>
@@ -33,7 +33,7 @@ export default function SentScreen() {
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16, paddingHorizontal: 28 }}>
         <PaymentDone />
         <T v="title" accessibilityRole="header">
-          Credit sent
+          Payment received
         </T>
         <T v="muted" style={{ textAlign: 'center' }}>
           {message}

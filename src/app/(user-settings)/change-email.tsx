@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Pressable, TextInput, View } from 'react-native';
+import { Pressable, View, type TextInputInstance } from 'react-native';
 
 import { ApiError} from '@/api/client';
 import { Button, Card, Field, Footer, NavBar, Screen, T, Tile } from '@/components/ui';
@@ -24,7 +24,7 @@ function formatCountdown(seconds: number): string {
 export default function ChangeEmailScreen() {
   const c = useTheme();
   const { user, changeEmail } = useStore();
-  const firstOtpInput = useRef<TextInput>(null);
+  const firstOtpInput = useRef<TextInputInstance>(null);
   const [newEmail, setNewEmail] = useState('');
   const [sentTo, setSentTo] = useState('');
   const [firstOtp, setFirstOtp] = useState('');

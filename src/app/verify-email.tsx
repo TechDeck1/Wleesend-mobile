@@ -2,8 +2,8 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 
-import { resendVerificationEmail } from '@/api/client';
 import { Icon, Screen, T } from '@/components/ui';
+import { resendVerificationEmail } from '@/services/accountService';
 import { useTheme } from '@/theme';
 
 export default function VerifyEmailScreen() {

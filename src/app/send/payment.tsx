@@ -1,46 +1,74 @@
-import * as Linking from 'expo-linking';
+import {
+  AddressCollectionMode,
+  CollectionMode,
+  useStripe,
+} from '@stripe/stripe-react-native';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Platform, Text, View } from 'react-native';
+import { ActivityIndicator, Linking, Text, View } from 'react-native';
 
-import { Button, Card, Field, Footer, KeyValue, NavBar, Screen, Segment, T, Tile } from '@/components/ui';
-import { WEBSITE_URL } from '@/config/api';
+import { Button, Card, Footer, KeyValue, NavBar, Screen, T } from '@/components/ui';
+import { STRIPE_PUBLISHABLE_KEY, WEBSITE_URL } from '@/config/api';
 import { money } from '@/data';
+import { createRechargePaymentIntent } from '@/services/checkoutService';
 import { buildOrder, useStore } from '@/store';
 import { fonts, useTheme } from '@/theme';
 
-type Method = 'Card' | 'Apple Pay' | 'Google Pay';
-
-/** Each phone offers its own wallet; the web preview shows all three. */
-const METHODS: Method[] = Platform.select({
-  ios: ['Card', 'Apple Pay'],
-  android: ['Card', 'Google Pay'],
-  default: ['Card', 'Apple Pay', 'Google Pay'],
-});
-
-/**
- * Step 2 of 2: order summary and payment.
- *
- * The card fields and wallet buttons are a visual placeholder only. Before launch, replace
- * them with your payment provider's mobile SDK (its card sheet, Apple Pay and Google Pay)
- * so card numbers never pass through the app.
- */
 export default function PaymentScreen() {
   const c = useTheme();
-  const { draft, completeOrder } = useStore();
+  const { draft, setLastOrder, user } = useStore();
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const order = buildOrder(draft);
-  const [method, setMethod] = useState<Method>('Card');
-  const isCard = method === 'Card';
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState('');
 
-  const pay = () => {
-    completeOrder(order);
-    router.replace('/send/sent');
+  const pay = async () => {
+    if (processing) return;
+    setProcessing(true);
+    setError('');
+    try {
+      if (!/^pk_(test|live)_/.test(STRIPE_PUBLISHABLE_KEY)) {
+        throw new Error('Secure payment is not configured. Set EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY to your Stripe publishable key, then rebuild the app.');
+      }
+
+      console.log("stripe api key", STRIPE_PUBLISHABLE_KEY);
+      const intent = await createRechargePaymentIntent(draft, order);
+      const initialized = await initPaymentSheet({
+        merchantDisplayName: 'Wleesend',
+        paymentIntentClientSecret: intent.clientSecret,
+        allowsDelayedPaymentMethods: false,
+        returnURL: 'wleesend://stripe-redirect',
+        defaultBillingDetails: {
+          name: [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim(),
+          email: user?.email ?? undefined,
+          phone: user?.phone ?? undefined,
+        },
+        billingDetailsCollectionConfiguration: {
+          name: CollectionMode.ALWAYS,
+          address: AddressCollectionMode.FULL,
+          attachDefaultsToPaymentMethod: true,
+        },
+      });
+      if (initialized.error) throw new Error(initialized.error.message);
+      const presented = await presentPaymentSheet();
+      if (presented.error) {
+        if (presented.error.code !== 'Canceled') throw new Error(presented.error.message);
+        return;
+      }
+
+      setLastOrder(order);
+      router.replace('/send/sent');
+    } catch (paymentError) {
+      setError(paymentError instanceof Error ? paymentError.message : 'Could not start secure checkout. Please try again.');
+    } finally {
+      setProcessing(false);
+    }
   };
 
-  const link = (label: string) => (
+  const link = (label: string , path : string) => (
     <Text
       accessibilityRole="link"
-      onPress={() => Linking.openURL(WEBSITE_URL)}
+      onPress={() => Linking.openURL(`${WEBSITE_URL}/${path}`)}
       style={{ color: c.brandText, fontWeight: '600', textDecorationLine: 'underline' }}>
       {label}
     </Text>
@@ -53,8 +81,9 @@ export default function PaymentScreen() {
       footer={
         <Footer>
           <Button
-            label={isCard ? `Pay ${money(order.total)}` : `Pay ${money(order.total)} with ${method}`}
-            onPress={pay}
+            label={processing ? 'Opening secure checkout…' : `Continue to pay ${money(order.total)}`}
+            disabled={processing}
+            onPress={() => void pay()}
           />
         </Footer>
       }>
@@ -80,66 +109,18 @@ export default function PaymentScreen() {
         </View>
       </Card>
 
-      <View style={{ gap: 8 }}>
-        <T v="display" accessibilityRole="header">
-          Payment method
+      <Card style={{ padding: 18, gap: 10 }}>
+        <T v="display" accessibilityRole="header">Secure checkout</T>
+        <T v="body" style={{ fontSize: 14.5, lineHeight: 21 }}>
+          Choose a payment method and provide your billing name and address in Stripe’s secure sheet. Wleesend does not store your card details.
         </T>
-        <View style={{ flexDirection: 'row', gap: 8 }}>
-          {METHODS.map((m) => (
-            <Segment key={m} label={m} selected={method === m} onPress={() => setMethod(m)} />
-          ))}
-        </View>
-      </View>
-
-      {isCard ? (
-        <>
-          <Card style={{ padding: 18, gap: 14 }}>
-            <T v="display" accessibilityRole="header">
-              Card details
-            </T>
-            <View>
-              <Field label="Card number" placeholder="0000 0000 0000 0000" keyboardType="number-pad" />
-            </View>
-            <View style={{ flexDirection: 'row', gap: 12 }}>
-              <Field label="Expiry" placeholder="MM/YY" keyboardType="numbers-and-punctuation" />
-              <Field label="CVV" placeholder="123" keyboardType="number-pad" secureTextEntry />
-            </View>
-          </Card>
-
-          <Card style={{ padding: 18, gap: 14 }}>
-            <T v="display" accessibilityRole="header">
-              Billing details
-            </T>
-            <View>
-              <Field label="Name on card" placeholder="Name on card" autoCapitalize="words" />
-            </View>
-            <View>
-              <Field label="Street address" placeholder="Street address" />
-            </View>
-            <View>
-              <Field label="City / Town" placeholder="City / Town" />
-            </View>
-            <View>
-              {/* Replace with a country picker when more billing countries are supported. */}
-              <Field label="Country" value="United States of America" editable={false} />
-            </View>
-            <View>
-              <Field label="Zip / Postal code" placeholder="Zip / Postal code" />
-            </View>
-          </Card>
-        </>
-      ) : (
-        <Card style={{ padding: 18, flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-          <Tile icon="wallet" size={46} />
-          <T v="body" style={{ flex: 1, fontSize: 14.5, lineHeight: 20 }}>
-            You&rsquo;ll confirm the payment with {method} after tapping Pay. No card details needed.
-          </T>
-        </Card>
-      )}
+        {processing ? <ActivityIndicator color={c.brandText} /> : null}
+        {error ? <T v="small" style={{ color: c.accentText }} accessibilityLiveRegion="polite">{error}</T> : null}
+      </Card>
 
       <T v="small" style={{ fontSize: 12.5 }}>
-        By placing your order, you agree to Wleesend&rsquo;s {link('privacy notice')} and{' '}
-        {link('terms and conditions of use')}.
+        By placing your order, you agree to Wleesend&rsquo;s {link('privacy notice' , 'privacy-policy')} and{' '}
+        {link('terms and conditions of use', 'terms-and-conditions')}.
       </T>
     </Screen>
   );

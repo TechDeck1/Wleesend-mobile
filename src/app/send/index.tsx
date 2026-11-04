@@ -9,6 +9,7 @@ import {
   COUNTRY_CODE,
   LEC_NAME,
   UTILITY_AMOUNTS,
+  UTILITY_MIN_AMOUNT,
   approxKw,
   money,
   VOUCHER_VENDOR_ID,
@@ -128,8 +129,12 @@ export default function SendDetailsScreen() {
   };
 
   const next = () => {
-    if (!draft.phone) {
+    if (draft.kind !== 'voucher' && !draft.phone) {
       Alert.alert('Receiver phone', 'Enter the receiver phone number.');
+      return;
+    }
+    if (draft.kind === 'utility' && (!/^\d{9}$/.test(digitsOnly(draft.phone)) || digitsOnly(draft.phone).startsWith('0'))) {
+      Alert.alert('Receiver phone', 'Enter a valid 9-digit Liberia number without the country code or leading zero.');
       return;
     }
     if (isAirtime) {
@@ -173,6 +178,17 @@ export default function SendDetailsScreen() {
           Alert.alert('Voucher amount', `Enter an amount from $${voucherProduct.min} to $${voucherProduct.max}.`);
           return;
         }
+      }
+    }
+
+    if (draft.kind === 'utility') {
+      if (!/^\d{10,12}$/.test(draft.meter.trim())) {
+        Alert.alert('Meter number', 'Enter a valid 10 to 12 digit meter number.');
+        return;
+      }
+      if (!(draft.amount >= UTILITY_MIN_AMOUNT)) {
+        Alert.alert('Amount', `Enter an amount of at least $${UTILITY_MIN_AMOUNT}.`);
+        return;
       }
     }
 
@@ -305,12 +321,11 @@ export default function SendDetailsScreen() {
               <View style={{ flex: 1, gap: 2 }}>
                 <T v="strong">{voucherCatalog.operatorName}</T>
                 <T v="small" style={{ fontSize: 13.5 }}>
-                  Shopping voucher code delivered by SMS
+                  Shopping voucher code sent to the checkout email
                 </T>
               </View>
             </Card>
           </View>
-          {phoneField}
           <View style={{ gap: 8 }}>
             <T v="label">Shopping voucher</T>
             {voucherCatalog.status === 'ready' ? (
@@ -362,6 +377,7 @@ export default function SendDetailsScreen() {
           <View style={{ gap: 8 }}>
             <T v="label">Amount (USD)</T>
             <AmountGrid amounts={UTILITY_AMOUNTS} value={draft.amount} onChange={(amount) => updateDraft({ amount })} />
+            <Field label="Custom amount (USD)" placeholder="Enter amount" keyboardType="decimal-pad" value={UTILITY_AMOUNTS.includes(draft.amount) ? '' : String(draft.amount)} onChangeText={(text) => { const cleaned = text.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1'); updateDraft({ amount: cleaned ? Number(cleaned) : 0 }); }} />
             <T v="small" style={{ fontSize: 13.5 }}>
               You will receive approx. {approxKw(draft.amount)}
             </T>

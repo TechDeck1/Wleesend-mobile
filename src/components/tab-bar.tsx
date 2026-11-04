@@ -13,7 +13,7 @@ const TAB_ICONS: Record<string, IconName> = {
 };
 
 /** Bottom tab bar with the active tab marked by a filled pill. */
-export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+export function TabBar({ state, descriptors, navigateToTab }: BottomTabBarProps) {
   const c = useTheme();
   const insets = useSafeAreaInsets();
   return (
@@ -31,8 +31,7 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
         const focused = state.index === index;
         const title = descriptors[route.key].options.title ?? route.name;
         const onPress = () => {
-          const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
-          if (!focused && !event.defaultPrevented) navigation.navigate(route.name, route.params);
+          if (!focused) navigateToTab(route.key);
         };
         return (
           <Pressable

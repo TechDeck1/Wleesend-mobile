@@ -20,8 +20,11 @@ import {
   View,
   type StyleProp,
   type TextInputProps,
+  type TextInputInstance,
   type TextProps,
   type ViewStyle,
+  type ViewInstance,
+  type ScrollViewInstance,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -142,8 +145,8 @@ function KeyboardDoneBar({ bottom }: { bottom: number }) {
 
 export function Screen({ children, header, footer, gap = 20, contentContainerStyle }: ScreenProps) {
   const c = useTheme();
-  const root = useRef<View>(null);
-  const scroll = useRef<ScrollView>(null);
+  const root = useRef<ViewInstance>(null);
+  const scroll = useRef<ScrollViewInstance>(null);
   const scrollY = useRef(0);
   const keyboardTop = useRef<number | null>(null);
   // iOS only: how far the Done bar sits above the screen's bottom edge, or null when hidden.
@@ -394,7 +397,7 @@ type FieldProps = TextInputProps & {
   error?: string;
   /** A control inside the field's right edge, e.g. a show-password button. */
   right?: ReactNode;
-  inputRef?: Ref<TextInput>;
+  inputRef?: Ref<TextInputInstance>;
 };
 
 export function Field({ label, required, error, right, inputRef, style, onFocus, ...input }: FieldProps) {

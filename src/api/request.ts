@@ -1,4 +1,3 @@
-import { getApiUrl } from '@/config/api';
 import { clearAuthSession, getAuthSession } from './auth-session';
 import type { ApiMethod, ApiQueryParams, ApiRequestOptions } from './types';
 
@@ -94,7 +93,7 @@ export async function request<TResponse = unknown, TBody = unknown>(
     throw new RangeError('timeoutMs must be a positive number.');
   }
 
-  const url = new URL(getApiUrl(path));
+  const url = new URL(path);
   appendQueryParams(url, params);
 
   const headers = new Headers(requestHeaders);

@@ -1,5 +1,4 @@
 import { forwardRef, useCallback, useMemo, useRef, useState } from 'react';
-import type { TextInputProps } from 'react-native';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -9,6 +8,8 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  type TextInputInstance,
+  type TextInputProps,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -82,8 +83,8 @@ export default function ResetPasswordScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const newRef = useRef<TextInput>(null);
-  const confirmRef = useRef<TextInput>(null);
+  const newRef = useRef<TextInputInstance>(null);
+  const confirmRef = useRef<TextInputInstance>(null);
 
   const runIdRef = useRef(0);
 
@@ -267,7 +268,7 @@ type PasswordFieldProps = {
   styles: ReturnType<typeof createStyles>;
 } & Pick<TextInputProps, 'editable' | 'returnKeyType' | 'onSubmitEditing' | 'autoComplete'>;
 
-const PasswordField = forwardRef<TextInput, PasswordFieldProps>(function PasswordField(
+const PasswordField = forwardRef<TextInputInstance, PasswordFieldProps>(function PasswordField(
   { label, value, onChangeText, error, theme, styles, ...rest },
   ref,
 ) {
