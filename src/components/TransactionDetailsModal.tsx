@@ -15,16 +15,35 @@ const KIND_LABEL: Record<SendKind, string> = {
   voucher: 'Shopping voucher',
 };
 
-/** Bottom sheet with the full details of one transaction. Shown while `transaction` is not null. */
-export function TransactionDetailsModal({ transaction, onClose, onResend }: TransactionDetailsModalProps) {
+export function TransactionDetailsModal({
+  transaction,
+  onClose,
+  onResend,
+}: TransactionDetailsModalProps) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const transactionDetails = transaction;
 
   return (
-    <Modal visible={transactionDetails !== null} transparent animationType="slide" statusBarTranslucent onRequestClose={onClose}>
-      <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(13, 15, 43, 0.6)' }}>
-        <Pressable style={{ flex: 1 }} onPress={onClose} accessibilityLabel="Close transaction details" />
+    <Modal
+      visible={transactionDetails !== null}
+      transparent
+      animationType="slide"
+      statusBarTranslucent
+      onRequestClose={onClose}
+    >
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'flex-end',
+          backgroundColor: 'rgba(13, 15, 43, 0.6)',
+        }}
+      >
+        <Pressable
+          style={{ flex: 1 }}
+          onPress={onClose}
+          accessibilityLabel="Close transaction details"
+        />
 
         {transactionDetails ? (
           <View
@@ -37,22 +56,41 @@ export function TransactionDetailsModal({ transaction, onClose, onResend }: Tran
               borderColor: theme.line,
               paddingTop: 10,
               paddingBottom: Math.max(insets.bottom, 16),
-            }}>
+            }}
+          >
             {/* Grab handle */}
             <View
-              style={{ alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: theme.fieldBorder }}
+              style={{
+                alignSelf: 'center',
+                width: 40,
+                height: 4,
+                borderRadius: 2,
+                backgroundColor: theme.fieldBorder,
+              }}
             />
 
             <ScrollView
               contentContainerStyle={{ padding: 20, gap: 16 }}
-              showsVerticalScrollIndicator={false}>
+              showsVerticalScrollIndicator={false}
+            >
               {/* Header */}
               <View style={{ alignItems: 'center', gap: 8 }}>
                 <BrandLogo brand={brandForTransaction(transactionDetails)} size={56} />
-                <AppText variant="heading" accessibilityRole="header" style={{ textAlign: 'center' }}>
+                <AppText
+                  variant="heading"
+                  accessibilityRole="header"
+                  style={{ textAlign: 'center' }}
+                >
                   {transactionDetails.product}
                 </AppText>
-                <AppText style={{ fontFamily: fonts.display, fontSize: 28, lineHeight: 34, color: theme.brandText }}>
+                <AppText
+                  style={{
+                    fontFamily: fonts.display,
+                    fontSize: 28,
+                    lineHeight: 34,
+                    color: theme.brandText,
+                  }}
+                >
                   {money(transactionDetails.total)}
                 </AppText>
                 <AppText variant="small">{transactionDetails.date}</AppText>
@@ -66,11 +104,17 @@ export function TransactionDetailsModal({ transaction, onClose, onResend }: Tran
                   borderRadius: 16,
                   paddingHorizontal: 16,
                   paddingVertical: 4,
-                }}>
+                }}
+              >
                 <KeyValue label="Type" value={KIND_LABEL[transactionDetails.kind]} first />
                 <KeyValue label="Provider" value={transactionDetails.provider} />
                 <KeyValue label="Date" value={transactionDetails.date} />
-                <KeyValue label="Amount" value={money(roundToTwoDecimals(transactionDetails.total - transactionDetails.fee))} />
+                <KeyValue
+                  label="Amount"
+                  value={money(
+                    roundToTwoDecimals(transactionDetails.total - transactionDetails.fee),
+                  )}
+                />
                 <KeyValue label="Transaction fee" value={money(transactionDetails.fee)} />
                 <KeyValue label="Total paid" value={money(transactionDetails.total)} />
                 <View
@@ -81,11 +125,16 @@ export function TransactionDetailsModal({ transaction, onClose, onResend }: Tran
                     paddingVertical: 10,
                     borderTopWidth: 1,
                     borderTopColor: theme.lineSoft,
-                  }}>
+                  }}
+                >
                   <AppText variant="small" style={{ fontSize: 14 }}>
                     Transaction ID
                   </AppText>
-                  <AppText variant="strong" selectable style={{ fontSize: 13, flexShrink: 1, textAlign: 'right' }}>
+                  <AppText
+                    variant="strong"
+                    selectable
+                    style={{ fontSize: 13, flexShrink: 1, textAlign: 'right' }}
+                  >
                     {transactionDetails.id}
                   </AppText>
                 </View>

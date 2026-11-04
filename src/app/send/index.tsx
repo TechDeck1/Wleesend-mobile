@@ -5,7 +5,16 @@ import { ActivityIndicator, Alert, Text, View, useWindowDimensions } from 'react
 
 import { BrandLogo } from '@/components/BrandLogo';
 import { PackagePicker, isAvailable } from '@/components/PackagePicker';
-import { Button, Card, Field, Footer, NavBar, Screen, Segment, AppText } from '@/components/UiComponents';
+import {
+  Button,
+  Card,
+  Field,
+  Footer,
+  NavBar,
+  Screen,
+  Segment,
+  AppText,
+} from '@/components/UiComponents';
 import {
   COUNTRY_CODE,
   LEC_NAME,
@@ -30,7 +39,6 @@ import { CollapsibleRow } from '@/components/CollapsibleRow';
 import { useVoucherCatalog } from '@/hooks/use-voucher-catalog';
 import type { AmountGridProps, CatalogNoticeProps } from '@/types/screens/SendDetailsScreen.types';
 
-
 const TITLES = {
   airtime: { nav: 'Mobile airtime', heading: 'Send mobile airtime credit' },
   utility: { nav: 'Utility credit', heading: 'Send utility credit' },
@@ -44,7 +52,11 @@ function AmountGrid({ amounts, value, onChange }: AmountGridProps) {
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
       {amounts.map((amount) => (
         <View key={amount} style={{ width: chip }}>
-          <Segment label={`$${amount}`} isSelected={value === amount} onPress={() => onChange(amount)} />
+          <Segment
+            label={`$${amount}`}
+            isSelected={value === amount}
+            onPress={() => onChange(amount)}
+          />
         </View>
       ))}
     </View>
@@ -83,12 +95,13 @@ export default function SendDetailsScreen() {
   const OPERATOR_ROW_HEIGHT = 52;
   const OPERATOR_ROW_GAP = 10;
   // A number's first digits fix its operator, so only that operator is offered once they are typed.
-  const restricted = isAirtime ? findRestrictedOperator(digitsOnly(draft.phone), operators) : undefined;
+  const restricted = isAirtime
+    ? findRestrictedOperator(digitsOnly(draft.phone), operators)
+    : undefined;
   const phoneError = isAirtime ? getPhonePrefixError(digitsOnly(draft.phone)) : undefined;
   const isVoucher = draft.kind === 'voucher';
   const voucherCatalog = useVoucherCatalog(isVoucher);
   const voucherProduct = draft.voucherProduct;
-
 
   const handleSelectOperator = (operator: AirtimeOperator) =>
     updateDraft({
@@ -100,7 +113,9 @@ export default function SendDetailsScreen() {
     });
 
   const handleSelectVoucherProduct = (productId: number) => {
-    const selectedProduct = voucherCatalog.products.find((productOption) => productOption.id === productId);
+    const selectedProduct = voucherCatalog.products.find(
+      (productOption) => productOption.id === productId,
+    );
     if (selectedProduct)
       updateDraft({
         voucherProduct: selectedProduct,
@@ -109,25 +124,36 @@ export default function SendDetailsScreen() {
       });
   };
 
-  // Once operators load: follow the number's operator, else keep the chosen one, else use the one
-  // picked on the Products screen. Clear a choice that is no longer on offer.
+  // Match the number's operator after loading, falling back to the Products screen choice.
   useEffect(() => {
     if (!isAirtime || operatorsStatus !== 'ready') return;
     const selectedOperator = operators.find((operator) => operator.id === draft.operatorId);
     if (restricted) {
       if (restricted.id !== draft.operatorId) handleSelectOperator(restricted);
     } else if (!selectedOperator) {
-      const hinted = operators.find((operator) => brandForOperatorName(operator.name) === draft.operator);
+      const hinted = operators.find(
+        (operator) => brandForOperatorName(operator.name) === draft.operator,
+      );
       if (hinted) handleSelectOperator(hinted);
-      else if (draft.operatorId !== null) updateDraft({ operatorId: null, operatorName: '', product: null, topUp: '' });
+      else if (draft.operatorId !== null)
+        updateDraft({
+          operatorId: null,
+          operatorName: '',
+          product: null,
+          topUp: '',
+        });
     }
-    // handleSelectOperator only reads `draft.operator`, which is already listed.
+    // This handler only reads draft.operator, so it isn't an effect dependency.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAirtime, operatorsStatus, operators, restricted, draft.operatorId, draft.operator]);
 
   const handleSelectProduct = (productId: number) => {
     const selectedProduct = products.find((productOption) => productOption.id === productId);
-    if (selectedProduct) updateDraft({ product: selectedProduct, topUp: selectedProduct.isRange ? String(selectedProduct.min) : '' });
+    if (selectedProduct)
+      updateDraft({
+        product: selectedProduct,
+        topUp: selectedProduct.isRange ? String(selectedProduct.min) : '',
+      });
   };
 
   const handleContinue = () => {
@@ -135,13 +161,22 @@ export default function SendDetailsScreen() {
       Alert.alert('Receiver phone', 'Enter the receiver phone number.');
       return;
     }
-    if (draft.kind === 'utility' && (!/^\d{9}$/.test(digitsOnly(draft.phone)) || digitsOnly(draft.phone).startsWith('0'))) {
-      Alert.alert('Receiver phone', 'Enter a valid 9-digit Liberia number without the country code or leading zero.');
+    if (
+      draft.kind === 'utility' &&
+      (!/^\d{9}$/.test(digitsOnly(draft.phone)) || digitsOnly(draft.phone).startsWith('0'))
+    ) {
+      Alert.alert(
+        'Receiver phone',
+        'Enter a valid 9-digit Liberia number without the country code or leading zero.',
+      );
       return;
     }
     if (isAirtime) {
       if (!isValidLiberiaPhone(digitsOnly(draft.phone))) {
-        Alert.alert('Receiver phone', 'Enter a valid 9-digit MTN or Orange number, without the country code.');
+        Alert.alert(
+          'Receiver phone',
+          'Enter a valid 9-digit MTN or Orange number, without the country code.',
+        );
         return;
       }
       if (draft.operatorId === null) {
@@ -159,7 +194,10 @@ export default function SendDetailsScreen() {
       if (selectedAirtimeProduct.isRange) {
         const amount = Number(draft.topUp);
         if (!(amount >= selectedAirtimeProduct.min && amount <= selectedAirtimeProduct.max)) {
-          Alert.alert('Top-up amount', `Enter an amount from $${selectedAirtimeProduct.min} to $${selectedAirtimeProduct.max}.`);
+          Alert.alert(
+            'Top-up amount',
+            `Enter an amount from $${selectedAirtimeProduct.min} to $${selectedAirtimeProduct.max}.`,
+          );
           return;
         }
       }
@@ -177,7 +215,10 @@ export default function SendDetailsScreen() {
       if (voucherProduct.isRange) {
         const amount = Number(draft.topUp);
         if (!(amount >= voucherProduct.min && amount <= voucherProduct.max)) {
-          Alert.alert('Voucher amount', `Enter an amount from $${voucherProduct.min} to $${voucherProduct.max}.`);
+          Alert.alert(
+            'Voucher amount',
+            `Enter an amount from $${voucherProduct.min} to $${voucherProduct.max}.`,
+          );
           return;
         }
       }
@@ -208,8 +249,11 @@ export default function SendDetailsScreen() {
             borderRadius: 12,
             backgroundColor: theme.brandTint,
             justifyContent: 'center',
-          }}>
-          <Text style={{ color: theme.brandText, fontSize: 16, fontWeight: '600' }}>{COUNTRY_CODE}</Text>
+          }}
+        >
+          <Text style={{ color: theme.brandText, fontSize: 16, fontWeight: '600' }}>
+            {COUNTRY_CODE}
+          </Text>
         </View>
         <Field
           accessibilityLabel="Receiver phone"
@@ -218,7 +262,12 @@ export default function SendDetailsScreen() {
           maxLength={isAirtime ? 9 : undefined}
           error={phoneError}
           value={draft.phone}
-          onChangeText={(phoneValue) => updateDraft({ phone: phoneValue.replace(/[^0-9]/g, ''), isPhoneEdited: true })}
+          onChangeText={(phoneValue) =>
+            updateDraft({
+              phone: phoneValue.replace(/[^0-9]/g, ''),
+              isPhoneEdited: true,
+            })
+          }
         />
       </View>
     </View>
@@ -234,16 +283,32 @@ export default function SendDetailsScreen() {
             <AppText variant="small" style={{ fontSize: 12.5 }}>
               Total, incl. {money(order.fee)} fee
             </AppText>
-            <AppText style={{ fontFamily: fonts.display, fontSize: 22, lineHeight: 28 }}>{money(order.total)}</AppText>
+            <AppText
+              style={{
+                fontFamily: fonts.display,
+                fontSize: 22,
+                lineHeight: 28,
+              }}
+            >
+              {money(order.total)}
+            </AppText>
             {draft.kind === 'utility' ? (
-              <AppText variant="small" style={{ fontSize: 12.5, fontWeight: '600', color: theme.brandText }}>
+              <AppText
+                variant="small"
+                style={{
+                  fontSize: 12.5,
+                  fontWeight: '600',
+                  color: theme.brandText,
+                }}
+              >
                 Approx. {approxKw(draft.amount)}
               </AppText>
             ) : null}
           </View>
           <Button label="Continue" onPress={handleContinue} />
         </Footer>
-      }>
+      }
+    >
       <AppText variant="title" style={{ fontSize: 26, lineHeight: 32 }} accessibilityRole="header">
         {TITLES[draft.kind].heading}
       </AppText>
@@ -262,7 +327,8 @@ export default function SendDetailsScreen() {
                         key={operator.id}
                         isVisible={!restricted || restricted.id === operator.id}
                         height={OPERATOR_ROW_HEIGHT}
-                        gap={OPERATOR_ROW_GAP}>
+                        gap={OPERATOR_ROW_GAP}
+                      >
                         <Segment
                           label={operator.name}
                           leading={brand ? <BrandLogo brand={brand} size={28} /> : undefined}
@@ -288,10 +354,16 @@ export default function SendDetailsScreen() {
           <View style={{ gap: 8 }}>
             <AppText variant="label">Package</AppText>
             {draft.operatorId === null ? (
-              <AppText variant="small">{operatorsStatus === 'ready' ? 'Select an operator to see its packages.' : ' '}</AppText>
+              <AppText variant="small">
+                {operatorsStatus === 'ready' ? 'Select an operator to see its packages.' : ' '}
+              </AppText>
             ) : productsStatus === 'ready' ? (
               products.length ? (
-                <PackagePicker packages={products} selectedId={selectedAirtimeProduct?.id ?? null} onSelect={handleSelectProduct} />
+                <PackagePicker
+                  packages={products}
+                  selectedId={selectedAirtimeProduct?.id ?? null}
+                  onSelect={handleSelectProduct}
+                />
               ) : (
                 <AppText variant="small">No packages are available for this operator.</AppText>
               )
@@ -309,7 +381,11 @@ export default function SendDetailsScreen() {
                 keyboardType="decimal-pad"
                 maxLength={7}
                 value={draft.topUp}
-                onChangeText={(text) => updateDraft({ topUp: text.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') })}
+                onChangeText={(text) =>
+                  updateDraft({
+                    topUp: text.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1'),
+                  })
+                }
               />
             ) : null}
           </View>
@@ -318,7 +394,15 @@ export default function SendDetailsScreen() {
         <>
           <View style={{ gap: 8 }}>
             <AppText variant="label">Vendor</AppText>
-            <Card style={{ padding: 14, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+            <Card
+              style={{
+                padding: 14,
+                paddingHorizontal: 16,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 14,
+              }}
+            >
               <BrandLogo brand={VOUCHER_VENDOR_ID} size={46} />
               <View style={{ flex: 1, gap: 2 }}>
                 <AppText variant="strong">{voucherCatalog.operatorName}</AppText>
@@ -341,7 +425,11 @@ export default function SendDetailsScreen() {
                 <AppText variant="small">No vouchers are available right now.</AppText>
               )
             ) : (
-              <CatalogNotice loadingMessage="Loading vouchers…" error={voucherCatalog.error} onRetry={voucherCatalog.reload} />
+              <CatalogNotice
+                loadingMessage="Loading vouchers…"
+                error={voucherCatalog.error}
+                onRetry={voucherCatalog.reload}
+              />
             )}
             {voucherProduct?.isRange ? (
               <Field
@@ -350,14 +438,26 @@ export default function SendDetailsScreen() {
                 keyboardType="decimal-pad"
                 maxLength={7}
                 value={draft.topUp}
-                onChangeText={(text) => updateDraft({ topUp: text.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1') })}
+                onChangeText={(text) =>
+                  updateDraft({
+                    topUp: text.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1'),
+                  })
+                }
               />
             ) : null}
           </View>
         </>
       ) : (
         <>
-          <Card style={{ padding: 14, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+          <Card
+            style={{
+              padding: 14,
+              paddingHorizontal: 16,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 14,
+            }}
+          >
             <BrandLogo brand="lec" size={46} />
             <View style={{ flex: 1, gap: 2 }}>
               <AppText variant="strong">{LEC_NAME}</AppText>
@@ -378,8 +478,21 @@ export default function SendDetailsScreen() {
           {phoneField}
           <View style={{ gap: 8 }}>
             <AppText variant="label">Amount (USD)</AppText>
-            <AmountGrid amounts={UTILITY_AMOUNTS} value={draft.amount} onChange={(amount) => updateDraft({ amount })} />
-            <Field label="Custom amount (USD)" placeholder="Enter amount" keyboardType="decimal-pad" value={UTILITY_AMOUNTS.includes(draft.amount) ? '' : String(draft.amount)} onChangeText={(text) => { const cleaned = text.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1'); updateDraft({ amount: cleaned ? Number(cleaned) : 0 }); }} />
+            <AmountGrid
+              amounts={UTILITY_AMOUNTS}
+              value={draft.amount}
+              onChange={(amount) => updateDraft({ amount })}
+            />
+            <Field
+              label="Custom amount (USD)"
+              placeholder="Enter amount"
+              keyboardType="decimal-pad"
+              value={UTILITY_AMOUNTS.includes(draft.amount) ? '' : String(draft.amount)}
+              onChangeText={(text) => {
+                const cleaned = text.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+                updateDraft({ amount: cleaned ? Number(cleaned) : 0 });
+              }}
+            />
             <AppText variant="small" style={{ fontSize: 13.5 }}>
               You will receive approx. {approxKw(draft.amount)}
             </AppText>

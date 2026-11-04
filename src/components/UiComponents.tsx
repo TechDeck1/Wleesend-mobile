@@ -1,13 +1,6 @@
 import { router } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import {
   Keyboard,
   Platform,
@@ -39,7 +32,6 @@ import type {
   TileProps,
 } from '@/types/components/UiComponents.types';
 
-/* ---------- Icons: SF Symbols on iOS, Material Symbols on Android ---------- */
 
 const ICONS = {
   home: { ios: 'house', android: 'home' },
@@ -79,7 +71,6 @@ export function Icon({ name, size = 24, color }: IconProps) {
   );
 }
 
-/* ---------- Text ---------- */
 
 export function AppText({ variant = 'body', style, ...rest }: AppTextProps) {
   const theme = useTheme();
@@ -87,28 +78,44 @@ export function AppText({ variant = 'body', style, ...rest }: AppTextProps) {
     body: { fontSize: 15, lineHeight: 22, color: theme.ink },
     muted: { fontSize: 15, lineHeight: 22, color: theme.muted },
     small: { fontSize: 13, lineHeight: 18, color: theme.muted },
-    strong: { fontSize: 15, lineHeight: 20, color: theme.ink, fontWeight: '600' },
-    label: { fontSize: 13, lineHeight: 18, color: theme.label, fontWeight: '600' },
-    title: { fontSize: 28, lineHeight: 34, color: theme.ink, fontFamily: fonts.display },
-    heading: { fontSize: 17, lineHeight: 22, color: theme.ink, fontFamily: fonts.display },
-    display: { fontSize: 16, lineHeight: 21, color: theme.ink, fontFamily: fonts.display },
+    strong: {
+      fontSize: 15,
+      lineHeight: 20,
+      color: theme.ink,
+      fontWeight: '600',
+    },
+    label: {
+      fontSize: 13,
+      lineHeight: 18,
+      color: theme.label,
+      fontWeight: '600',
+    },
+    title: {
+      fontSize: 28,
+      lineHeight: 34,
+      color: theme.ink,
+      fontFamily: fonts.display,
+    },
+    heading: {
+      fontSize: 17,
+      lineHeight: 22,
+      color: theme.ink,
+      fontFamily: fonts.display,
+    },
+    display: {
+      fontSize: 16,
+      lineHeight: 21,
+      color: theme.ink,
+      fontFamily: fonts.display,
+    },
   } as const;
   return <Text {...rest} style={[variants[variant], style]} />;
 }
 
-/* ---------- Layout ---------- */
-
-/**
- * iOS number pads have no return key, so a Done bar rides on top of the keyboard.
- * (React Native's InputAccessoryView doesn't render on this RN version, so the bar
- * follows the keyboard's position itself.)
- */
-/** Height of the Done bar, so the active field can be kept clear of it. */
+// iOS number pads lack a return key, so the Done bar follows the keyboard.
 const DONE_BAR_HEIGHT = 46;
-/** Breathing room between the active field and the Done bar. */
 const FIELD_CLEARANCE = 16;
 
-/** Lets a field ask its screen to scroll it into view once it gains focus. */
 const RevealContext = createContext<() => void>(() => {});
 
 function KeyboardDoneBar({ bottom }: KeyboardDoneBarProps) {
@@ -128,7 +135,8 @@ function KeyboardDoneBar({ bottom }: KeyboardDoneBarProps) {
         borderTopWidth: 1,
         borderTopColor: theme.line,
         paddingHorizontal: 20,
-      }}>
+      }}
+    >
       <Pressable onPress={Keyboard.dismiss} accessibilityRole="button" hitSlop={10}>
         <Text style={{ color: theme.brandText, fontSize: 16, fontWeight: '600' }}>Done</Text>
       </Pressable>
@@ -136,16 +144,22 @@ function KeyboardDoneBar({ bottom }: KeyboardDoneBarProps) {
   );
 }
 
-export function Screen({ children, header, footer, gap = 20, contentContainerStyle, onScrollNearEnd }: ScreenProps) {
+export function Screen({
+  children,
+  header,
+  footer,
+  gap = 20,
+  contentContainerStyle,
+  onScrollNearEnd,
+}: ScreenProps) {
   const theme = useTheme();
   const root = useRef<ViewInstance>(null);
   const scroll = useRef<ScrollViewInstance>(null);
   const scrollY = useRef(0);
   const keyboardTop = useRef<number | null>(null);
-  // iOS only: how far the Done bar sits above the screen's bottom edge, or null when hidden.
+  // Track the iOS Done bar position so focused fields can stay visible.
   const [barBottom, setBarBottom] = useState<number | null>(null);
 
-  // Scrolls the focused field so it sits above the keyboard and the Done bar.
   const reveal = useCallback(() => {
     const field = TextInput.State.currentlyFocusedInput();
     const top = keyboardTop.current;
@@ -153,7 +167,11 @@ export function Screen({ children, header, footer, gap = 20, contentContainerSty
     field.measureInWindow((_x, y, _w, h) => {
       const limit = top - (Platform.OS === 'ios' ? DONE_BAR_HEIGHT : 0) - FIELD_CLEARANCE;
       const overlap = y + h - limit;
-      if (overlap > 0) scroll.current?.scrollTo({ y: scrollY.current + overlap, animated: true });
+      if (overlap > 0)
+        scroll.current?.scrollTo({
+          y: scrollY.current + overlap,
+          animated: true,
+        });
     });
   }, []);
 
@@ -163,9 +181,11 @@ export function Screen({ children, header, footer, gap = 20, contentContainerSty
     const show = Keyboard.addListener(showEvent, (keyboardEvent) => {
       keyboardTop.current = keyboardEvent.endCoordinates.screenY;
       if (Platform.OS === 'ios') {
-        root.current?.measureInWindow((_x, y, _w, height) => setBarBottom(y + height - keyboardEvent.endCoordinates.screenY));
+        root.current?.measureInWindow((_x, y, _w, height) =>
+          setBarBottom(y + height - keyboardEvent.endCoordinates.screenY),
+        );
       }
-      // Wait for the keyboard to finish sliding in and the inset to apply.
+      // Wait until the keyboard and safe-area inset finish moving.
       setTimeout(reveal, Platform.OS === 'ios' ? 320 : 60);
     });
     const hide = Keyboard.addListener(hideEvent, () => {
@@ -199,13 +219,15 @@ export function Screen({ children, header, footer, gap = 20, contentContainerSty
           onScroll={(scrollEvent) => {
             scrollY.current = scrollEvent.nativeEvent.contentOffset.y;
             const { contentOffset, contentSize, layoutMeasurement } = scrollEvent.nativeEvent;
-            if (contentOffset.y + layoutMeasurement.height >= contentSize.height - 240) onScrollNearEnd?.();
+            if (contentOffset.y + layoutMeasurement.height >= contentSize.height - 240)
+              onScrollNearEnd?.();
           }}
           scrollEventThrottle={16}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           automaticallyAdjustKeyboardInsets
-          showsVerticalScrollIndicator={false}>
+          showsVerticalScrollIndicator={false}
+        >
           {children}
         </ScrollView>
         {footer}
@@ -230,7 +252,8 @@ export function Footer({ children, row }: FooterProps) {
         flexDirection: row ? 'row' : 'column',
         alignItems: row ? 'center' : 'stretch',
         gap: 16,
-      }}>
+      }}
+    >
       {children}
     </View>
   );
@@ -240,12 +263,25 @@ export function NavBar({ title, step, onBack }: NavBarProps) {
   const theme = useTheme();
   return (
     <View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, gap: 2 }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: 8,
+          gap: 2,
+        }}
+      >
         <Pressable
           onPress={onBack ?? (() => router.back())}
           accessibilityRole="button"
           accessibilityLabel="Back"
-          style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
+          style={{
+            width: 44,
+            height: 44,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
           <Icon name="left" size={22} color={theme.ink} />
         </Pressable>
         <AppText variant="heading" style={{ flex: 1 }}>
@@ -258,10 +294,29 @@ export function NavBar({ title, step, onBack }: NavBarProps) {
         ) : null}
       </View>
       {step ? (
-        <View style={{ flexDirection: 'row', gap: 6, paddingHorizontal: 20, paddingTop: 8 }}>
-          <View style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: theme.brandText }} />
+        <View
+          style={{
+            flexDirection: 'row',
+            gap: 6,
+            paddingHorizontal: 20,
+            paddingTop: 8,
+          }}
+        >
           <View
-            style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: step === 2 ? theme.brandText : theme.fieldBorder }}
+            style={{
+              flex: 1,
+              height: 4,
+              borderRadius: 2,
+              backgroundColor: theme.brandText,
+            }}
+          />
+          <View
+            style={{
+              flex: 1,
+              height: 4,
+              borderRadius: 2,
+              backgroundColor: step === 2 ? theme.brandText : theme.fieldBorder,
+            }}
           />
         </View>
       ) : null}
@@ -272,7 +327,17 @@ export function NavBar({ title, step, onBack }: NavBarProps) {
 export function Card({ children, style }: CardProps) {
   const theme = useTheme();
   return (
-    <View style={[{ backgroundColor: theme.card, borderWidth: 1, borderColor: theme.line, borderRadius: 20 }, style]}>
+    <View
+      style={[
+        {
+          backgroundColor: theme.card,
+          borderWidth: 1,
+          borderColor: theme.line,
+          borderRadius: 20,
+        },
+        style,
+      ]}
+    >
       {children}
     </View>
   );
@@ -295,20 +360,42 @@ export function Tile({ icon, tone = 'brand', size = 48 }: TileProps) {
         backgroundColor: background,
         alignItems: 'center',
         justifyContent: 'center',
-      }}>
+      }}
+    >
       <Icon name={icon} size={Math.round(size * 0.5)} color={foreground} />
     </View>
   );
 }
 
-/* ---------- Controls ---------- */
 
-export function Button({ label, onPress, variant = 'primary', icon, style, disabled }: ButtonProps) {
+export function Button({
+  label,
+  onPress,
+  variant = 'primary',
+  icon,
+  style,
+  disabled,
+}: ButtonProps) {
   const theme = useTheme();
   const look = {
-    primary: { background: theme.accent, color: theme.onBrand, border: theme.accent, height: 54 },
-    text: { background: 'transparent', color: theme.brandText, border: 'transparent', height: 50 },
-    outline: { background: theme.card, color: theme.accentText, border: theme.line, height: 52 },
+    primary: {
+      background: theme.accent,
+      color: theme.onBrand,
+      border: theme.accent,
+      height: 54,
+    },
+    text: {
+      background: 'transparent',
+      color: theme.brandText,
+      border: 'transparent',
+      height: 50,
+    },
+    outline: {
+      background: theme.card,
+      color: theme.accentText,
+      border: theme.line,
+      height: 52,
+    },
   }[variant];
   return (
     <Pressable
@@ -329,14 +416,14 @@ export function Button({ label, onPress, variant = 'primary', icon, style, disab
           opacity: pressed ? 0.85 : 1,
         },
         style,
-      ]}>
+      ]}
+    >
       {icon ? <Icon name={icon} size={20} color={look.color} /> : null}
       <Text style={{ color: look.color, fontSize: 16, fontWeight: '600' }}>{label}</Text>
     </Pressable>
   );
 }
 
-/** A selectable option: operator, amount or filter. */
 export function Segment({ label, isSelected, onPress, shape = 'block', leading }: SegmentProps) {
   const theme = useTheme();
   const chip = shape === 'chip';
@@ -357,14 +444,32 @@ export function Segment({ label, isSelected, onPress, shape = 'block', leading }
         gap: 8,
         alignItems: 'center',
         justifyContent: 'center',
-      }}>
+      }}
+    >
       {leading}
-      <Text style={{ color: isSelected ? theme.onBrand : theme.ink, fontSize: chip ? 14 : 15, fontWeight: '600' }}>{label}</Text>
+      <Text
+        style={{
+          color: isSelected ? theme.onBrand : theme.ink,
+          fontSize: chip ? 14 : 15,
+          fontWeight: '600',
+        }}
+      >
+        {label}
+      </Text>
     </Pressable>
   );
 }
 
-export function Field({ label, required, error, right, inputRef, style, onFocus, ...input }: FieldProps) {
+export function Field({
+  label,
+  required,
+  error,
+  right,
+  inputRef,
+  style,
+  onFocus,
+  ...input
+}: FieldProps) {
   const theme = useTheme();
   const reveal = useContext(RevealContext);
   return (
@@ -383,7 +488,7 @@ export function Field({ label, required, error, right, inputRef, style, onFocus,
           {...input}
           onFocus={(focusEvent) => {
             onFocus?.(focusEvent);
-            // When the keyboard is already up, moving to another field fires no keyboard event.
+            // Reveal the next field when focus moves without a keyboard event.
             setTimeout(reveal, 50);
           }}
           style={[
@@ -426,7 +531,8 @@ export function LinkRow({ icon, label, onPress, last }: LinkRowProps) {
         paddingHorizontal: 16,
         borderBottomWidth: last ? 0 : 1,
         borderBottomColor: theme.lineSoft,
-      }}>
+      }}
+    >
       <Tile icon={icon} size={36} />
       <AppText variant="strong" style={{ flex: 1 }}>
         {label}
@@ -436,7 +542,6 @@ export function LinkRow({ icon, label, onPress, last }: LinkRowProps) {
   );
 }
 
-/** Label/value line used in the order summary and profile. */
 export function KeyValue({ label, value, first }: KeyValueProps) {
   const theme = useTheme();
   return (
@@ -448,7 +553,8 @@ export function KeyValue({ label, value, first }: KeyValueProps) {
         paddingVertical: 10,
         borderTopWidth: first ? 0 : 1,
         borderTopColor: theme.lineSoft,
-      }}>
+      }}
+    >
       <AppText variant="small" style={{ fontSize: 14 }}>
         {label}
       </AppText>

@@ -29,11 +29,11 @@ import { MIN_PASSWORD_LENGTH } from '@/constants/auth';
 
 const EMPTY: ResetPasswordValues = { oldPin: '', newPin: '', confirmPin: '' };
 
-
 function getPasswordRuleError(password: string): string | null {
   const missing: string[] = [];
 
-  if (password.length < MIN_PASSWORD_LENGTH) missing.push(`at least ${MIN_PASSWORD_LENGTH} characters`);
+  if (password.length < MIN_PASSWORD_LENGTH)
+    missing.push(`at least ${MIN_PASSWORD_LENGTH} characters`);
   if (!/^[A-Z]/.test(password)) missing.push('a capital letter as the first character');
   if (!/\d/.test(password)) missing.push('a number');
   if (!/[^A-Za-z0-9\s]/.test(password)) missing.push('a symbol (e.g. @ # $ !)');
@@ -131,8 +131,8 @@ export default function ResetPasswordScreen() {
         newPin: values.newPin,
         confirmPin: values.confirmPin,
       });
-      if (runId !== runIdRef.current) return; 
-      setValues(EMPTY); 
+      if (runId !== runIdRef.current) return;
+      setValues(EMPTY);
       setSuccessMessage(message);
     } catch (error) {
       if (runId !== runIdRef.current) return;
@@ -187,7 +187,11 @@ export default function ResetPasswordScreen() {
           </Text>
 
           {formError ? (
-            <View style={styles.errorBanner} accessibilityLiveRegion="polite" accessibilityRole="alert">
+            <View
+              style={styles.errorBanner}
+              accessibilityLiveRegion="polite"
+              accessibilityRole="alert"
+            >
               <Text style={styles.errorBannerText}>{formError}</Text>
             </View>
           ) : null}
@@ -251,7 +255,12 @@ export default function ResetPasswordScreen() {
             )}
           </Pressable>
 
-          <Pressable onPress={handleGoBack} disabled={isSubmitting} style={styles.linkButton} accessibilityRole="button">
+          <Pressable
+            onPress={handleGoBack}
+            disabled={isSubmitting}
+            style={styles.linkButton}
+            accessibilityRole="button"
+          >
             <Text style={styles.linkText}>Cancel</Text>
           </Pressable>
         </ScrollView>
@@ -260,59 +269,60 @@ export default function ResetPasswordScreen() {
   );
 }
 
-const PasswordField = forwardRef<TextInputInstance, ResetPasswordPasswordFieldProps>(function PasswordField(
-  { label, value, onChangeText, error, theme, styles, ...rest },
-  ref,
-) {
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+const PasswordField = forwardRef<TextInputInstance, ResetPasswordPasswordFieldProps>(
+  function PasswordField({ label, value, onChangeText, error, theme, styles, ...rest }, ref) {
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
-  return (
-    <View style={styles.fieldWrap}>
-      <Text style={styles.label}>{label}</Text>
-      <View style={[styles.inputRow, error ? styles.inputRowError : null]}>
-        <TextInput
-          ref={ref}
-          style={styles.input}
-          value={value}
-          onChangeText={onChangeText}
-          secureTextEntry={!isPasswordVisible}
-          keyboardType="default"
-          autoCapitalize="none"
-          autoCorrect={false}
-          placeholderTextColor={theme.muted}
-          accessibilityLabel={label}
-          {...rest}
-        />
-        <Pressable
-          onPress={() => setIsPasswordVisible((isVisible) => !isVisible)}
-          hitSlop={10}
-          accessibilityRole="button"
-          accessibilityLabel={isPasswordVisible ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`}
-        >
-          <SymbolView
-            name={isPasswordVisible ? 'eye.slash' : 'eye'}
-            size={22}
-            tintColor={theme.muted}
-            style={styles.toggleSymbol}
-            fallback={
-              <Ionicons
-                name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
-                size={22}
-                color={theme.muted}
-                style={styles.toggleIcon}
-              />
-            }
+    return (
+      <View style={styles.fieldWrap}>
+        <Text style={styles.label}>{label}</Text>
+        <View style={[styles.inputRow, error ? styles.inputRowError : null]}>
+          <TextInput
+            ref={ref}
+            style={styles.input}
+            value={value}
+            onChangeText={onChangeText}
+            secureTextEntry={!isPasswordVisible}
+            keyboardType="default"
+            autoCapitalize="none"
+            autoCorrect={false}
+            placeholderTextColor={theme.muted}
+            accessibilityLabel={label}
+            {...rest}
           />
-        </Pressable>
+          <Pressable
+            onPress={() => setIsPasswordVisible((isVisible) => !isVisible)}
+            hitSlop={10}
+            accessibilityRole="button"
+            accessibilityLabel={
+              isPasswordVisible ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`
+            }
+          >
+            <SymbolView
+              name={isPasswordVisible ? 'eye.slash' : 'eye'}
+              size={22}
+              tintColor={theme.muted}
+              style={styles.toggleSymbol}
+              fallback={
+                <Ionicons
+                  name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
+                  size={22}
+                  color={theme.muted}
+                  style={styles.toggleIcon}
+                />
+              }
+            />
+          </Pressable>
+        </View>
+        {error ? (
+          <Text style={styles.fieldError} accessibilityLiveRegion="polite">
+            {error}
+          </Text>
+        ) : null}
       </View>
-      {error ? (
-        <Text style={styles.fieldError} accessibilityLiveRegion="polite">
-          {error}
-        </Text>
-      ) : null}
-    </View>
-  );
-});
+    );
+  },
+);
 
 function createStyles(theme: Palette) {
   return StyleSheet.create({
@@ -325,7 +335,12 @@ function createStyles(theme: Palette) {
       color: theme.ink,
       marginBottom: 6,
     },
-    subtitle: { fontSize: 15, lineHeight: 22, color: theme.muted, marginBottom: 20 },
+    subtitle: {
+      fontSize: 15,
+      lineHeight: 22,
+      color: theme.muted,
+      marginBottom: 20,
+    },
     centerText: { textAlign: 'center' },
 
     card: {
@@ -337,7 +352,12 @@ function createStyles(theme: Palette) {
       marginBottom: 20,
     },
     fieldWrap: { marginBottom: 16 },
-    label: { fontSize: 14, color: theme.label, marginBottom: 6, fontWeight: '500' },
+    label: {
+      fontSize: 14,
+      color: theme.label,
+      marginBottom: 6,
+      fontWeight: '500',
+    },
     inputRow: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -359,7 +379,11 @@ function createStyles(theme: Palette) {
       padding: 14,
       marginBottom: 16,
     },
-    errorBannerText: { color: theme.accentTintText, fontSize: 14, lineHeight: 20 },
+    errorBannerText: {
+      color: theme.accentTintText,
+      fontSize: 14,
+      lineHeight: 20,
+    },
 
     button: {
       backgroundColor: theme.brand,
@@ -372,7 +396,11 @@ function createStyles(theme: Palette) {
     },
     buttonPressed: { opacity: 0.88 },
     buttonDisabled: { opacity: 0.7 },
-    buttonText: { fontFamily: fonts.displayMedium, fontSize: 16, color: theme.onBrand },
+    buttonText: {
+      fontFamily: fonts.displayMedium,
+      fontSize: 16,
+      color: theme.onBrand,
+    },
     linkButton: { alignItems: 'center', paddingVertical: 16 },
     linkText: { fontSize: 15, color: theme.brandText, fontWeight: '600' },
 

@@ -21,7 +21,10 @@ export function getTransactionHistory(
   page: number,
   pageSize: number = TRANSACTIONS_PAGE_SIZE,
 ) {
-  const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
+  const params = new URLSearchParams({
+    page: String(page),
+    pageSize: String(pageSize),
+  });
   if (kind !== 'all') params.set('kind', kind);
 
   return apiClient.get<TransactionHistoryResponse>(

@@ -53,7 +53,8 @@ export default function VerifyEmailScreen() {
             shadowOpacity: 0.08,
             shadowRadius: 24,
             elevation: 4,
-          }}>
+          }}
+        >
           <View
             accessibilityLabel="Success"
             style={{
@@ -64,7 +65,8 @@ export default function VerifyEmailScreen() {
               alignItems: 'center',
               justifyContent: 'center',
               backgroundColor: '#E8F5EC',
-            }}>
+            }}
+          >
             <View
               style={{
                 width: 40,
@@ -73,7 +75,8 @@ export default function VerifyEmailScreen() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 backgroundColor: '#2E7D32',
-              }}>
+              }}
+            >
               <Icon name="check" size={25} color="#FFFFFF" />
             </View>
           </View>
@@ -81,7 +84,13 @@ export default function VerifyEmailScreen() {
           <AppText
             variant="heading"
             accessibilityRole="header"
-            style={{ color: theme.brandText, fontSize: 24, lineHeight: 31, textAlign: 'center' }}>
+            style={{
+              color: theme.brandText,
+              fontSize: 24,
+              lineHeight: 31,
+              textAlign: 'center',
+            }}
+          >
             Check Your Email
           </AppText>
           <AppText style={{ marginTop: 12, textAlign: 'center' }}>
@@ -109,7 +118,10 @@ export default function VerifyEmailScreen() {
             onPress={() => void handleResend()}
             disabled={isResending || !email}
             accessibilityRole="button"
-            accessibilityState={{ disabled: isResending || !email, busy: isResending }}
+            accessibilityState={{
+              disabled: isResending || !email,
+              busy: isResending,
+            }}
             style={({ pressed }) => ({
               width: '100%',
               minHeight: 52,
@@ -124,7 +136,8 @@ export default function VerifyEmailScreen() {
               borderRadius: 12,
               backgroundColor: theme.card,
               opacity: isResending || !email ? 0.6 : pressed ? 0.8 : 1,
-            })}>
+            })}
+          >
             {isResending ? <ActivityIndicator size="small" color={theme.brandText} /> : null}
             <AppText variant="strong" style={{ color: theme.brandText }}>
               {isResending ? 'Sending...' : 'Resend Verification Email'}
@@ -134,14 +147,20 @@ export default function VerifyEmailScreen() {
           {message ? (
             <AppText
               accessibilityLiveRegion="polite"
-              style={{ marginTop: 12, color: '#2E7D32', textAlign: 'center' }}>
+              style={{ marginTop: 12, color: '#2E7D32', textAlign: 'center' }}
+            >
               {message}
             </AppText>
           ) : null}
           {error ? (
             <AppText
               accessibilityLiveRegion="polite"
-              style={{ marginTop: 12, color: theme.accentText, textAlign: 'center' }}>
+              style={{
+                marginTop: 12,
+                color: theme.accentText,
+                textAlign: 'center',
+              }}
+            >
               {error}
             </AppText>
           ) : null}
@@ -149,7 +168,13 @@ export default function VerifyEmailScreen() {
           <Pressable
             onPress={() => router.replace(ROUTES.LOGIN)}
             accessibilityRole="link"
-            style={{ minHeight: 48, marginTop: 8, paddingHorizontal: 16, justifyContent: 'center' }}>
+            style={{
+              minHeight: 48,
+              marginTop: 8,
+              paddingHorizontal: 16,
+              justifyContent: 'center',
+            }}
+          >
             <AppText variant="strong" style={{ color: theme.brandText }}>
               Go to Login
             </AppText>

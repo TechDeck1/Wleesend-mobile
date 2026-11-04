@@ -1,12 +1,10 @@
 import { ROUTES } from '@/constants/routes';
 import { router } from 'expo-router';
-import {  Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import { Button, Card, LinkRow, Screen, AppText, Tile } from '@/components/UiComponents';
 import { useStore } from '@/store';
 import { fonts, useTheme } from '@/theme';
-
-// const notConnected = (what: string) => Alert.alert(what, 'This action is not connected yet.');
 
 export default function ProfileScreen() {
   const theme = useTheme();
@@ -53,7 +51,8 @@ export default function ProfileScreen() {
         minHeight: 54,
         borderBottomWidth: 1,
         borderBottomColor: theme.lineSoft,
-      }}>
+      }}
+    >
       <AppText variant="muted">{label}</AppText>
       <AppText variant="strong">{value}</AppText>
     </View>
@@ -74,8 +73,15 @@ export default function ProfileScreen() {
             backgroundColor: theme.brand,
             alignItems: 'center',
             justifyContent: 'center',
-          }}>
-          <Text style={{ fontFamily: fonts.display, fontSize: 19, color: theme.onBrand }}>
+          }}
+        >
+          <Text
+            style={{
+              fontFamily: fonts.display,
+              fontSize: 19,
+              color: theme.onBrand,
+            }}
+          >
             {userProfile.firstName[0]}
             {userProfile.lastName[0]}
           </Text>
@@ -101,19 +107,36 @@ export default function ProfileScreen() {
             justifyContent: 'space-between',
             borderBottomWidth: 1,
             borderBottomColor: theme.lineSoft,
-          }}>
+          }}
+        >
           <AppText variant="muted">Email</AppText>
           <View style={{ alignItems: 'flex-end', paddingTop: 10 }}>
             <AppText variant="strong">{userProfile.email}</AppText>
             <Pressable
               onPress={() => router.push(ROUTES.CHANGE_EMAIL)}
               accessibilityRole="button"
-              style={{ height: 44, justifyContent: 'center', marginTop: -6 }}>
-              <Text style={{ color: theme.accentText, fontSize: 14, fontWeight: '600' }}>Change email</Text>
+              style={{ height: 44, justifyContent: 'center', marginTop: -6 }}
+            >
+              <Text
+                style={{
+                  color: theme.accentText,
+                  fontSize: 14,
+                  fontWeight: '600',
+                }}
+              >
+                Change email
+              </Text>
             </Pressable>
           </View>
         </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 68 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            minHeight: 68,
+          }}
+        >
           <AppText variant="muted">Password</AppText>
           <Pressable
             onPress={() => router.push(ROUTES.RESET_PASSWORD)}
@@ -124,8 +147,17 @@ export default function ProfileScreen() {
               borderRadius: 12,
               backgroundColor: theme.accentTint,
               justifyContent: 'center',
-            }}>
-            <Text style={{ color: theme.accentTintText, fontSize: 14, fontWeight: '600' }}>Reset password</Text>
+            }}
+          >
+            <Text
+              style={{
+                color: theme.accentTintText,
+                fontSize: 14,
+                fontWeight: '600',
+              }}
+            >
+              Reset password
+            </Text>
           </Pressable>
         </View>
       </Card>

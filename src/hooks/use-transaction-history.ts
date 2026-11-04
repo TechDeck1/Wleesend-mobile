@@ -21,21 +21,31 @@ type Loaded = {
 type Failure = { filter: Filter; message: string };
 
 const formatDate = (iso: string) =>
-  new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-
-
+  new Date(iso).toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
 
 function draftFromApi(apiTransaction: ApiTransaction): Draft {
   const apiDraft = apiTransaction.draft ?? ({} as Partial<ApiTransaction['draft']>);
-  const amount = Number(apiDraft.amount) || Math.max(0, +(apiTransaction.total - (apiTransaction.fee ?? 0)).toFixed(2));
+  const amount =
+    Number(apiDraft.amount) ||
+    Math.max(0, +(apiTransaction.total - (apiTransaction.fee ?? 0)).toFixed(2));
 
-  // "+231888008771" -> "888008771"
-  const receiverDigits = digitsOnly(apiDraft.receiverPhone ?? (apiTransaction.kind === 'airtime' ? apiTransaction.receiver : ''));
+  const receiverDigits = digitsOnly(
+    apiDraft.receiverPhone ?? (apiTransaction.kind === 'airtime' ? apiTransaction.receiver : ''),
+  );
   const phone = receiverDigits.startsWith('231') ? receiverDigits.slice(3) : receiverDigits;
 
-  const operatorId = apiDraft.operatorId != null && !Number.isNaN(Number(apiDraft.operatorId)) ? Number(apiDraft.operatorId) : null;
-  const productId = apiDraft.productId != null && !Number.isNaN(Number(apiDraft.productId)) ? Number(apiDraft.productId) : null;
-
+  const operatorId =
+    apiDraft.operatorId != null && !Number.isNaN(Number(apiDraft.operatorId))
+      ? Number(apiDraft.operatorId)
+      : null;
+  const productId =
+    apiDraft.productId != null && !Number.isNaN(Number(apiDraft.productId))
+      ? Number(apiDraft.productId)
+      : null;
 
   const fixedProduct = {
     id: productId ?? 0,
@@ -64,12 +74,7 @@ function draftFromApi(apiTransaction: ApiTransaction): Draft {
   };
 }
 
-
-
-
-// Isolated so it is the only place that depends on the store's Transaction/Draft shape.
-// TODO: replace the cast with the real Draft type from src/store.tsx, and make sure
-// brandOf() and resend() understand operatorId/productId/meterNumber.
+// TODO: Align API draft fields with Draft before removing this cast.
 const toTransaction = (apiTransaction: ApiTransaction): Transaction =>
   ({
     id: apiTransaction.id,
@@ -83,7 +88,8 @@ const toTransaction = (apiTransaction: ApiTransaction): Transaction =>
     draft: draftFromApi(apiTransaction),
   }) as unknown as Transaction;
 
-const messageOf = (error: unknown) => (error instanceof Error ? error.message : 'Could not load transactions.');
+const messageOf = (error: unknown) =>
+  error instanceof Error ? error.message : 'Could not load transactions.';
 
 export function useTransactionHistory(filter: Filter) {
   const [loaded, setLoaded] = useState<Loaded | null>(null);
@@ -92,8 +98,7 @@ export function useTransactionHistory(filter: Filter) {
   const isLoadingMoreRef = useRef(false);
   const [reloadKey, setReloadKey] = useState(0);
 
-  // First page for the current filter. State is only set inside the promise callbacks,
-  // never synchronously in the effect body.
+  // Keep state updates in async callbacks so the effect doesn't update state during setup.
   useEffect(() => {
     let cancelled = false;
 
@@ -119,7 +124,7 @@ export function useTransactionHistory(filter: Filter) {
     };
   }, [filter, reloadKey]);
 
-  // Anything stored for a different filter is ignored, so old rows never flash after a filter change.
+  // Ignore rows cached for another filter to avoid flashing stale results.
   const current = loaded && loaded.filter === filter ? loaded : null;
   const error = failure && failure.filter === filter ? failure.message : null;
   const rows = current ? current.rows : [];
@@ -139,10 +144,16 @@ export function useTransactionHistory(filter: Filter) {
     try {
       const response = await getTransactionHistory(filter, nextPage, TRANSACTIONS_PAGE_SIZE);
       const moreTransactions = response.data.map(toTransaction);
-      // Apply only if the list is still the one this request was made for.
+      // Ignore this response if the current page or filter changed while it was loading.
       setLoaded((prev) =>
         prev && prev.filter === filter && prev.page === nextPage - 1
-          ? { ...prev, page: nextPage, rows: [...prev.rows, ...moreTransactions], totals: response.totals, totalCount: response.totalCount }
+          ? {
+              ...prev,
+              page: nextPage,
+              rows: [...prev.rows, ...moreTransactions],
+              totals: response.totals,
+              totalCount: response.totalCount,
+            }
           : prev,
       );
     } catch (error) {

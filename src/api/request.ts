@@ -26,10 +26,7 @@ function appendQueryParams(url: URL, params: ApiQueryParams | undefined): void {
     return;
   }
 
-  const entries =
-    params instanceof URLSearchParams
-      ? params.entries()
-      : Object.entries(params);
+  const entries = params instanceof URLSearchParams ? params.entries() : Object.entries(params);
 
   for (const [key, value] of entries) {
     if (value !== null && value !== undefined) {
@@ -120,12 +117,11 @@ export async function request<TResponse = unknown, TBody = unknown>(
   const controller = new AbortController();
   let timedOut = false;
 
-
   const timeout = setTimeout(() => {
     timedOut = true;
     controller.abort();
   }, timeoutMs);
-  
+
   const abortRequest = () => controller.abort();
 
   if (signal?.aborted) {
@@ -145,7 +141,11 @@ export async function request<TResponse = unknown, TBody = unknown>(
     const responseBody = await readResponseBody(response);
 
     if (!response.ok) {
-      const error = new ApiError(getErrorMessage(responseBody, response), response.status, responseBody);
+      const error = new ApiError(
+        getErrorMessage(responseBody, response),
+        response.status,
+        responseBody,
+      );
       if (response.status === 401 && !skipAuth) {
         await clearAuthSession();
       }

@@ -29,7 +29,9 @@ export function useVoucherCatalog(enabled: boolean) {
       getOperatorProducts(VOUCHER_OPERATOR_ID, controller.signal),
       getVoucherOperatorName(controller.signal),
     ])
-      .then(([products, operatorName]) => setState({ status: 'ready', products, operatorName, error: null }))
+      .then(([products, operatorName]) =>
+        setState({ status: 'ready', products, operatorName, error: null }),
+      )
       .catch((error: unknown) => {
         if (controller.signal.aborted) return;
         setState({
@@ -43,7 +45,11 @@ export function useVoucherCatalog(enabled: boolean) {
   }, [enabled, attempt]);
 
   const reload = useCallback(() => {
-    setState((currentState) => ({ ...currentState, status: 'loading', error: null }));
+    setState((currentState) => ({
+      ...currentState,
+      status: 'loading',
+      error: null,
+    }));
     setAttempt((currentAttempt) => currentAttempt + 1);
   }, []);
 

@@ -20,7 +20,15 @@ export default function HomeScreen() {
 
   const renderSendAction = (kind: SendKind, icon: IconName, title: string, detail: string) => (
     <Pressable onPress={() => handleStartSend(kind)} accessibilityRole="button" style={{ flex: 1 }}>
-      <Card style={{ flex: 1, padding: 12, minHeight: 138, justifyContent: 'space-between', gap: 14 }}>
+      <Card
+        style={{
+          flex: 1,
+          padding: 12,
+          minHeight: 138,
+          justifyContent: 'space-between',
+          gap: 14,
+        }}
+      >
         <Tile icon={icon} tone="accent" size={42} />
         <View style={{ gap: 2 }}>
           <AppText variant="display" style={{ fontSize: 14.5, lineHeight: 19 }}>
@@ -36,7 +44,13 @@ export default function HomeScreen() {
 
   return (
     <Screen>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
         <View style={{ marginLeft: -6 }}>
           <Logo />
         </View>
@@ -51,9 +65,16 @@ export default function HomeScreen() {
             backgroundColor: theme.brandTint,
             alignItems: 'center',
             justifyContent: 'center',
-          }}>
+          }}
+        >
           {user ? (
-            <Text style={{ fontFamily: fonts.display, fontSize: 15, color: theme.brandText }}>
+            <Text
+              style={{
+                fontFamily: fonts.display,
+                fontSize: 15,
+                color: theme.brandText,
+              }}
+            >
               {user.firstName[0]}
               {user.lastName[0]}
             </Text>
@@ -64,13 +85,27 @@ export default function HomeScreen() {
       </View>
 
       <View
-        style={{ backgroundColor: theme.hero, borderRadius: 26, padding: 22, paddingTop: 24, paddingBottom: 26, gap: 14 }}>
+        style={{
+          backgroundColor: theme.hero,
+          borderRadius: 26,
+          padding: 22,
+          paddingTop: 24,
+          paddingBottom: 26,
+          gap: 14,
+        }}
+      >
         <Text style={{ fontSize: 14, fontWeight: '600', color: theme.heroSub }}>
           {user ? `Hello, ${user.firstName}` : 'Welcome to Wleesend'}
         </Text>
         <Text
           accessibilityRole="header"
-          style={{ fontFamily: fonts.displayMedium, fontSize: 25, lineHeight: 32, color: theme.onBrand }}>
+          style={{
+            fontFamily: fonts.displayMedium,
+            fontSize: 25,
+            lineHeight: 32,
+            color: theme.onBrand,
+          }}
+        >
           Send data, utility and shopping voucher credit to friends and relatives around the world.
         </Text>
         <View
@@ -84,7 +119,8 @@ export default function HomeScreen() {
             paddingVertical: 6,
             borderRadius: 999,
             backgroundColor: theme.heroChip,
-          }}>
+          }}
+        >
           <Image
             source={require('@/assets/images/flag-liberia.png')}
             style={{ width: 22, height: 12, borderRadius: 2 }}
@@ -108,8 +144,17 @@ export default function HomeScreen() {
       </View>
 
       <Card>
-        <LinkRow icon="list" label="Transactions history" onPress={() => router.navigate(ROUTES.TRANSACTIONS)} />
-        <LinkRow icon="user" label="My profile" onPress={() => router.navigate(ROUTES.PROFILE)} last />
+        <LinkRow
+          icon="list"
+          label="Transactions history"
+          onPress={() => router.navigate(ROUTES.TRANSACTIONS)}
+        />
+        <LinkRow
+          icon="user"
+          label="My profile"
+          onPress={() => router.navigate(ROUTES.PROFILE)}
+          last
+        />
       </Card>
     </Screen>
   );

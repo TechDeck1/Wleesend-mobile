@@ -13,14 +13,28 @@ export default function ProductsScreen() {
   const theme = useTheme();
   const { startSend } = useStore();
 
-  const renderProductCard = (brand: Brand, title: string, detail: string, kind: SendKind, operator?: OperatorId) => (
+  const renderProductCard = (
+    brand: Brand,
+    title: string,
+    detail: string,
+    kind: SendKind,
+    operator?: OperatorId,
+  ) => (
     <Pressable
       accessibilityRole="button"
       onPress={() => {
         startSend(kind, operator);
         router.push(ROUTES.SEND);
-      }}>
-      <Card style={{ padding: 16, flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+      }}
+    >
+      <Card
+        style={{
+          padding: 16,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 14,
+        }}
+      >
         <BrandLogo brand={brand} size={52} />
         <View style={{ flex: 1, gap: 3 }}>
           <AppText variant="display" style={{ fontSize: 15.5 }}>
@@ -45,9 +59,26 @@ export default function ProductsScreen() {
       </View>
       <View style={{ gap: 12 }}>
         {renderProductCard('lec', LEC_NAME, 'Buy and send LEC credit tokens', 'utility')}
-        {renderProductCard('mtn', 'Lonestar Cell MTN', 'Buy and send Lonestar mobile phone credit and packages', 'airtime', 'mtn')}
-        {renderProductCard('orange', 'Orange Liberia', 'Buy and send Orange mobile phone credit and packages', 'airtime', 'orange')}
-        {renderProductCard('voucher', 'Stop & Shop', 'Buy and send Stop & Shop shopping vouchers', 'voucher')}
+        {renderProductCard(
+          'mtn',
+          'Lonestar Cell MTN',
+          'Buy and send Lonestar mobile phone credit and packages',
+          'airtime',
+          'mtn',
+        )}
+        {renderProductCard(
+          'orange',
+          'Orange Liberia',
+          'Buy and send Orange mobile phone credit and packages',
+          'airtime',
+          'orange',
+        )}
+        {renderProductCard(
+          'voucher',
+          'Stop & Shop',
+          'Buy and send Stop & Shop shopping vouchers',
+          'voucher',
+        )}
       </View>
     </Screen>
   );

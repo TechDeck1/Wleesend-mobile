@@ -3,27 +3,46 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
-import { Button, Field, Footer, Icon, NavBar, Screen, AppText, Tile } from '@/components/UiComponents';
+import {
+  Button,
+  Field,
+  Footer,
+  Icon,
+  NavBar,
+  Screen,
+  AppText,
+  Tile,
+} from '@/components/UiComponents';
 import { useStore } from '@/store';
 import { useTheme } from '@/theme';
 import type { SignUpErrors, SignUpForm } from '@/types/screens/SignUpScreen.types';
 import { MIN_PASSWORD_LENGTH } from '@/constants/auth';
 
-const EMPTY: SignUpForm = { firstName: '', lastName: '', email: '', phone: '', password: '', confirm: '' };
+const EMPTY: SignUpForm = {
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  password: '',
+  confirm: '',
+};
 
 function validate(form: SignUpForm): SignUpErrors {
   const fieldErrors: SignUpErrors = {};
   if (!form.firstName.trim()) fieldErrors.firstName = 'Enter your first name.';
   if (!form.lastName.trim()) fieldErrors.lastName = 'Enter your last name.';
-  if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) fieldErrors.email = 'Enter a valid email address, like name@example.com.';
+  if (!/^\S+@\S+\.\S+$/.test(form.email.trim()))
+    fieldErrors.email = 'Enter a valid email address, like name@example.com.';
   const phoneDigits = form.phone.replace(/\D/g, '');
-  if (phoneDigits.length < 7 || phoneDigits.length > 15) fieldErrors.phone = 'Enter a phone number with 7 to 15 digits.';
-  if (form.password.length < MIN_PASSWORD_LENGTH) fieldErrors.password = `Use at least ${MIN_PASSWORD_LENGTH} characters.`;
-  if (form.confirm !== form.password || !form.confirm) fieldErrors.confirm = 'The passwords don’t match.';
+  if (phoneDigits.length < 7 || phoneDigits.length > 15)
+    fieldErrors.phone = 'Enter a phone number with 7 to 15 digits.';
+  if (form.password.length < MIN_PASSWORD_LENGTH)
+    fieldErrors.password = `Use at least ${MIN_PASSWORD_LENGTH} characters.`;
+  if (form.confirm !== form.password || !form.confirm)
+    fieldErrors.confirm = 'The passwords don’t match.';
   return fieldErrors;
 }
 
-/** Sign-up form, matching the website's Create Your Account page. */
 export default function SignUpScreen() {
   const theme = useTheme();
   const { signUp } = useStore();
@@ -61,7 +80,10 @@ export default function SignUpScreen() {
         form.password,
         form.confirm,
       );
-      router.replace({ pathname: ROUTES.VERIFY_EMAIL, params: { email: form.email.trim() } });
+      router.replace({
+        pathname: ROUTES.VERIFY_EMAIL,
+        params: { email: form.email.trim() },
+      });
     } catch (requestError) {
       setServerError(
         requestError instanceof Error
@@ -73,12 +95,22 @@ export default function SignUpScreen() {
     }
   };
 
-  const renderPasswordVisibilityToggle = (isVisible: boolean, onToggle: () => void, fieldLabel: string) => (
+  const renderPasswordVisibilityToggle = (
+    isVisible: boolean,
+    onToggle: () => void,
+    fieldLabel: string,
+  ) => (
     <Pressable
       onPress={onToggle}
       accessibilityRole="button"
       accessibilityLabel={isVisible ? `Hide ${fieldLabel}` : `Show ${fieldLabel}`}
-      style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
+      style={{
+        width: 44,
+        height: 44,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
       <Icon name={isVisible ? 'eyeOff' : 'eye'} size={20} color={theme.muted} />
     </Pressable>
   );
@@ -89,9 +121,13 @@ export default function SignUpScreen() {
       header={<NavBar title="Sign up" />}
       footer={
         <Footer>
-          <Button label={isSubmitting ? 'Creating account...' : 'Create account'} onPress={() => void handleCreateAccount()} />
+          <Button
+            label={isSubmitting ? 'Creating account...' : 'Create account'}
+            onPress={() => void handleCreateAccount()}
+          />
         </Footer>
-      }>
+      }
+    >
       <View style={{ alignItems: 'center', gap: 8, paddingTop: 4 }}>
         <Tile icon="personAdd" size={64} />
         <AppText variant="title" style={{ textAlign: 'center' }} accessibilityRole="header">
@@ -165,7 +201,11 @@ export default function SignUpScreen() {
           value={form.password}
           onChangeText={handleFieldChange('password')}
           error={errors.password}
-          right={renderPasswordVisibilityToggle(isPasswordVisible, () => setIsPasswordVisible((isVisible) => !isVisible), 'password')}
+          right={renderPasswordVisibilityToggle(
+            isPasswordVisible,
+            () => setIsPasswordVisible((isVisible) => !isVisible),
+            'password',
+          )}
         />
       </View>
       <View>
@@ -180,14 +220,24 @@ export default function SignUpScreen() {
           value={form.confirm}
           onChangeText={handleFieldChange('confirm')}
           error={errors.confirm}
-          right={renderPasswordVisibilityToggle(isConfirmPasswordVisible, () => setIsConfirmPasswordVisible((isVisible) => !isVisible), 'password')}
+          right={renderPasswordVisibilityToggle(
+            isConfirmPasswordVisible,
+            () => setIsConfirmPasswordVisible((isVisible) => !isVisible),
+            'password',
+          )}
         />
       </View>
       {serverError ? <AppText style={{ color: theme.accentText }}>{serverError}</AppText> : null}
       <AppText variant="small">
         <Text style={{ color: theme.accentText }}>*</Text> Required fields
       </AppText>
-      <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
         <AppText variant="muted">Already have an account? </AppText>
         <Pressable onPress={() => router.push(ROUTES.LOGIN)} accessibilityRole="link" hitSlop={8}>
           <Text style={{ color: theme.brandText, fontSize: 15, fontWeight: '600' }}>Log in</Text>

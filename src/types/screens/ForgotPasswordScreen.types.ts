@@ -11,7 +11,10 @@ export type SuccessModalProps = {
   buttonLabel: string;
   onPress: () => void;
 };
-export type ForgotPasswordTextFieldProps = TextInputProps & { palette: Palette; hasError?: boolean };
+export type ForgotPasswordTextFieldProps = TextInputProps & {
+  palette: Palette;
+  hasError?: boolean;
+};
 export type ForgotPasswordPasswordFieldProps = ForgotPasswordTextFieldProps;
 export type OtpInputProps = {
   palette: Palette;

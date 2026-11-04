@@ -6,8 +6,6 @@ export const STRIPE_PUBLISHABLE_KEY = (process.env.EXPO_PUBLIC_STRIPE_PUBLISHABL
 const apiEndpoint = (path: string) => `${API_BASE_URL}/${path.replace(/^\/+/, '')}`;
 const webEndpoint = (path: string) => `${BASE_URL}/${path.replace(/^\/+/, '')}`;
 
-
-
 export const API_ENDPOINTS = {
   auth: {
     login: apiEndpoint('WleeUserAcccount/login'),
@@ -26,12 +24,13 @@ export const API_ENDPOINTS = {
     forgotPin: apiEndpoint('WleeUserAcccount/forgot-pin'),
     sendDualEmailOtp: apiEndpoint('account/send-dual-email-otp'),
     verifyDualEmailOtp: apiEndpoint('account/verify-dual-email-otp'),
-    resetPassword: apiEndpoint('WleeUserAcccount/reset-pin')
+    resetPassword: apiEndpoint('WleeUserAcccount/reset-pin'),
   },
 
   airtime: {
     operators: apiEndpoint('Product/operators'),
-    operatorProducts: (operatorId: number | string) => apiEndpoint(`Product/operators/${operatorId}/products`),
+    operatorProducts: (operatorId: number | string) =>
+      apiEndpoint(`Product/operators/${operatorId}/products`),
     operatorById: (operatorId: number | string) => apiEndpoint(`Product/operators/${operatorId}`),
   },
 

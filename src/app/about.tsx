@@ -28,18 +28,18 @@ export default function AboutScreen() {
         About Wleesend
       </AppText>
       <AppText>
-        Wleesend is a Liberian owned and operated company established in 2025. The company is a subsidiary of Wleepay
-        Financial Services incorporated in Liberia.
+        Wleesend is a Liberian owned and operated company established in 2025. The company is a
+        subsidiary of Wleepay Financial Services incorporated in Liberia.
       </AppText>
       <AppText>
-        Liberians receive cash remittances daily to purchase goods and services. But they have to first retrieve the
-        remitted cash from an agent, and then use the cash to purchase a mobile top up (scratch) card or LEC credit
-        from another agent.
+        Liberians receive cash remittances daily to purchase goods and services. But they have to
+        first retrieve the remitted cash from an agent, and then use the cash to purchase a mobile
+        top up (scratch) card or LEC credit from another agent.
       </AppText>
       <AppText>
-        Wleesend solves this problem by allowing those in the diaspora to instantly send both Mobile and LEC credits
-        to their family and friends back home. They immediately receive an SMS/Text message with the Mobile or LEC
-        Token to top up their phone or electricity meter.
+        Wleesend solves this problem by allowing those in the diaspora to instantly send both Mobile
+        and LEC credits to their family and friends back home. They immediately receive an SMS/Text
+        message with the Mobile or LEC Token to top up their phone or electricity meter.
       </AppText>
       <Card style={{ padding: 18, paddingVertical: 20, gap: 18 }}>
         <AppText variant="heading" style={{ fontSize: 18 }} accessibilityRole="header">

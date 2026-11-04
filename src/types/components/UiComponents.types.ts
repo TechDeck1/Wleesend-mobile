@@ -35,7 +35,8 @@ export type IconName =
   | 'info'
   | 'logout';
 
-export type TextVariant = 'body' | 'muted' | 'small' | 'strong' | 'label' | 'title' | 'heading' | 'display';
+export type TextVariant =
+  'body' | 'muted' | 'small' | 'strong' | 'label' | 'title' | 'heading' | 'display';
 export type IconProps = { name: IconName; size?: number; color: string };
 export type AppTextProps = TextProps & { variant?: TextVariant };
 
@@ -86,5 +87,10 @@ export type FieldProps = TextInputProps & {
   inputRef?: Ref<TextInputInstance>;
 };
 
-export type LinkRowProps = { icon: IconName; label: string; onPress: () => void; last?: boolean };
+export type LinkRowProps = {
+  icon: IconName;
+  label: string;
+  onPress: () => void;
+  last?: boolean;
+};
 export type KeyValueProps = { label: string; value: string; first?: boolean };

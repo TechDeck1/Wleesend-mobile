@@ -2,12 +2,12 @@ export type ApiMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE';
 
 export type ApiQueryValue = string | number | boolean | null | undefined;
 
-export type ApiQueryParams =
-  | Record<string, ApiQueryValue>
-  | URLSearchParams;
+export type ApiQueryParams = Record<string, ApiQueryValue> | URLSearchParams;
 
-export interface ApiRequestOptions<TBody = unknown>
-  extends Omit<RequestInit, 'method' | 'body' | 'headers'> {
+export interface ApiRequestOptions<TBody = unknown> extends Omit<
+  RequestInit,
+  'method' | 'body' | 'headers'
+> {
   skipAuth?: boolean;
   accessToken?: string;
   body?: TBody;

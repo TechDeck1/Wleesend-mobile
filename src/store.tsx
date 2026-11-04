@@ -61,12 +61,13 @@ export function brandOf(draft: Draft): Brand {
   return draft.vendor;
 }
 
-
 function chosenAmount(product: AirtimeProduct | null, topUp: string): number {
   if (!product) return 0;
   if (!product.isRange) return product.price ?? 0;
   const topUpAmount = Number(topUp);
-  return topUpAmount >= product.min && topUpAmount <= product.max ? roundToTwoDecimals(topUpAmount) : 0;
+  return topUpAmount >= product.min && topUpAmount <= product.max
+    ? roundToTwoDecimals(topUpAmount)
+    : 0;
 }
 
 export function buildOrder(draft: Draft): Order {
@@ -169,7 +170,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       })
       .catch((error: unknown) => {
         if (active) {
-          setAuthError(error instanceof Error ? error.message : 'Unable to restore your sign-in session.');
+          setAuthError(
+            error instanceof Error ? error.message : 'Unable to restore your sign-in session.',
+          );
         }
       })
       .finally(() => {
@@ -186,7 +189,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     draft,
     startSend: (kind, operator) => {
       setLastOrder(null);
-      setDraft(newDraft(kind, operator ?? (kind === 'airtime' ? 'mtn' : 'orange'), user?.phone ?? ''));
+      setDraft(
+        newDraft(kind, operator ?? (kind === 'airtime' ? 'mtn' : 'orange'), user?.phone ?? ''),
+      );
     },
     updateDraft: (patch) => setDraft((currentDraft) => ({ ...currentDraft, ...patch })),
     lastOrder,

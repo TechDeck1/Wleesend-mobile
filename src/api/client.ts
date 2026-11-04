@@ -1,10 +1,7 @@
 import { request } from './request';
 import type { ApiMethod, ApiRequestOptions } from './types';
 
-
-
 export const apiClient = {
-  
   request<TResponse = unknown, TBody = unknown>(
     method: ApiMethod,
     path: string,
@@ -13,10 +10,7 @@ export const apiClient = {
     return request<TResponse, TBody>(method, path, options);
   },
 
-  get<TResponse = unknown>(
-    path: string,
-    options?: ApiRequestOptions,
-  ): Promise<TResponse> {
+  get<TResponse = unknown>(path: string, options?: ApiRequestOptions): Promise<TResponse> {
     return request<TResponse>('GET', path, options);
   },
 
@@ -36,10 +30,7 @@ export const apiClient = {
     return request<TResponse, TBody>('PATCH', path, { ...options, body });
   },
 
-  delete<TResponse = unknown>(
-    path: string,
-    options?: ApiRequestOptions,
-  ): Promise<TResponse> {
+  delete<TResponse = unknown>(path: string, options?: ApiRequestOptions): Promise<TResponse> {
     return request<TResponse>('DELETE', path, options);
   },
 };

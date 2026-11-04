@@ -51,7 +51,10 @@ export default function ForgotPasswordScreen({ onBack }: ForgotPasswordScreenPro
 
   useEffect(() => {
     if (secondsLeft <= 0) return;
-    const timeoutId = setTimeout(() => setSecondsLeft((secondsRemaining) => secondsRemaining - 1), 1000);
+    const timeoutId = setTimeout(
+      () => setSecondsLeft((secondsRemaining) => secondsRemaining - 1),
+      1000,
+    );
     return () => clearTimeout(timeoutId);
   }, [secondsLeft]);
 
@@ -158,10 +161,20 @@ export default function ForgotPasswordScreen({ onBack }: ForgotPasswordScreenPro
             hitSlop={12}
             style={styles.back}
           >
-            <View style={[styles.backCircle, { backgroundColor: palette.card, borderColor: palette.line }]}>
+            <View
+              style={[
+                styles.backCircle,
+                { backgroundColor: palette.card, borderColor: palette.line },
+              ]}
+            >
               <View style={[styles.chevron, { borderColor: palette.brandText }]} />
             </View>
-            <Text style={[styles.backText, { color: palette.brandText, fontFamily: fonts.displayMedium }]}>
+            <Text
+              style={[
+                styles.backText,
+                { color: palette.brandText, fontFamily: fonts.displayMedium },
+              ]}
+            >
               {step === 'otp' ? 'Change email' : 'Sign in'}
             </Text>
           </Pressable>
@@ -194,7 +207,12 @@ export default function ForgotPasswordScreen({ onBack }: ForgotPasswordScreenPro
                   hasError={!!error}
                 />
                 <ErrorText palette={palette} message={error} />
-                <PrimaryButton palette={palette} label="Send code" isLoading={isLoading} onPress={handleSendOtp} />
+                <PrimaryButton
+                  palette={palette}
+                  label="Send code"
+                  isLoading={isLoading}
+                  onPress={handleSendOtp}
+                />
               </>
             )}
 
@@ -211,7 +229,12 @@ export default function ForgotPasswordScreen({ onBack }: ForgotPasswordScreenPro
                   disabled={isLoading}
                 />
                 <ErrorText palette={palette} message={error} />
-                <PrimaryButton palette={palette} label="Verify code" isLoading={isLoading} onPress={handleVerifyOtp} />
+                <PrimaryButton
+                  palette={palette}
+                  label="Verify code"
+                  isLoading={isLoading}
+                  onPress={handleVerifyOtp}
+                />
 
                 <Pressable
                   onPress={handleResend}
@@ -219,7 +242,14 @@ export default function ForgotPasswordScreen({ onBack }: ForgotPasswordScreenPro
                   accessibilityRole="button"
                   style={styles.linkWrap}
                 >
-                  <Text style={[styles.link, { color: secondsLeft > 0 ? palette.muted : palette.brandText }]}>
+                  <Text
+                    style={[
+                      styles.link,
+                      {
+                        color: secondsLeft > 0 ? palette.muted : palette.brandText,
+                      },
+                    ]}
+                  >
                     {secondsLeft > 0 ? `Resend code in ${secondsLeft}s` : 'Resend code'}
                   </Text>
                 </Pressable>
@@ -296,7 +326,12 @@ function SuccessModal({
   useEffect(() => {
     if (!isVisible) return;
     scale.setValue(0.6);
-    Animated.spring(scale, { toValue: 1, friction: 5, tension: 80, useNativeDriver: true }).start();
+    Animated.spring(scale, {
+      toValue: 1,
+      friction: 5,
+      tension: 80,
+      useNativeDriver: true,
+    }).start();
   }, [isVisible, scale]);
 
   return (
@@ -308,9 +343,14 @@ function SuccessModal({
       onRequestClose={onPress}
     >
       <View style={styles.backdrop}>
-        <View style={[styles.modalCard, { backgroundColor: palette.card, borderColor: palette.line }]}>
+        <View
+          style={[styles.modalCard, { backgroundColor: palette.card, borderColor: palette.line }]}
+        >
           <Animated.View
-            style={[styles.tickRing, { backgroundColor: palette.brandTint, transform: [{ scale }] }]}
+            style={[
+              styles.tickRing,
+              { backgroundColor: palette.brandTint, transform: [{ scale }] },
+            ]}
           >
             <View style={[styles.tickCircle, { backgroundColor: palette.brand }]}>
               <View style={[styles.tick, { borderColor: palette.onBrand }]} />
@@ -322,7 +362,12 @@ function SuccessModal({
           </Text>
           <Text style={[styles.modalBody, { color: palette.muted }]}>{message}</Text>
 
-          <PrimaryButton palette={palette} label={buttonLabel} onPress={onPress} style={styles.modalButton} />
+          <PrimaryButton
+            palette={palette}
+            label={buttonLabel}
+            onPress={onPress}
+            style={styles.modalButton}
+          />
         </View>
       </View>
     </Modal>
@@ -376,19 +421,15 @@ function PasswordField(props: ForgotPasswordPasswordFieldProps) {
         hitSlop={8}
         style={styles.eye}
       >
-        <Text style={[styles.eyeText, { color: palette.brandText }]}>{isPasswordVisible ? 'Hide' : 'Show'}</Text>
+        <Text style={[styles.eyeText, { color: palette.brandText }]}>
+          {isPasswordVisible ? 'Hide' : 'Show'}
+        </Text>
       </Pressable>
     </View>
   );
 }
 
-function OtpInput({
-  palette,
-  value,
-  onChange,
-  hasError,
-  disabled,
-}: OtpInputProps) {
+function OtpInput({ palette, value, onChange, hasError, disabled }: OtpInputProps) {
   const inputRef = useRef<TextInputInstance>(null);
   const [isFocused, setIsFocused] = useState(false);
 
@@ -411,7 +452,11 @@ function OtpInput({
                 styles.otpBox,
                 {
                   backgroundColor: palette.field,
-                  borderColor: hasError ? palette.accent : isActive ? palette.brand : palette.fieldBorder,
+                  borderColor: hasError
+                    ? palette.accent
+                    : isActive
+                      ? palette.brand
+                      : palette.fieldBorder,
                 },
               ]}
             >
@@ -449,13 +494,7 @@ function ErrorText({ palette, message }: ErrorTextProps) {
   );
 }
 
-function PrimaryButton({
-  palette,
-  label,
-  onPress,
-  isLoading,
-  style,
-}: PrimaryButtonProps) {
+function PrimaryButton({ palette, label, onPress, isLoading, style }: PrimaryButtonProps) {
   return (
     <Pressable
       onPress={onPress}
@@ -463,14 +502,19 @@ function PrimaryButton({
       accessibilityRole="button"
       style={({ pressed }) => [
         styles.button,
-        { backgroundColor: palette.brand, opacity: pressed || isLoading ? 0.85 : 1 },
+        {
+          backgroundColor: palette.brand,
+          opacity: pressed || isLoading ? 0.85 : 1,
+        },
         style,
       ]}
     >
       {isLoading ? (
         <ActivityIndicator color={palette.onBrand} />
       ) : (
-        <Text style={[styles.buttonText, { color: palette.onBrand, fontFamily: fonts.displayMedium }]}>
+        <Text
+          style={[styles.buttonText, { color: palette.onBrand, fontFamily: fonts.displayMedium }]}
+        >
           {label}
         </Text>
       )}
@@ -518,7 +562,13 @@ const styles = StyleSheet.create({
     height: 50,
     fontSize: 16,
   },
-  eye: { position: 'absolute', right: 14, top: 0, bottom: 0, justifyContent: 'center' },
+  eye: {
+    position: 'absolute',
+    right: 14,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+  },
   eyeText: { fontSize: 14, fontWeight: '600' },
   otpRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 8 },
   otpBox: {
@@ -581,7 +631,12 @@ const styles = StyleSheet.create({
     borderBottomWidth: 4,
     transform: [{ rotate: '45deg' }, { translateY: -2 }],
   },
-  modalTitle: { fontSize: 22, lineHeight: 28, textAlign: 'center', marginBottom: 8 },
+  modalTitle: {
+    fontSize: 22,
+    lineHeight: 28,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
   modalBody: { fontSize: 15, lineHeight: 22, textAlign: 'center' },
   modalButton: { alignSelf: 'stretch', marginTop: 28 },
 });

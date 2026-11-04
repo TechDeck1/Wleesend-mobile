@@ -10,7 +10,6 @@ import { money } from '@/data';
 import { useStore } from '@/store';
 import { useTheme } from '@/theme';
 
-/** Confirmation after payment. */
 export default function SentScreen() {
   const theme = useTheme();
   const { lastOrder } = useStore();
@@ -31,7 +30,15 @@ export default function SentScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.ground }}>
       <Stack.Screen options={{ gestureEnabled: false }} />
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16, paddingHorizontal: 28 }}>
+      <View
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 16,
+          paddingHorizontal: 28,
+        }}
+      >
         <PaymentDone />
         <AppText variant="title" accessibilityRole="header">
           Payment received
@@ -40,7 +47,14 @@ export default function SentScreen() {
           {message}
         </AppText>
         {lastOrder ? (
-          <Card style={{ alignSelf: 'stretch', marginTop: 8, paddingHorizontal: 18, paddingVertical: 6 }}>
+          <Card
+            style={{
+              alignSelf: 'stretch',
+              marginTop: 8,
+              paddingHorizontal: 18,
+              paddingVertical: 6,
+            }}
+          >
             <KeyValue label="Product" value={lastOrder.product} first />
             <KeyValue label="Total paid" value={money(lastOrder.total)} />
           </Card>
@@ -48,7 +62,11 @@ export default function SentScreen() {
       </View>
       <View style={{ paddingHorizontal: 20, paddingBottom: 12, gap: 6 }}>
         <Button label="Back to home" onPress={() => handleLeaveConfirmation(ROUTES.HOME)} />
-        <Button variant="text" label="View transactions" onPress={() => handleLeaveConfirmation(ROUTES.TRANSACTIONS)} />
+        <Button
+          variant="text"
+          label="View transactions"
+          onPress={() => handleLeaveConfirmation(ROUTES.TRANSACTIONS)}
+        />
       </View>
     </SafeAreaView>
   );

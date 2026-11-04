@@ -4,7 +4,9 @@ import { COUNTRY_ID, RANGE_PRICE_TYPE, VOUCHER_OPERATOR_ID } from '@/data';
 import type { AirtimeOperator, AirtimeProduct, ApiOperator, ApiProduct } from '@/types/airtime';
 
 const isRangePriceType = (priceType: ApiProduct['priceType']) =>
-  priceType !== null && priceType !== undefined && String(priceType).toLowerCase() === String(RANGE_PRICE_TYPE).toLowerCase();
+  priceType !== null &&
+  priceType !== undefined &&
+  String(priceType).toLowerCase() === String(RANGE_PRICE_TYPE).toLowerCase();
 
 function toProduct(item: ApiProduct): AirtimeProduct {
   const isRange = isRangePriceType(item.priceType);
@@ -26,14 +28,22 @@ export async function getOperators(signal?: AbortSignal): Promise<AirtimeOperato
     throw new Error('Unexpected operators response from the server.');
   }
 
-return (response as ApiOperator[])
-  .filter((item) => item.countryId === COUNTRY_ID && Number(item.sochitelId) !== VOUCHER_OPERATOR_ID)
-  .map((item) => ({ id: Number(item.sochitelId), name: item.name }));
+  return (response as ApiOperator[])
+    .filter(
+      (item) => item.countryId === COUNTRY_ID && Number(item.sochitelId) !== VOUCHER_OPERATOR_ID,
+    )
+    .map((item) => ({ id: Number(item.sochitelId), name: item.name }));
 }
 
 /** Products for one operator. Rejects when the request fails or the response isn't a list. */
-export async function getOperatorProducts(operatorId: number, signal?: AbortSignal): Promise<AirtimeProduct[]> {
-  const response = await apiClient.get<unknown>(API_ENDPOINTS.airtime.operatorProducts(operatorId), { signal });
+export async function getOperatorProducts(
+  operatorId: number,
+  signal?: AbortSignal,
+): Promise<AirtimeProduct[]> {
+  const response = await apiClient.get<unknown>(
+    API_ENDPOINTS.airtime.operatorProducts(operatorId),
+    { signal },
+  );
   if (!Array.isArray(response)) {
     throw new Error('Unexpected products response from the server.');
   }

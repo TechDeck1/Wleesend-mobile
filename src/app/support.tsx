@@ -21,7 +21,10 @@ export default function SupportScreen() {
             {SUPPORT_EMAIL}
           </AppText>
         </View>
-        <Button label="Email support" onPress={() => WebBrowser.openBrowserAsync(`mailto:${SUPPORT_EMAIL}`)} />
+        <Button
+          label="Email support"
+          onPress={() => WebBrowser.openBrowserAsync(`mailto:${SUPPORT_EMAIL}`)}
+        />
       </Card>
     </Screen>
   );

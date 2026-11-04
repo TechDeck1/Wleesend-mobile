@@ -1,11 +1,19 @@
 import { ROUTES } from '@/constants/routes';
-import { Button, Field, Footer, Icon, NavBar, Screen, AppText, Tile } from '@/components/UiComponents';
+import {
+  Button,
+  Field,
+  Footer,
+  Icon,
+  NavBar,
+  Screen,
+  AppText,
+  Tile,
+} from '@/components/UiComponents';
 import { Pressable, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { useTheme } from '@/theme';
 import { useStore } from '@/store';
 import { useState } from 'react';
-
 
 export default function LogInScreen() {
   const theme = useTheme();
@@ -38,7 +46,6 @@ export default function LogInScreen() {
     } finally {
       setIsSubmitting(false);
     }
-
   };
 
   const handleFieldChange = (setter: (fieldValue: string) => void) => (fieldValue: string) => {
@@ -52,9 +59,13 @@ export default function LogInScreen() {
       header={<NavBar title="Log in" />}
       footer={
         <Footer>
-          <Button label={isSubmitting ? 'Logging in...' : 'Log in'} onPress={() => void handleLoginSubmit()} />
+          <Button
+            label={isSubmitting ? 'Logging in...' : 'Log in'}
+            onPress={() => void handleLoginSubmit()}
+          />
         </Footer>
-      }>
+      }
+    >
       <View style={{ alignItems: 'center', gap: 8, paddingTop: 4 }}>
         <Tile icon="user" size={64} />
         <AppText variant="title" style={{ textAlign: 'center' }} accessibilityRole="header">
@@ -90,19 +101,34 @@ export default function LogInScreen() {
               onPress={() => setIsPasswordVisible((isVisible) => !isVisible)}
               accessibilityRole="button"
               accessibilityLabel={isPasswordVisible ? 'Hide password' : 'Show password'}
-              style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
+              style={{
+                width: 44,
+                height: 44,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
               <Icon name={isPasswordVisible ? 'eyeOff' : 'eye'} size={20} color={theme.muted} />
             </Pressable>
           }
         />
       </View>
 
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
         <Pressable
           onPress={() => router.push(ROUTES.FORGET_PASSWORD)}
           accessibilityRole="button"
-          hitSlop={8}>
-          <Text style={{ color: theme.brandText, fontSize: 15, fontWeight: '600' }}>Forgot password?</Text>
+          hitSlop={8}
+        >
+          <Text style={{ color: theme.brandText, fontSize: 15, fontWeight: '600' }}>
+            Forgot password?
+          </Text>
         </Pressable>
         <Pressable onPress={() => router.push(ROUTES.SIGNUP)} accessibilityRole="link" hitSlop={8}>
           <Text style={{ color: theme.brandText, fontSize: 15, fontWeight: '600' }}>Sign up</Text>

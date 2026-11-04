@@ -2,8 +2,17 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, View, type TextInputInstance } from 'react-native';
 
-import { ApiError} from '@/api/client';
-import { Button, Card, Field, Footer, NavBar, Screen, AppText, Tile } from '@/components/UiComponents';
+import { ApiError } from '@/api/client';
+import {
+  Button,
+  Card,
+  Field,
+  Footer,
+  NavBar,
+  Screen,
+  AppText,
+  Tile,
+} from '@/components/UiComponents';
 import { useStore } from '@/store';
 import { useTheme } from '@/theme';
 import { sendDualEmailOtp, verifyDualEmailOtp } from '@/services/accountService';
@@ -71,8 +80,7 @@ export default function ChangeEmailScreen() {
     }, [resetForm]),
   );
 
-  const expirySeconds =
-    expiresAt === null ? 0 : Math.max(0, Math.ceil((expiresAt - now) / 1000));
+  const expirySeconds = expiresAt === null ? 0 : Math.max(0, Math.ceil((expiresAt - now) / 1000));
   const resendSeconds =
     resendAvailableAt === null ? 0 : Math.max(0, Math.ceil((resendAvailableAt - now) / 1000));
 
@@ -182,9 +190,7 @@ export default function ChangeEmailScreen() {
       if (!response.success) {
         const message = response.message || GENERIC_ERROR;
         const requiresResend = /expired|too many (invalid )?attempts/i.test(message);
-        setOtpError(
-          requiresResend ? `${message} Please resend OTPs to continue.` : message,
-        );
+        setOtpError(requiresResend ? `${message} Please resend OTPs to continue.` : message);
         if (requiresResend) {
           setFirstOtp('');
           setSecondOtp('');
@@ -203,9 +209,7 @@ export default function ChangeEmailScreen() {
         error instanceof ApiError &&
         error.status === 400 &&
         /expired|too many (invalid )?attempts/i.test(error.message);
-      setOtpError(
-        requiresResend ? `${message} Please resend OTPs to continue.` : message,
-      );
+      setOtpError(requiresResend ? `${message} Please resend OTPs to continue.` : message);
       if (requiresResend) {
         setFirstOtp('');
         setSecondOtp('');
@@ -214,7 +218,6 @@ export default function ChangeEmailScreen() {
       if (generation === requestGeneration.current) setBusy(null);
     }
   };
-
 
   return (
     <Screen
@@ -230,7 +233,8 @@ export default function ChangeEmailScreen() {
             />
           </Footer>
         ) : null
-      }>
+      }
+    >
       <View style={{ alignItems: 'center', gap: 8, paddingTop: 4 }}>
         <Tile icon={isSuccess ? 'check' : 'mail'} size={64} />
         <AppText variant="title" style={{ textAlign: 'center' }} accessibilityRole="header">
@@ -247,7 +251,11 @@ export default function ChangeEmailScreen() {
 
       {isSuccess ? (
         <Card style={{ padding: 18, alignItems: 'center', gap: 16 }}>
-          <AppText variant="strong" style={{ textAlign: 'center' }} accessibilityLiveRegion="polite">
+          <AppText
+            variant="strong"
+            style={{ textAlign: 'center' }}
+            accessibilityLiveRegion="polite"
+          >
             Your email is now {sentTo}.
           </AppText>
           <Button label="Done" onPress={() => router.back()} />
@@ -326,7 +334,11 @@ export default function ChangeEmailScreen() {
               : 'Codes expired. Resend OTPs to continue.'}
           </AppText>
           {otpError ? (
-            <AppText variant="small" accessibilityLiveRegion="polite" style={{ color: theme.accentText }}>
+            <AppText
+              variant="small"
+              accessibilityLiveRegion="polite"
+              style={{ color: theme.accentText }}
+            >
               {otpError}
             </AppText>
           ) : null}
@@ -334,9 +346,22 @@ export default function ChangeEmailScreen() {
             onPress={() => void handleSendOtp(true)}
             disabled={busy !== null || resendSeconds > 0}
             accessibilityRole="button"
-            accessibilityState={{ disabled: busy !== null || resendSeconds > 0, busy: busy === 'resend' }}
-            style={{ minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
-            <AppText variant="strong" style={{ color: resendSeconds > 0 ? theme.muted : theme.brandText }}>
+            accessibilityState={{
+              disabled: busy !== null || resendSeconds > 0,
+              busy: busy === 'resend',
+            }}
+            style={{
+              minHeight: 44,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <AppText
+              variant="strong"
+              style={{
+                color: resendSeconds > 0 ? theme.muted : theme.brandText,
+              }}
+            >
               {busy === 'resend'
                 ? 'Resending…'
                 : resendSeconds > 0

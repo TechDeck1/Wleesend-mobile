@@ -1,8 +1,4 @@
-import {
-  AddressCollectionMode,
-  CollectionMode,
-  useStripe,
-} from '@stripe/stripe-react-native';
+import { AddressCollectionMode, CollectionMode, useStripe } from '@stripe/stripe-react-native';
 import { router } from 'expo-router';
 import { useState } from 'react';
 
@@ -24,7 +20,9 @@ export function usePaymentFlow() {
     setError('');
     try {
       if (!/^pk_(test|live)_/.test(STRIPE_PUBLISHABLE_KEY)) {
-        throw new Error('Secure payment is not configured. Set EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY to your Stripe publishable key, then rebuild the app.');
+        throw new Error(
+          'Secure payment is not configured. Set EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY to your Stripe publishable key, then rebuild the app.',
+        );
       }
 
       console.log('stripe api key', STRIPE_PUBLISHABLE_KEY);
@@ -55,7 +53,11 @@ export function usePaymentFlow() {
       setLastOrder(order);
       router.replace(ROUTES.SEND_SENT);
     } catch (paymentError) {
-      setError(paymentError instanceof Error ? paymentError.message : 'Could not start secure checkout. Please try again.');
+      setError(
+        paymentError instanceof Error
+          ? paymentError.message
+          : 'Could not start secure checkout. Please try again.',
+      );
     } finally {
       setIsProcessing(false);
     }

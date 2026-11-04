@@ -3,7 +3,6 @@ import { apiClient } from '@/api/client';
 import { API_ENDPOINTS } from '@/config/api';
 import { LoginCredentials, LoginResponse, Registration, RegistrationResponse } from '@/types/auth';
 
-
 function toAuthSession(response: LoginResponse): AuthSession {
   if (!response.success || !response.token) {
     throw new Error(response.errorMessage || 'Sign-in failed. Check your details and try again.');

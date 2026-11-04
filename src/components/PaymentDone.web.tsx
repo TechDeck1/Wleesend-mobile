@@ -5,10 +5,7 @@ import { Icon } from '@/components/UiComponents';
 import { useTheme } from '@/theme';
 import type { PaymentDoneProps } from '@/types/components/PaymentDone.types';
 
-/**
- * Web stand-in for the Lottie animation: its web player downloads its engine
- * from a CDN at runtime, which hosted previews block. Same end frame, scaled in.
- */
+/** Avoid the Lottie web player's CDN dependency in hosted previews. */
 export function PaymentDone({ size = 168 }: PaymentDoneProps) {
   const theme = useTheme();
   const [scale] = useState(() => new Animated.Value(0.4));
@@ -28,7 +25,14 @@ export function PaymentDone({ size = 168 }: PaymentDoneProps) {
       accessible
       accessibilityRole="image"
       accessibilityLabel="Payment complete"
-      style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center', transform: [{ scale }] }}>
+      style={{
+        width: size,
+        height: size,
+        alignItems: 'center',
+        justifyContent: 'center',
+        transform: [{ scale }],
+      }}
+    >
       <Animated.View
         style={{
           width: circle,
@@ -37,7 +41,8 @@ export function PaymentDone({ size = 168 }: PaymentDoneProps) {
           backgroundColor: theme.brand,
           alignItems: 'center',
           justifyContent: 'center',
-        }}>
+        }}
+      >
         <Icon name="check" size={Math.round(circle * 0.45)} color={theme.onBrand} />
       </Animated.View>
     </Animated.View>

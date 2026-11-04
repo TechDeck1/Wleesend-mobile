@@ -14,7 +14,12 @@ export default function PaymentScreen() {
     <Text
       accessibilityRole="link"
       onPress={() => WebBrowser.openBrowserAsync(`${WEBSITE_URL}/${path}`)}
-      style={{ color: theme.brandText, fontWeight: '600', textDecorationLine: 'underline' }}>
+      style={{
+        color: theme.brandText,
+        fontWeight: '600',
+        textDecorationLine: 'underline',
+      }}
+    >
       {label}
     </Text>
   );
@@ -26,12 +31,15 @@ export default function PaymentScreen() {
       footer={
         <Footer>
           <Button
-            label={isProcessing ? 'Opening secure checkout…' : `Continue to pay ${money(order.total)}`}
+            label={
+              isProcessing ? 'Opening secure checkout…' : `Continue to pay ${money(order.total)}`
+            }
             disabled={isProcessing}
-          onPress={() => void handlePayment()}
+            onPress={() => void handlePayment()}
           />
         </Footer>
-      }>
+      }
+    >
       <Card style={{ padding: 18, paddingTop: 16, paddingBottom: 6 }}>
         <AppText variant="display" style={{ marginBottom: 8 }} accessibilityRole="header">
           Order summary
@@ -48,23 +56,44 @@ export default function PaymentScreen() {
             paddingBottom: 10,
             borderTopWidth: 1,
             borderTopColor: theme.fieldBorder,
-          }}>
+          }}
+        >
           <AppText variant="strong">Total amount</AppText>
-          <Text style={{ fontFamily: fonts.display, fontSize: 20, color: theme.brandText }}>{money(order.total)}</Text>
+          <Text
+            style={{
+              fontFamily: fonts.display,
+              fontSize: 20,
+              color: theme.brandText,
+            }}
+          >
+            {money(order.total)}
+          </Text>
         </View>
       </Card>
 
       <Card style={{ padding: 18, gap: 10 }}>
-        <AppText variant="display" accessibilityRole="header">Secure checkout</AppText>
+        <AppText variant="display" accessibilityRole="header">
+          Secure checkout
+        </AppText>
         <AppText variant="body" style={{ fontSize: 14.5, lineHeight: 21 }}>
-          Choose a payment method and provide your billing name and address in Stripe’s secure sheet. Wleesend does not store your card details.
+          Choose a payment method and provide your billing name and address in Stripe’s secure
+          sheet. Wleesend does not store your card details.
         </AppText>
         {isProcessing ? <ActivityIndicator color={theme.brandText} /> : null}
-        {error ? <AppText variant="small" style={{ color: theme.accentText }} accessibilityLiveRegion="polite">{error}</AppText> : null}
+        {error ? (
+          <AppText
+            variant="small"
+            style={{ color: theme.accentText }}
+            accessibilityLiveRegion="polite"
+          >
+            {error}
+          </AppText>
+        ) : null}
       </Card>
 
       <AppText variant="small" style={{ fontSize: 12.5 }}>
-        By placing your order, you agree to Wleesend&rsquo;s {renderLegalLink('privacy notice', 'privacy-policy')} and{' '}
+        By placing your order, you agree to Wleesend&rsquo;s{' '}
+        {renderLegalLink('privacy notice', 'privacy-policy')} and{' '}
         {renderLegalLink('terms and conditions of use', 'terms-and-conditions')}.
       </AppText>
     </Screen>
