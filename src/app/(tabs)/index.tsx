@@ -9,18 +9,8 @@ import type { SendKind } from '@/data';
 import { useStore } from '@/store';
 import { fonts, useTheme } from '@/theme';
 import type { IconName } from '@/types/components/UiComponents.types';
-import { BASE_URL } from '@/config/api';
-import { base64ToDataUri } from '@/services/profileService';
+import { getInitials, resolveProfileImage } from '@/utils';
 
-function resolveProfileImage(path: string | null | undefined): string | null {
-  const value = path?.trim();
-  if (!value) return null;
-  if (/^(data:|https?:\/\/)/i.test(value)) return value;
-  // Raw base64 can begin with `/`, so check it before treating the value as a server path.
-  if (value.startsWith('/9j/') || value.startsWith('iVBOR')) return base64ToDataUri(value);
-  if (value.startsWith('/')) return `${BASE_URL.replace(/\/+$/, '')}${value}`;
-  return value;
-}
 
 export default function HomeScreen() {
   const theme = useTheme();
@@ -98,8 +88,7 @@ export default function HomeScreen() {
                 color: theme.brandText,
               }}
             >
-              {user.firstName[0]}
-              {user.lastName[0]}
+              {getInitials(user.firstName, user.lastName)}
             </Text>
           ) : (
             <Icon name="user" size={20} color={theme.brandText} />

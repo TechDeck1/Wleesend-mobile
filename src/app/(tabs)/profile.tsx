@@ -1,6 +1,6 @@
 import { ROUTES } from '@/constants/routes';
 import { router } from 'expo-router';
-import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Pressable, Text, View } from 'react-native';
 import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -8,20 +8,13 @@ import { Button, Card, LinkRow, Screen, AppText, Tile } from '@/components/UiCom
 import { useStore } from '@/store';
 import { fonts, useTheme } from '@/theme';
 import { BASE_URL } from '@/config/api';
-import { base64ToDataUri, uploadProfileImage } from '@/services/profileService';
+import { base64ToDataUri, removeProfileImage, uploadProfileImage } from '@/services/profileService';
+import { getInitials, resolveProfileImage } from '@/utils';
+
 
 type SelectedPhoto = { uri: string; name: string; type: string };
 
-function resolveImageUrl(path: string | null | undefined): string | null {
-  const value = path?.trim();
-  if (!value) return null;
-  if (/^data:/i.test(value)) return value;
-  if (/^https?:\/\//i.test(value)) return value;
-  // Raw base64 (JPEG starts with "/9j/", PNG with "iVBOR") - check before treating "/" as a path.
-  if (value.startsWith('/9j/') || value.startsWith('iVBOR')) return base64ToDataUri(value);
-  if (value.startsWith('/')) return `${BASE_URL.replace(/\/+$/, '')}${value}`;
-  return value;
-}
+
 
 export default function ProfileScreen() {
   const theme = useTheme();
@@ -30,11 +23,40 @@ export default function ProfileScreen() {
   const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
+  const [isRemoving, setIsRemoving] = useState(false);
+
+
 
   const handleSignOut = async () => {
     await signOut();
     router.replace(ROUTES.WELCOME);
   };
+
+
+  const removePhoto = async () => {
+    if (!userProfile?.userId) {
+      setPhotoError('Missing user id. Please sign in again.');
+      return;
+    }
+    setPhotoError(null);
+    setIsRemoving(true);
+    try {
+      await removeProfileImage(String(userProfile.userId));
+      await updateProfilePic('');
+      setSelectedPhoto(null);
+      setAvatarLoadFailed(false);
+    } catch (error) {
+      setPhotoError(error instanceof Error ? error.message : 'Could not remove the photo.');
+    } finally {
+      setIsRemoving(false);
+    }
+  };
+
+  const confirmRemovePhoto = () =>
+    Alert.alert('Remove photo', 'Your profile photo will be removed.', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Remove', style: 'destructive', onPress: () => void removePhoto() },
+    ]);
 
   const accountLinks = (
     <Card>
@@ -84,9 +106,9 @@ export default function ProfileScreen() {
     </View>
   );
 
-  const avatarUrl = resolveImageUrl(userProfile.profilePic);
+  const avatarUrl = resolveProfileImage(userProfile.profilePic);
+  const hasUploadedPhoto = Boolean(userProfile.profilePic?.trim());
   const avatarSource = selectedPhoto?.uri ?? (avatarLoadFailed ? null : avatarUrl);
-
   const choosePhoto = async () => {
     setPhotoError(null);
     try {
@@ -158,6 +180,7 @@ export default function ProfileScreen() {
             backgroundColor: theme.brand,
             alignItems: 'center',
             justifyContent: 'center',
+            overflow: 'hidden',
           }}
         >
           {avatarSource ? (
@@ -175,12 +198,13 @@ export default function ProfileScreen() {
                 fontSize: 19,
                 color: theme.onBrand,
               }}
+              accessibilityLabel={`${userProfile.firstName} ${userProfile.lastName} initials`}
             >
-              {userProfile.firstName[0]}
-              {userProfile.lastName[0]}
+              {getInitials(userProfile.firstName, userProfile.lastName)}
             </Text>
           )}
         </View>
+
         <View style={{ flex: 1 }}>
           <AppText variant="heading" style={{ fontSize: 18 }}>
             {userProfile.firstName} {userProfile.lastName}
@@ -188,14 +212,41 @@ export default function ProfileScreen() {
           <AppText variant="small" style={{ fontSize: 14 }}>
             {userProfile.email}
           </AppText>
-          <Pressable
-            onPress={choosePhoto}
-            accessibilityRole="button"
-            disabled={uploadProgress !== null}
-            style={{ minHeight: 44, justifyContent: 'center', alignSelf: 'flex-start' }}
-          >
-            <Text style={{ color: theme.accentText, fontSize: 14, fontWeight: '600' }}>Edit photo</Text>
-          </Pressable>
+
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+            <Pressable
+              onPress={choosePhoto}
+              accessibilityRole="button"
+              accessibilityLabel="Edit profile photo"
+              disabled={uploadProgress !== null || isRemoving}
+              style={{ minHeight: 44, justifyContent: 'center' }}
+            >
+              <Text style={{ color: theme.accentText, fontSize: 14, fontWeight: '600' }}>
+                Edit photo
+              </Text>
+            </Pressable>
+
+            {hasUploadedPhoto && !selectedPhoto ? (
+              <Pressable
+                onPress={confirmRemovePhoto}
+                accessibilityRole="button"
+                accessibilityLabel="Remove profile photo"
+                disabled={uploadProgress !== null || isRemoving}
+                style={{
+                  minHeight: 44,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                }}
+              >
+                {isRemoving ? <ActivityIndicator size="small" color={theme.muted} /> : null}
+                <Text style={{ color: theme.muted, fontSize: 14, fontWeight: '600' }}>
+                  {isRemoving ? 'Removing…' : 'Remove photo'}
+                </Text>
+              </Pressable>
+            ) : null}
+          </View>
         </View>
       </View>
 
@@ -209,7 +260,7 @@ export default function ProfileScreen() {
                 setPhotoError(null);
               }}
               accessibilityRole="button"
-              disabled={uploadProgress !== null}
+              disabled={uploadProgress !== null || isRemoving}
               style={{
                 flex: 1,
                 minHeight: 48,
@@ -225,7 +276,7 @@ export default function ProfileScreen() {
             <Pressable
               onPress={savePhoto}
               accessibilityRole="button"
-              disabled={uploadProgress !== null}
+              disabled={uploadProgress !== null || isRemoving}
               style={{
                 flex: 1,
                 minHeight: 48,
@@ -254,6 +305,7 @@ export default function ProfileScreen() {
           ) : null}
         </View>
       ) : null}
+
       {photoError ? (
         <Text accessibilityLiveRegion="polite" style={{ color: theme.accentText, fontSize: 14 }}>
           {photoError}

@@ -1,3 +1,4 @@
+
 import { ROUTES } from '@/constants/routes';
 import { router } from 'expo-router';
 import { useEffect } from 'react';
@@ -229,8 +230,16 @@ export default function SendDetailsScreen() {
         Alert.alert('Meter number', 'Enter a valid 10 to 12 digit meter number.');
         return;
       }
-      if (!(draft.amount >= UTILITY_MIN_AMOUNT)) {
-        Alert.alert('Amount', `Enter an amount of at least $${UTILITY_MIN_AMOUNT}.`);
+
+      const isPresetAmount = UTILITY_AMOUNTS.includes(draft.amount);
+
+      if (isPresetAmount) {
+        if (!(draft.amount >= UTILITY_MIN_AMOUNT)) {
+          Alert.alert('Amount', `Enter an amount of at least $${UTILITY_MIN_AMOUNT}.`);
+          return;
+        }
+      } else if (!(draft.amount >= 10)) {
+        Alert.alert('Amount', 'Enter an amount of at least $10.');
         return;
       }
     }
@@ -499,7 +508,7 @@ export default function SendDetailsScreen() {
             />
             <Field
               label="Custom amount (USD)"
-              placeholder="Enter amount"
+              placeholder="Minimum $10.00"
               keyboardType="decimal-pad"
               value={UTILITY_AMOUNTS.includes(draft.amount) ? '' : String(draft.amount)}
               onChangeText={(text) => {

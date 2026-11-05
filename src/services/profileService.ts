@@ -60,3 +60,11 @@ export async function uploadProfileImage(
   }
   return base64ToDataUri(image);
 }
+
+
+
+export async function removeProfileImage(userId: string): Promise<void> {
+  const base = API_ENDPOINTS.user.profileImage;
+  const separator = base.includes('?') ? '&' : '?';
+  await apiClient.delete(`${base}${separator}userId=${encodeURIComponent(userId)}`);
+}
