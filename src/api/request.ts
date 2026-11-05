@@ -83,6 +83,7 @@ export async function request<TResponse = unknown, TBody = unknown>(
     skipAuth = false,
     signal,
     timeoutMs = DEFAULT_TIMEOUT_MS,
+    onUploadProgress,
     ...fetchOptions
   } = options;
 
@@ -103,14 +104,21 @@ export async function request<TResponse = unknown, TBody = unknown>(
     headers.set('Authorization', `Bearer ${token}`);
   }
 
-  let serializedBody: string | undefined;
+  const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
+  let serializedBody: BodyInit | undefined;
   if (body !== undefined) {
-    serializedBody = JSON.stringify(body);
-    if (serializedBody === undefined) {
-      throw new TypeError('The request body could not be serialized as JSON.');
-    }
-    if (!headers.has('Content-Type')) {
-      headers.set('Content-Type', 'application/json');
+    if (isFormData) {
+      serializedBody = body as FormData;
+      // The transport must supply the multipart boundary.
+      headers.delete('Content-Type');
+    } else {
+      serializedBody = JSON.stringify(body);
+      if (serializedBody === undefined) {
+        throw new TypeError('The request body could not be serialized as JSON.');
+      }
+      if (!headers.has('Content-Type')) {
+        headers.set('Content-Type', 'application/json');
+      }
     }
   }
 
@@ -131,6 +139,35 @@ export async function request<TResponse = unknown, TBody = unknown>(
   }
 
   try {
+    if (isFormData && onUploadProgress) {
+      return await new Promise<TResponse>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open(method, url.toString());
+        headers.forEach((value, name) => xhr.setRequestHeader(name, value));
+        xhr.timeout = timeoutMs;
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) onUploadProgress(Math.round((event.loaded / event.total) * 100));
+        };
+        xhr.onload = () => {
+          const contentType = xhr.getResponseHeader('content-type')?.toLowerCase() ?? '';
+          let responseBody: unknown = xhr.responseText;
+          if (xhr.status === 204 || xhr.status === 205 || !xhr.responseText) responseBody = undefined;
+          else if (contentType.includes('json')) {
+            try { responseBody = JSON.parse(xhr.responseText); } catch { responseBody = xhr.responseText; }
+          }
+          if (xhr.status >= 200 && xhr.status < 300) resolve(responseBody as TResponse);
+          else reject(new ApiError(getErrorMessage(responseBody, new Response(null, { status: xhr.status, statusText: xhr.statusText })), xhr.status, responseBody));
+        };
+        xhr.onerror = () => reject(new Error('Network request failed.'));
+        xhr.ontimeout = () => reject(new ApiTimeoutError(timeoutMs));
+        xhr.onabort = () => reject(new Error('Request was cancelled.'));
+        const abort = () => xhr.abort();
+        if (signal?.aborted) xhr.abort();
+        else signal?.addEventListener('abort', abort, { once: true });
+        xhr.onloadend = () => signal?.removeEventListener('abort', abort);
+        xhr.send(serializedBody);
+      });
+    }
     const response = await fetch(url.toString(), {
       ...fetchOptions,
       method,

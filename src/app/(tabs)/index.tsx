@@ -1,5 +1,6 @@
 import { ROUTES } from '@/constants/routes';
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { Image, Pressable, Text, View } from 'react-native';
 
 import { Logo } from '@/components/LogoComponent';
@@ -8,10 +9,24 @@ import type { SendKind } from '@/data';
 import { useStore } from '@/store';
 import { fonts, useTheme } from '@/theme';
 import type { IconName } from '@/types/components/UiComponents.types';
+import { BASE_URL } from '@/config/api';
+import { base64ToDataUri } from '@/services/profileService';
+
+function resolveProfileImage(path: string | null | undefined): string | null {
+  const value = path?.trim();
+  if (!value) return null;
+  if (/^(data:|https?:\/\/)/i.test(value)) return value;
+  // Raw base64 can begin with `/`, so check it before treating the value as a server path.
+  if (value.startsWith('/9j/') || value.startsWith('iVBOR')) return base64ToDataUri(value);
+  if (value.startsWith('/')) return `${BASE_URL.replace(/\/+$/, '')}${value}`;
+  return value;
+}
 
 export default function HomeScreen() {
   const theme = useTheme();
   const { startSend, user } = useStore();
+  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
+  const avatarUrl = resolveProfileImage(user?.profilePic);
 
   const handleStartSend = (kind: SendKind) => {
     startSend(kind);
@@ -67,7 +82,15 @@ export default function HomeScreen() {
             justifyContent: 'center',
           }}
         >
-          {user ? (
+          {user && avatarUrl && !avatarLoadFailed ? (
+            <Image
+              source={{ uri: avatarUrl }}
+              onError={() => setAvatarLoadFailed(true)}
+              onLoad={() => setAvatarLoadFailed(false)}
+              style={{ width: 44, height: 44, borderRadius: 22 }}
+              accessibilityLabel="Profile photo"
+            />
+          ) : user ? (
             <Text
               style={{
                 fontFamily: fonts.display,

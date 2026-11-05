@@ -14,6 +14,7 @@ export interface ApiRequestOptions<TBody = unknown> extends Omit<
   headers?: HeadersInit;
   params?: ApiQueryParams;
   timeoutMs?: number;
+  onUploadProgress?: (progress: number) => void;
 }
 
 export type GenericResponse = {

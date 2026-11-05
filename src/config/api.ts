@@ -16,6 +16,10 @@ export const API_ENDPOINTS = {
     changeEmail: webEndpoint('auth/change-email'),
   },
 
+  user: {
+    profileImage: apiEndpoint('User/profileImage'),
+  },
+
   transactions: {
     mobileHistory: apiEndpoint('WleeTransaction/mobile/transactions'),
   },
