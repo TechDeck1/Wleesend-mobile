@@ -14,6 +14,12 @@ export function resolveProfileImage(path: string | null | undefined): string | n
   const afterWwwroot = normalized.match(/(?:^|\/)wwwroot\/(.+)$/i);
   if (afterWwwroot) return `${base}/${afterWwwroot[1]}`;
 
+  // Older records may contain a Windows disk path such as D:\Images\photo.png.
+  // The API now stores a web path, but map legacy paths to the public Images folder
+  // so they can still render when the corresponding file is present on the server.
+  const afterImages = normalized.match(/(?:^|\/)Images\/(.+)$/i);
+  if (afterImages) return `${base}/Images/${afterImages[1]}`;
+
   if (/^[A-Za-z]:\//.test(normalized)) return null;
 
   if (normalized.startsWith('/')) return `${base}${normalized}`;

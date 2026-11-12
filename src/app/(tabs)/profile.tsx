@@ -3,18 +3,14 @@ import { router } from 'expo-router';
 import { ActivityIndicator, Alert, Image, Pressable, Text, View } from 'react-native';
 import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
-
 import { Button, Card, LinkRow, Screen, AppText, Tile } from '@/components/UiComponents';
 import { useStore } from '@/store';
 import { fonts, useTheme } from '@/theme';
-import { BASE_URL } from '@/config/api';
-import { base64ToDataUri, removeProfileImage, uploadProfileImage } from '@/services/profileService';
+import { removeProfileImage, uploadProfileImage } from '@/services/profileService';
 import { getInitials, resolveProfileImage } from '@/utils';
 
 
 type SelectedPhoto = { uri: string; name: string; type: string };
-
-
 
 export default function ProfileScreen() {
   const theme = useTheme();

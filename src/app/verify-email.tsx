@@ -9,11 +9,14 @@ import { useTheme } from '@/theme';
 
 export default function VerifyEmailScreen() {
   const theme = useTheme();
-  const { email: emailParam } = useLocalSearchParams<{ email?: string }>();
+  const { email: emailParam, resent: resentParam, resendError: resendErrorParam } =
+    useLocalSearchParams<{ email?: string; resent?: string; resendError?: string }>();
   const email = typeof emailParam === 'string' ? emailParam : '';
   const [isResending, setIsResending] = useState(false);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [message, setMessage] = useState(
+    resentParam === 'true' ? 'Verification email sent. Please check your inbox.' : '',
+  );
+  const [error, setError] = useState(typeof resendErrorParam === 'string' ? resendErrorParam : '');
 
   const handleResend = async () => {
     if (isResending || !email) return;
@@ -94,11 +97,11 @@ export default function VerifyEmailScreen() {
             Check Your Email
           </AppText>
           <AppText style={{ marginTop: 12, textAlign: 'center' }}>
-            We&apos;ve sent a verification link to{' '}
+            {message ? 'We sent a verification link to ' : 'A verification link will be sent to '}
             <AppText style={{ fontWeight: '600' }}>{email || 'your email address'}</AppText>.
           </AppText>
           <AppText variant="muted" style={{ marginTop: 4, textAlign: 'center' }}>
-            Please check your inbox and click the verification link to activate your account.
+            Click the verification link in your inbox to activate your account.
           </AppText>
 
           <View

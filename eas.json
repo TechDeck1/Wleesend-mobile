@@ -7,9 +7,10 @@
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://porsche-retrorse-unblenchingly.ngrok-free.dev",
+        "EXPO_PUBLIC_API_URL": "https://wleesendapi.arielsoftwares.in",
         "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_test_51NuuIvSAs6uug6arPlfOKJ6gKPjSRgWqShPNjlJ3pP1Pz8xDsvNm8AXEYBBSuzRWu6NACT0W6OmPAiP2PwMmBi9800XMvJxsNU",
-        "EXPO_PUBLIC_WEBSITE_URL": "https://www.wleesend.com"
+        "EXPO_PUBLIC_WEBSITE_URL": "https://www.wleesend.com",
+        "EXPO_SUPPORT_EMAIL": "support@wleesend.com"
       },
       "android": {
         "buildType": "apk",

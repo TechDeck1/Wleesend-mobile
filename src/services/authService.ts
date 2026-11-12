@@ -2,6 +2,19 @@ import { AuthSession, AuthUser } from '@/api/auth-session';
 import { apiClient } from '@/api/client';
 import { API_ENDPOINTS } from '@/config/api';
 import { LoginCredentials, LoginResponse, Registration, RegistrationResponse } from '@/types/auth';
+import { resendVerificationEmail } from './accountService';
+
+const EMAIL_NOT_VERIFIED_MESSAGE = 'Please verify your email to activate your account.';
+
+export class EmailVerificationRequiredError extends Error {
+  constructor(
+    public readonly email: string,
+    public readonly resendError?: string,
+  ) {
+    super(EMAIL_NOT_VERIFIED_MESSAGE);
+    this.name = 'EmailVerificationRequiredError';
+  }
+}
 
 function toAuthSession(response: LoginResponse): AuthSession {
   if (!response.success || !response.token) {
@@ -27,13 +40,30 @@ function toAuthSession(response: LoginResponse): AuthSession {
 }
 
 export async function login(email: string, password: string): Promise<AuthSession> {
-  const response = await apiClient.post<LoginResponse, LoginCredentials>(
-    API_ENDPOINTS.auth.login,
-    { email: email.trim(), pin: password },
-    { skipAuth: true },
-  );
+  const normalizedEmail = email.trim();
+  try {
+    const response = await apiClient.post<LoginResponse, LoginCredentials>(
+      API_ENDPOINTS.auth.login,
+      { email: normalizedEmail, pin: password },
+      { skipAuth: true },
+    );
 
-  return toAuthSession(response);
+    return toAuthSession(response);
+  } catch (error) {
+    if (error instanceof Error && error.message === EMAIL_NOT_VERIFIED_MESSAGE) {
+      try {
+        await resendVerificationEmail(normalizedEmail);
+        throw new EmailVerificationRequiredError(normalizedEmail);
+      } catch (resendError) {
+        if (resendError instanceof EmailVerificationRequiredError) throw resendError;
+        throw new EmailVerificationRequiredError(
+          normalizedEmail,
+          resendError instanceof Error ? resendError.message : 'Unable to resend the verification email.',
+        );
+      }
+    }
+    throw error;
+  }
 }
 
 export async function register(
@@ -55,6 +85,7 @@ export async function register(
     },
     { skipAuth: true },
   );
+  console.log("res", response);
 
   if (!response?.success) {
     throw new Error(response?.errorMessage || response?.message || 'Account creation failed.');

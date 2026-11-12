@@ -1,8 +1,8 @@
 import { View } from 'react-native';
 import * as Linking from 'expo-linking';
 import { Button, Card, NavBar, Screen, AppText, Tile } from '@/components/UiComponents';
+import { SUPPORT_EMAIL } from '@/config/api';
 
-const SUPPORT_EMAIL = 'support@wleepay.com';
 
 export default function SupportScreen() {
   return (

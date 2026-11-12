@@ -18,6 +18,7 @@ import { useStore } from '@/store';
 import { useRef, useState } from 'react';
 import { MAX_PASSWORD_LENGTH } from '@/constants/auth';
 import { AuthLoadingOverlay } from '@/components/AuthLoadingOverlay';
+import { EmailVerificationRequiredError } from '@/services/authService';
 
 export default function LogInScreen() {
   const theme = useTheme();
@@ -44,6 +45,18 @@ export default function LogInScreen() {
       if (router.canDismiss()) router.dismissAll();
       router.replace(ROUTES.HOME);
     } catch (requestError) {
+      if (requestError instanceof EmailVerificationRequiredError) {
+        router.replace({
+          pathname: ROUTES.VERIFY_EMAIL,
+          params: {
+            email: requestError.email,
+            ...(requestError.resendError
+              ? { resendError: requestError.resendError }
+              : { resent: 'true' }),
+          },
+        });
+        return;
+      }
       setError(
         requestError instanceof Error
           ? requestError.message
@@ -121,7 +134,7 @@ export default function LogInScreen() {
               <Icon name={isPasswordVisible ? 'eyeOff' : 'eye'} size={20} color={theme.muted} />
             </Pressable>
           }
-        />
+      />  
       </View>
 
       <View
