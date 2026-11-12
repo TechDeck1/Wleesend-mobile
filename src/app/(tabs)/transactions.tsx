@@ -41,7 +41,15 @@ export default function TransactionsScreen() {
 
   const handleSendAgain = (transaction: Transaction) => {
     resend(transaction);
-    router.push(transaction.draft.phone ? ROUTES.SEND_PAYMENT : ROUTES.SEND);
+    // Airtime history contains the Sochitel product id but not its Stripe reference.
+    // Reopen the send screen so its catalog can restore the current payment reference.
+    router.push(
+      transaction.kind === 'airtime' ||
+      transaction.kind === 'utility' ||
+      !transaction.draft.phone
+        ? ROUTES.SEND
+        : ROUTES.SEND_PAYMENT,
+    );
   };
   return (
     <Screen

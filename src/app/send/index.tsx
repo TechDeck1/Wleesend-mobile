@@ -148,6 +148,65 @@ export default function SendDetailsScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAirtime, operatorsStatus, operators, restricted, draft.operatorId, draft.operator]);
 
+  // History stores the Sochitel product id but omits the Stripe product reference.
+  // Rehydrate the selected history item from the live catalog before checkout.
+  useEffect(() => {
+    const selectedProduct = draft.product;
+    if (
+      !isAirtime ||
+      productsStatus !== 'ready' ||
+      !selectedProduct ||
+      selectedProduct.stripeProductId
+    ) {
+      return;
+    }
+
+    const catalogProduct = products.find((product) => product.id === selectedProduct.id);
+    if (catalogProduct) {
+      updateDraft({
+        product: catalogProduct,
+        topUp: catalogProduct.isRange ? draft.topUp || String(catalogProduct.min) : '',
+      });
+    } else {
+      updateDraft({ product: null, topUp: '' });
+    }
+  }, [isAirtime, productsStatus, products, draft.product, draft.topUp, updateDraft]);
+
+  // History stores the voucher's Sochitel product id but omits its Stripe reference.
+  // Restore the live catalog product before allowing the resend to reach checkout.
+  useEffect(() => {
+    const selectedProduct = draft.voucherProduct;
+    if (
+      !isVoucher ||
+      voucherCatalog.status !== 'ready' ||
+      !selectedProduct ||
+      selectedProduct.stripeProductId
+    ) {
+      return;
+    }
+
+    const catalogProduct = voucherCatalog.products.find(
+      (product) => product.id === selectedProduct.id,
+    );
+    if (catalogProduct) {
+      updateDraft({
+        voucherProduct: catalogProduct,
+        voucherOperatorName: voucherCatalog.operatorName,
+        topUp: catalogProduct.isRange ? draft.topUp || String(catalogProduct.min) : '',
+      });
+    } else {
+      updateDraft({ voucherProduct: null, voucherOperatorName: '', topUp: '' });
+    }
+  }, [
+    isVoucher,
+    voucherCatalog.status,
+    voucherCatalog.products,
+    voucherCatalog.operatorName,
+    draft.voucherProduct,
+    draft.topUp,
+    updateDraft,
+  ]);
+
   const handleSelectProduct = (productId: number) => {
     const selectedProduct = products.find((productOption) => productOption.id === productId);
     if (selectedProduct)
@@ -268,6 +327,8 @@ export default function SendDetailsScreen() {
           accessibilityLabel="Receiver phone"
           placeholder="Phone number"
           keyboardType="number-pad"
+          autoComplete="tel"
+          textContentType="telephoneNumber"
           maxLength={9}
           error={phoneError}
           value={draft.phone}
@@ -493,6 +554,9 @@ export default function SendDetailsScreen() {
               label="Meter number"
               placeholder="Meter number"
               keyboardType="number-pad"
+              autoComplete="off"
+              textContentType="none"
+              importantForAutofill="no"
               maxLength={12}
               value={draft.meter}
               onChangeText={(meter) => updateDraft({ meter: meter.replace(/\D/g, '') })}

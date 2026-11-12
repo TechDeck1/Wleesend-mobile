@@ -85,8 +85,6 @@ export async function register(
     },
     { skipAuth: true },
   );
-  console.log("res", response);
-
   if (!response?.success) {
     throw new Error(response?.errorMessage || response?.message || 'Account creation failed.');
   }

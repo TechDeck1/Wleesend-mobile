@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import type { SendKind } from '@/data';
+import { FEE_RATE, type SendKind } from '@/data';
 import { getTransactionHistory, TRANSACTIONS_PAGE_SIZE } from '@/services/transactionService';
 import type { Draft, Transaction } from '@/store';
 import type { ApiTransaction, TransactionTotals } from '@/types/transactions';
@@ -27,11 +27,23 @@ const formatDate = (iso: string) =>
     year: 'numeric',
   });
 
+function feeFromHistory(apiTransaction: ApiTransaction): number {
+  const reportedFee = Number(apiTransaction.fee) || 0;
+  if (apiTransaction.kind !== 'utility' || reportedFee > 0) return reportedFee;
+
+  // Older LEC history rows can report the total as the base amount and a zero fee.
+  const recoveredFee = apiTransaction.total - apiTransaction.total / (1 + FEE_RATE);
+  return Math.max(0, Math.round(recoveredFee * 100) / 100);
+}
+
 function draftFromApi(apiTransaction: ApiTransaction): Draft {
   const apiDraft = apiTransaction.draft ?? ({} as Partial<ApiTransaction['draft']>);
+  const fee = feeFromHistory(apiTransaction);
   const amount =
-    Number(apiDraft.amount) ||
-    Math.max(0, +(apiTransaction.total - (apiTransaction.fee ?? 0)).toFixed(2));
+    apiTransaction.kind === 'utility'
+      ? Math.max(0, +(apiTransaction.total - fee).toFixed(2))
+      : Number(apiDraft.amount) ||
+        Math.max(0, +(apiTransaction.total - fee).toFixed(2));
 
   const receiverDigits = digitsOnly(
     apiDraft.receiverPhone ?? (apiTransaction.kind === 'airtime' ? apiTransaction.receiver : ''),
@@ -84,7 +96,7 @@ const toTransaction = (apiTransaction: ApiTransaction): Transaction =>
     receiver: apiTransaction.receiver,
     date: formatDate(apiTransaction.createdAt),
     total: apiTransaction.total,
-    fee: apiTransaction.fee,
+    fee: feeFromHistory(apiTransaction),
     draft: draftFromApi(apiTransaction),
   }) as unknown as Transaction;
 

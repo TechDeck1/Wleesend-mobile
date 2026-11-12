@@ -25,7 +25,6 @@ export function usePaymentFlow() {
         );
       }
 
-      console.log('stripe api key', STRIPE_PUBLISHABLE_KEY);
       const intent = await createRechargePaymentIntent(draft, order);
       const initialized = await initPaymentSheet({
         merchantDisplayName: 'Wleesend',
